@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+      "all": "bns:block/generic_item_block"
+    }
+  }

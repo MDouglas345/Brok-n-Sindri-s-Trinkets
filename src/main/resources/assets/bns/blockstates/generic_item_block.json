@@ -1,0 +1,5 @@
+{
+    "variants": {
+      "": { "model": "bns:block/generic_item_block" }
+    }
+  }
