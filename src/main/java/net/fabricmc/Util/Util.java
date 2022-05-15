@@ -2,6 +2,9 @@ package net.fabricmc.Util;
 
 import java.util.Random;
 
+
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 
@@ -25,5 +28,28 @@ public class Util {
 
     public static double getRandomDouble(double min, double max){
         return randgen.nextDouble() * (max - min) + min;
+    }
+
+    public static BlockPos getAdjacentBlock(BlockPos pos, Direction dir){
+        
+
+        switch (dir){
+            case DOWN :
+                return pos.down();
+            case UP :
+                return pos.up();
+            case NORTH :
+                return pos.north();
+            case SOUTH :
+                return pos.south();
+            case WEST :
+                return pos.west();
+            case EAST :
+                return pos.east();
+            default:
+                break;
+        }
+
+        return null;
     }
 }

@@ -29,8 +29,8 @@ public class BounceState  extends GenericThrownItemEntityState{
     @Override
     public void onBlockHit(BlockHitResult blockHitResult) {
         // TODO Auto-generated method stub
-        Master.world.setBlockState(blockHitResult.getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
-        Master.ChangeState(3);
+        //Master.world.setBlockState(blockHitResult.getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+        //Master.ChangeState(3);
         
     }
 
@@ -38,6 +38,7 @@ public class BounceState  extends GenericThrownItemEntityState{
     public void onEntityHit(EntityHitResult entityHitResult) {
         // TODO Auto-generated method stub
         
+        Master.Attack(entityHitResult);
     }
     
 }

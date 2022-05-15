@@ -1,3 +1,15 @@
+/**
+ * 
+ * Perhaps only one state is truly needed : the bouncing mechanic is simply setting the velocity of the masters
+ * entity to some smaller tangential trajectory
+ * 
+ * 
+ * Future feature : have all living entites have a itemstack object that takes reference to the item that 
+ * was thrown at it, for a feature renderer, and so that when they die, the item drops.
+ * possible via mixin!
+ * 
+ */
+
 package net.fabricmc.GenericThrownItemEntity.States;
 
 import java.util.Random;
@@ -8,14 +20,25 @@ import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.enums.BlockHalf;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
-
+import net.minecraft.item.Item;
+import net.minecraft.item.MiningToolItem;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolItem;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
+import net.fabricmc.Util.IPlayerEntityItems;
 import net.fabricmc.Util.Util;
+import net.fabricmc.CardinalComponents.BlockPosStackComponent;
+import net.fabricmc.CardinalComponents.UUIDStackComponent;
+import net.fabricmc.CardinalComponents.mycomponents;
 
 public class ThrownState extends GenericThrownItemEntityState{
 
@@ -25,9 +48,14 @@ public class ThrownState extends GenericThrownItemEntityState{
 
     @Override
     public void Tick() {
-        
+       
+
         Master.rotoffset -= Master.rotSpeed;
         Master.SuperTick();
+
+        if (Master.age > 30){
+            Master.setNoGravity(false);
+        }
         
         // TODO Auto-generated method stub
         
@@ -75,33 +103,54 @@ public class ThrownState extends GenericThrownItemEntityState{
          * 
          */
         
-        //Quaternion q = Master.originalRot.copy();
-        //q.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(Master.rotoffset, 0,0)));
-
-        //Vec3d quatDir = Util.getVec3FromQuat(q); // assume this works
-        //quatDir.multiply(-1);
-
-        //Vec3d toHitPos = Master.getPos().subtract(blockHitResult.getPos());
-        //BNSCore.LOGGER.info(quatDir.toString());
-
-
-       // q.hamiltonProduct(blockHitResult.getSide().getRotationQuaternion());
-        Quaternion q = blockHitResult.getSide().getRotationQuaternion();
-
-        q.hamiltonProduct(this.Master.originalRot);
-
-        Master.world.setBlockState(this.Master.getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
-        GenericItemBlockEntity be = (GenericItemBlockEntity)Master.world.getBlockEntity(this.Master.getBlockPos());
-        //be.Initalize(Master.itemToRender, Master.originalRot, Master.rotoffset);
         
 
+       /*
+            Using the blockhitresult.getSide and getBlockPos together fixes some issues with placing items where they land :
+                no more floating items if thrown straight onto the edge of a block
 
-        be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200));
+            need to find tune the translation vector so that there is some offset in the block to where it actually landed!
+
+            need to fix the rotation quaternion! Its not quite right.
+       */
+
+       if (!Master.world.isClient){
+            Quaternion q = blockHitResult.getSide().getRotationQuaternion();
+
+            BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
+
+            //IPlayerEntityItems player = (IPlayerEntityItems)(PlayerEntity)Master.getOwner();
+
+            //player.addReturnableItem(hitpos);
+
+
+            //blockHitResult.withSide(blockHitResult.getSide());
+
+            q.hamiltonProduct(this.Master.originalRot);
+
+            
+
+            Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+            GenericItemBlockEntity be = (GenericItemBlockEntity)Master.world.getBlockEntity(hitpos);
+            //be.Initalize(Master.itemToRender, Master.originalRot, Master.rotoffset);
+        
+            //be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  player.getStack().size()-1, Master.Owner);
         
         
-        Master.ChangeState(3);
+            //Master.ChangeState(3);
 
-        Master.kill();
+            BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(Master.world.getLevelProperties());
+
+            UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(Master.world.getLevelProperties());
+
+            uuidstack.Remove(Master.Owner.name, Master.StackID);
+
+            int id = stack.Push(Master.getOwner().getEntityName(), hitpos);
+
+            be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  id, Master.Owner);
+
+            Master.kill();
+       }
         
     }
 
@@ -110,18 +159,27 @@ public class ThrownState extends GenericThrownItemEntityState{
         // TODO Auto-generated method stub
         Master.SuperOnEntityHit(entityHitResult);
 
-        if (Master.world.random.nextFloat() > 0.8){
-             StuckState s = (StuckState) Master.States[1];
-             s.setStuckEntity(entityHitResult.getEntity());
-             Master.ChangeState(1);
-        }
-        else{
-            
-            Vec3d dir = new Vec3d(Master.world.random.nextFloat(), Master.world.random.nextFloat(), Master.world.random.nextFloat()).normalize();
-            dir.multiply(Master.getVelocity().length() * 0.002f);
-            Master.setVelocity(dir);
-            Master.ChangeState(2);
-        }
+        
+
+        
+            Master.Attack(entityHitResult);
+        
+        
+            /*
+            if (Util.randgen.nextFloat() > 0.8){
+                StuckState s = (StuckState) Master.States[1];
+                s.setStuckEntity(entityHitResult.getEntity());
+                Master.ChangeState(1);
+           }
+           else{
+               
+              
+               //Master.ChangeState(2);
+           }
+           */
+        
+
+        
         
     }
 

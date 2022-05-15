@@ -1,8 +1,47 @@
+/**
+ * Attempting to create a return effect for weapons and tools!
+ * 
+ * idea for referring to far away block entities : implemented!
+ * Each player entity will have a list of blockpos of where returnable items are currently.
+ * That way the server can essentially "pop the stack" of blockpos and return items to the player.
+ * This only works under the assumption that the thrown item lands on a block! need a more universal solution in case
+ * the thrown item is lodged into another living entity! This is something i will look into when I am implementing stuck in living entity feature
+ * 
+ * details on idea : requires a mixin for the player entity
+ * 
+ * idea for the actual return effect :
+ * Block entities that are called to be returned will turn into thrown entities which will then go in the direction
+ * of the player that threw it / is attached to. Once collided with said player, it will go into their inventory
+ * 
+ * details on idea : if an block entity is in an unloaded chunk (very far from any player), the created thrown
+ * entity may not be tickable. Need to find a solution for this.
+ * 
+ * Solution : if BE is some threshold away from the player, get a direction vector that points from the BE to the player,
+ *  and minimize it so the vector points from the rim of the chunk the player is in to the player. That way, the thrown entity will
+ *  become tickable and will move towards the player as if it came from its original position in the BE.
+ * 
+ * 
+ *  EnchantmentHelper.getLevel(enchantment, itemStack) useful for determining if an itemstack has an enchantment by returning 0 if non existent
+ * 
+ * 
+ * problem : a client can throw an item and disconnects before the item lands and registers as a returnable item for the player
+ * solution : have a NBT-esque data structure <playername> : <stack of entity uuid>	stored on the server, agnostic to actual serverplayerentity objects
+ * 														   : <stack of block pos>
+ * 
+ * 				this will be a fool proof way of ensuring all player's thrown items are accounted for and they can call them back in case of crash / disconnect
+ */
+
+
 package net.fabricmc.BNSCore;
 
-import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
+import net.fabricmc.CardinalComponents.BlockPosStackComponent;
+import net.fabricmc.CardinalComponents.UUIDStackComponent;
+import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
+import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
 import net.fabricmc.GenericItemBlock.*;
+import net.fabricmc.Util.IPlayerEntityItems;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -12,19 +51,24 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.Entity;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 
+import java.util.UUID;
+
+import org.apache.logging.log4j.core.pattern.ThreadIdPatternConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +84,21 @@ public class BNSCore implements ModInitializer {
 			new Identifier(ModID, "generic_thrown_item"),
 			FabricEntityTypeBuilder.<GenericThrownItemEntity>create(SpawnGroup.MISC, GenericThrownItemEntity::new)
 					.dimensions(EntityDimensions.fixed(0.65F, 0.65F)) // dimensions in Minecraft units of the projectile
-					.trackRangeBlocks(4).trackedUpdateRate(10) // necessary for all thrown projectiles (as it prevents it from breaking, lol)
+					.trackRangeBlocks(10).trackedUpdateRate(10) // necessary for all thrown projectiles (as it prevents it from breaking, lol)
 					.build() // VERY IMPORTANT DONT DELETE FOR THE LOVE OF GOD PSLSSSSSS
 	);
 
 	public static final Block GENERIC_ITEM_BLOCK = new GenericItemBlock(FabricBlockSettings.of(Material.METAL).strength(-1.0f, 9999999f).nonOpaque().noCollision());
+
 	public static BlockEntityType<GenericItemBlockEntity> GENERIC_ITEM_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(GenericItemBlockEntity::new, GENERIC_ITEM_BLOCK).build();
+
+	public static Enchantment WorthyWeapon = Registry.register(Registry.ENCHANTMENT, 
+														 new Identifier(ModID, "worthyweapon"),
+														 new WorthyWeaponEnchantment());
+
+	public static Enchantment WorthyTool = Registry.register(Registry.ENCHANTMENT, 
+														 new Identifier(ModID, "worthytool"),
+														 new WorthyToolEnchantment());
 
 	@Override
 	public void onInitialize() {
@@ -64,8 +117,109 @@ public class BNSCore implements ModInitializer {
 			float timeHeld = (float)buf.readByte();
 
 			server.submit(() ->{
-				
 				ServerWorld world = server.getOverworld();
+
+				if (timeHeld < 5){
+					// recall the last throw / landed item in stack!
+					//otherwise throw whatever is in the players hand
+					UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+					BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+
+					UUID entityuuid = uuidstack.Pop(client.getEntityName());
+
+					if (entityuuid == null){
+						BlockPos BEPosition = bpstack.Pop(client.getEntityName());
+
+						if (BEPosition == null){
+							return;
+						}
+						
+						GenericItemBlockEntity restingEntity = (GenericItemBlockEntity) world.getBlockEntity(BEPosition);
+
+						if (restingEntity == null){
+							return;
+						}
+
+						if (EnchantmentHelper.getLevel(WorthyTool, restingEntity.SavedItem) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, restingEntity.SavedItem) == 0 ){
+							return;
+						}
+
+
+						/**
+						 * How do you check if the entity is too far from the player? what is the radius of a loaded chunk?
+						 */
+
+						int dist = (server.getPlayerManager().getViewDistance()- 2 ) * 8; //modify this to fix bug where item is close but acts like its far
+						BlockPos Destination = client.getBlockPos();
+
+						if (!BEPosition.isWithinDistance(Destination, dist + 2)){
+							// if the BE is too far!
+							Vec3d Direction = Vec3d.of(Destination.subtract(BEPosition));
+							Direction = Direction.normalize();
+							Direction = Direction.multiply(dist);
+							Vec3d position = Vec3d.of(Destination).subtract(Direction);
+
+							
+
+
+							GenericThrownItemEntity e = new GenericThrownItemEntity(GenericThrownItemEntityType, world);
+							
+							//client.getHandPosOffset(itemstack.getItem());
+							e.setPos(position.getX(), position.getY(), position.getZ());
+							e.updatePosition(position.getX(), position.getY(), position.getZ());
+							e.updateTrackedPosition(position.getX(), position.getY(), position.getZ());
+							e.setOwner(client); // Assume the thrower is always THE owner!
+							e.SetOwner(client);
+							e.setItem(restingEntity.SavedItem.copy());
+							e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 10, true));
+							e.setRSpeed(10);
+							//e.setProperties()
+							//client.getCameraEntity().
+							world.spawnEntity(e);
+
+							e.ChangeState(4);
+						}else{
+							// if the BE is within range!
+							GenericThrownItemEntity e = new GenericThrownItemEntity(GenericThrownItemEntityType, world);
+							Vec3d position = Vec3d.of(BEPosition);
+							
+							//client.getHandPosOffset(itemstack.getItem());
+							e.setPos(position.getX(), position.getY(), position.getZ());
+							e.updatePosition(position.getX(), position.getY(), position.getZ());
+							e.updateTrackedPosition(position.getX(), position.getY(), position.getZ());
+							e.setOwner(client); // Assume the thrower is always THE owner!
+							e.SetOwner(client);
+							e.setItem(restingEntity.SavedItem.copy());
+
+							e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 10, true));
+							e.setRSpeed(10);
+
+							world.spawnEntity(e);
+
+							e.ChangeState(4);
+
+						}
+
+						world.removeBlock(BEPosition, false);
+						return;
+					}
+
+					GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity) world.getEntity(entityuuid);
+
+					if (EnchantmentHelper.getLevel(WorthyTool, thrownEntity.itemToRender) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, thrownEntity.itemToRender) == 0 ){
+						return;
+					}
+					
+					if (thrownEntity == null){
+						return;
+					}
+
+					thrownEntity.ChangeState(4);
+					return;
+				}
+				
+				
+				
 				ItemStack itemstackOrig = client.getMainHandStack();
 				ItemStack itemstack = itemstackOrig.copy();
 				itemstack.setCount(1);
@@ -76,11 +230,13 @@ public class BNSCore implements ModInitializer {
 				e.setPos(pos.x, client.getEyeY(), pos.z);
 				e.updatePosition(pos.x, client.getEyeY(), pos.z);
 				e.updateTrackedPosition(pos.x, client.getEyeY(), pos.z);
-				e.setOwner(client);
+				e.setOwner(client); // Assume the thrower is always THE owner!
+				e.SetOwner(client);
 				e.setItem(itemstack.copy());
 				//e.setProperties()
 				//client.getCameraEntity().
 				e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
+				e.setBonusAttack(timeHeld / 40f);
 				
 
 				//e.setQuat(Quaternion.fromEulerXyzDegrees(new Vec3f(0f, client.getYaw() + 180f,0)));
@@ -88,6 +244,21 @@ public class BNSCore implements ModInitializer {
 				//e.setQuat(Quaternion.fromEulerXyz((client.getCameraEntity().getRotationVector()));
 				e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true));
 				e.setRSpeed(timeHeld*4f);
+
+				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+
+				int id = stack.Push(client.getEntityName(), e.getUuid());
+
+				e.SetStackID(id);
+
+
+
+				//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(Master.world.getLevelProperties());
+
+
+				//IPlayerEntityItems p = (IPlayerEntityItems)client;
+
+				//p.addReturnableThrownEntity(e.getUuid());
 
 				if (!client.isCreative()){
 					itemstackOrig.decrement(1);

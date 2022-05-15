@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.fabricmc.GenericItemBlock.GenericItemBlock;
-import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
@@ -20,14 +18,12 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback.Registry;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 
@@ -58,7 +54,7 @@ public class BNSClient implements ClientModInitializer {
                 HeldTime += 1;
             }
             else{
-               if (HeldTime >= 5){
+               if (HeldTime > 0){
                 if (HeldTime > 40){HeldTime = 40;}
                 PacketByteBuf P = PacketByteBufs.create();
                 P.writeByte(HeldTime);
@@ -73,8 +69,10 @@ public class BNSClient implements ClientModInitializer {
             Vec3d pos = PacketUtil.ReadVec3d(buf);
             Quaternion rot = PacketUtil.ReadQuaternion(buf);
             float rspeed = buf.readFloat();
+            float bonusAttack = buf.readFloat();
             int ID = buf.readInt();
             UUID uuid = buf.readUuid();
+            UUID owneruuid = buf.readUuid();
             
             
             client.submit(() ->{
@@ -85,7 +83,10 @@ public class BNSClient implements ClientModInitializer {
                 e.setQuat(rot);
                 e.updatePosition(pos.x, pos.y, pos.z);
                 e.updateTrackedPosition(pos.x, pos.y, pos.z);
+                //e.setOwner(entity);
                 e.setRSpeed(rspeed);
+                e.setBonusAttack(bonusAttack);
+                e.setOwner(client.world.getPlayerByUuid(owneruuid));
                 client.world.addEntity(ID, e);
             });
         });

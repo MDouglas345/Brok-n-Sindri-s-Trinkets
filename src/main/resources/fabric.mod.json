@@ -3,6 +3,13 @@
   "id": "bns",
   "version": "${version}",
 
+  "custom": {
+      "cardinal-components": [
+          "bns:blockentitypositions",
+          "bns:entityuuids"
+      ]
+  },
+
   "name": "Brok N Sindri's Trinkets",
   "description": "A little mod that attempts to bring more mysticism to Minecraft",
   "authors": [
@@ -23,10 +30,13 @@
     ],
     "client" : [
       "net.fabricmc.BNSCore.BNSClient"
-    ]
+    ],
+    "cardinal-components": [
+      "net.fabricmc.CardinalComponents.mycomponents"
+    ] 
   },
   "mixins": [
-    
+    "bns.mixins.json"
   ],
 
   "depends": {
@@ -38,4 +48,6 @@
   "suggests": {
     "another-mod": "*"
   }
+
+ 
 }

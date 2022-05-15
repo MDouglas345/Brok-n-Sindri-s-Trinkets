@@ -16,7 +16,7 @@ public class GroundedState extends GenericThrownItemEntityState {
     public void Tick() {
         // TODO Auto-generated method stub
         if (Master.world.getBlockState(Master.getBlockPos().down()).isAir()){
-            Master.ChangeState(0);
+           // Master.ChangeState(0);
         }
         
     }
