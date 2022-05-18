@@ -3,7 +3,7 @@ A mod that aims to bring gameplay and mechanics from God of War into Minecraft!
 
 ## Planned Features
 
-# Throwing Mechanic
+### Throwing Mechanic
 
 ## License
 
