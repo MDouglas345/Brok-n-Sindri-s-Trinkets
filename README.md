@@ -1,8 +1,9 @@
-# Fabric Example Mod
+# Brok N Sindri's Trinkets
+A mod that aims to bring gameplay and mechanics from God of War into Minecraft!
 
-## Setup
+## Planned Features
 
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
+# Throwing Mechanic
 
 ## License
 
