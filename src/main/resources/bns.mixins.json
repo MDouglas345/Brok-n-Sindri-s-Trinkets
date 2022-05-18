@@ -4,7 +4,9 @@
   "package": "net.fabricmc.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "PlayerEntityMixin"
+    "PlayerEntityMixin",
+    "PlayerInventoryMixin",
+    "ClientPlayerEntityMixin"
   ],
   "client": [
 

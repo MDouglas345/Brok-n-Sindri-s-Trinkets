@@ -23,17 +23,27 @@ public class ReturnState extends GenericThrownItemEntityState {
     public void Tick() {
         // TODO Auto-generated method stub
            
-            Master.SuperTick();
-            Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0));
+            
+           // Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0.5f));
+            if (Master.world.getPlayerByUuid(Master.Owner.ID) == null){
+                Master.ChangeState(0);
+                return;
+            }
+
+           Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos();
 
             Vec3d DesiredDir = Master.getPos().subtract(Destination).normalize().negate();
 
             double newdist = Destination.squaredDistanceTo(Master.getPos());
             newdist = newdist / originaldist;
 
-            DesiredDir = DesiredDir.multiply(Math.max(0.5, newdist * 2));
+            DesiredDir = DesiredDir.multiply(Math.max(0.8, newdist * 2));
+
+            DesiredDir = Master.getVelocity().lerp(DesiredDir, 0.8f);
 
             Master.setVelocity(DesiredDir);
+
+            Master.SuperTick();
             
 
         
@@ -83,7 +93,7 @@ public class ReturnState extends GenericThrownItemEntityState {
 
     @Override
     public void OnEnter(){
-        Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0));
+        Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos().add(new Vec3d(0,1,0));
 
         originaldist = Destination.squaredDistanceTo(Master.getPos());
     }

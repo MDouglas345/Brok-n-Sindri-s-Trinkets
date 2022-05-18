@@ -15,6 +15,7 @@ package net.fabricmc.GenericThrownItemEntity.States;
 import java.util.Random;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.minecraft.util.hit.BlockHitResult;
@@ -24,6 +25,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.entity.damage.DamageSource;
@@ -41,9 +44,10 @@ import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
 
 public class ThrownState extends GenericThrownItemEntityState{
-
+    float ageToGrav = 1;
     public ThrownState(GenericThrownItemEntity m){
         super(m);
+        ageToGrav = Master.rotSpeed;
     }
 
     @Override
@@ -51,11 +55,13 @@ public class ThrownState extends GenericThrownItemEntityState{
        
 
         Master.rotoffset -= Master.rotSpeed;
-        Master.SuperTick();
+       
 
-        if (Master.age > 30){
+        if (Master.age > Master.rotSpeed/5){
             Master.setNoGravity(false);
         }
+
+        Master.SuperTick();
         
         // TODO Auto-generated method stub
         
@@ -115,6 +121,14 @@ public class ThrownState extends GenericThrownItemEntityState{
        */
 
        if (!Master.world.isClient){
+            BlockState b = Master.world.getBlockState(blockHitResult.getBlockPos());
+            if (b.getBlock() instanceof GenericItemBlock){
+                // if this entity hits a genericitemblock, bounce.
+                Master.ThrowRandom(0.3f);
+
+                return;
+            }
+        
             Quaternion q = blockHitResult.getSide().getRotationQuaternion();
 
             BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
@@ -145,7 +159,7 @@ public class ThrownState extends GenericThrownItemEntityState{
 
             uuidstack.Remove(Master.Owner.name, Master.StackID);
 
-            int id = stack.Push(Master.getOwner().getEntityName(), hitpos);
+            int id = stack.Push(Master.Owner.name, hitpos);
 
             be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  id, Master.Owner);
 

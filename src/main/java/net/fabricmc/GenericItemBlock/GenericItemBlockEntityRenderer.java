@@ -41,6 +41,7 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
         matrices.multiply(r);
        
         this.itemRenderer.renderItem(block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
+        //this.itemRenderer.renderItem((LivingEntity) block.getOwner(), block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, entity.world, light, 0, 0);
         matrices.pop();
         
         //off += 0.05;

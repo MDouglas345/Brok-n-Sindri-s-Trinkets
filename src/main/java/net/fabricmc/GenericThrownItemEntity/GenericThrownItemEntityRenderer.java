@@ -14,6 +14,7 @@ import net.minecraft.client.render.model.json.ModelTransformation.Mode;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
@@ -43,7 +44,24 @@ public class GenericThrownItemEntityRenderer extends EntityRenderer<GenericThrow
      protected int getBlockLight(GenericThrownItemEntity entity, BlockPos pos) {
         return this.lit ? 15 : super.getBlockLight(entity, pos);
      }
-  
+
+     public void render(GenericThrownItemEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+        
+      Quaternion r =  entity.originalRot.copy();
+      
+      
+
+      r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(entity.rotoffset, 0,0)));
+
+      matrices.push();
+      //matrices.multiply(entity.originalRot);
+      matrices.multiply(r);
+      matrices.scale(1.3f, 1.3f, 1.3f);
+      //this.itemRenderer.renderItem(entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getId());
+      this.itemRenderer.renderItem((LivingEntity) entity.getOwner(), entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, entity.world, light, 0, 0);
+      matrices.pop();
+   }
+  /*
       @Override
      public void render(GenericThrownItemEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         
@@ -61,7 +79,7 @@ public class GenericThrownItemEntityRenderer extends EntityRenderer<GenericThrow
         matrices.pop();
      }
 
-     
+   */ 
 
    @Override
    public Identifier getTexture(GenericThrownItemEntity var1) {

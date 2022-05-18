@@ -10,7 +10,11 @@
  */
 package net.fabricmc.GenericThrownItemEntity;
 
+import java.util.UUID;
+
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.CardinalComponents.UUIDStackComponent;
+import net.fabricmc.CardinalComponents.mycomponents;
 import net.fabricmc.GenericThrownItemEntity.States.BounceState;
 import net.fabricmc.GenericThrownItemEntity.States.GenericThrownItemEntityState;
 import net.fabricmc.GenericThrownItemEntity.States.GroundedState;
@@ -47,8 +51,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 
 public class GenericThrownItemEntity extends ThrownItemEntity {
@@ -187,6 +193,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
        nbt.putFloat("quatw", originalRot.getW());
        nbt.putFloat("roff", rotoffset);
        nbt.putFloat("bonus", bonusAttack);
+       nbt.putUuid("owner", this.Owner.ID);
+       nbt.putString("ownername", this.Owner.name);
 
         return nbt;
     }
@@ -199,6 +207,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         originalRot = new Quaternion(nbt.getFloat("quatx"), nbt.getFloat("quaty"), nbt.getFloat("quatz"), nbt.getFloat("quatw"));
         rotoffset = nbt.getFloat("roff");
         bonusAttack = nbt.getFloat("bonus");
+        this.Owner = new ClientIdentification(nbt.getString("ownername"), nbt.getUuid("owner"));
     }
 
     @Override
@@ -218,6 +227,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         createPacket.writeInt(this.getId());
         createPacket.writeUuid(this.getUuid());
         createPacket.writeUuid(this.Owner.ID);
+        createPacket.writeString(this.Owner.name);
 
         return ServerPlayNetworking.createS2CPacket(NetworkConstants.EstablishThrownItem, createPacket);
 	}
@@ -254,6 +264,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         this.Owner = new ClientIdentification(entity.getName().asString(), entity.getUuid());
     }
 
+    public void SetOwner(String name, UUID id){
+        this.Owner = new ClientIdentification(name, id);
+    }
+
     public void SetStackID(int i ){
         this.StackID = i;
     }
@@ -283,5 +297,89 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         ActiveState.OnExit();
         ActiveState = States[i];
         ActiveState.OnEnter();
+    }
+
+    public static GenericThrownItemEntity CreateNew(ServerWorld world, PlayerEntity owner, Vec3d spawnposition, ItemStack itemstack){
+                GenericThrownItemEntity e = new GenericThrownItemEntity(BNSCore.GenericThrownItemEntityType, world);
+				Vec3d pos = spawnposition;
+
+				e.setPos(pos.x, pos.y, pos.z);
+				e.updatePosition(pos.x, pos.y, pos.z);
+				e.updateTrackedPosition(pos.x, pos.y, pos.z);
+				e.setOwner(owner); // Assume the thrower is always THE owner!
+				e.SetOwner(owner);
+				e.setItem(itemstack.copy());
+
+                
+                //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
+                e.setBonusAttack(1);
+                e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 10, true));
+
+                /**
+                 *  pitch = asin(-d.Y);
+                 *  yaw = atan2(d.X, d.Z)
+                 */
+                
+                
+				
+
+			
+				e.setRSpeed(5f);
+
+                
+
+                return e;
+    }
+
+    public static GenericThrownItemEntity CreateNew(ServerWorld world, PlayerEntity client, ItemStack itemstack, float timeHeld, boolean random){
+                GenericThrownItemEntity e = new GenericThrownItemEntity(BNSCore.GenericThrownItemEntityType, world);
+				Vec3d pos = client.getPos();
+
+				e.setPos(pos.x, client.getEyeY(), pos.z);
+				e.updatePosition(pos.x, client.getEyeY(), pos.z);
+				e.updateTrackedPosition(pos.x, client.getEyeY(), pos.z);
+				e.setOwner(client); // Assume the thrower is always THE owner!
+				e.SetOwner(client);
+				e.setItem(itemstack.copy());
+
+                if (!random){
+				    e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
+				    e.setBonusAttack(timeHeld / 40f);
+                    e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true));
+                }
+                else{
+                    float yaw = Util.randgen.nextFloat() * 360;
+                    e.setVelocity(client, Util.randgen.nextFloat() * -90 + 10, yaw, 0, Util.randgen.nextFloat() * 0.5f , 0.4f);
+				    e.setBonusAttack(timeHeld / 40f);
+                    e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - yaw, true));
+                }
+				
+
+			
+				e.setRSpeed(timeHeld*4f);
+
+				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+
+				int id = stack.Push(client.getEntityName(), e.getUuid());
+
+				e.SetStackID(id);
+
+                return e;
+        
+    }
+
+    public void ThrowRandom(float force){
+        
+        float yaw = Util.randgen.nextFloat() * 360;
+        float pitch =  Util.randgen.nextFloat() * -90 + 10;
+        float roll = 0;
+        
+        float f = -MathHelper.sin(yaw * ((float)Math.PI / 180)) * MathHelper.cos(pitch * ((float)Math.PI / 180));
+        float g = -MathHelper.sin((pitch + roll) * ((float)Math.PI / 180));
+        float h = MathHelper.cos(yaw * ((float)Math.PI / 180)) * MathHelper.cos(pitch * ((float)Math.PI / 180));
+
+        this.setVelocity(f, g, h, force, 0);
+        this.setBonusAttack(force);
+        this.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - yaw, true));
     }
 }

@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFW;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
+import net.fabricmc.Util.IClientPlayerEntity;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.PacketUtil;
 import net.fabricmc.api.ClientModInitializer;
@@ -19,6 +20,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.mixins.ClientPlayerEntityMixin;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.client.render.RenderLayer;
@@ -50,6 +52,8 @@ public class BNSClient implements ClientModInitializer {
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->{
+
+            
             if (ActionKey.isPressed()){
                 HeldTime += 1;
             }
@@ -73,9 +77,13 @@ public class BNSClient implements ClientModInitializer {
             int ID = buf.readInt();
             UUID uuid = buf.readUuid();
             UUID owneruuid = buf.readUuid();
+            String ownername = buf.readString();
             
             
             client.submit(() ->{
+          
+               
+                
                 GenericThrownItemEntity e = new GenericThrownItemEntity(client.world, pos.x, pos.y, pos.z);
                 e.setItem(stack);
                 e.setId(ID);
@@ -87,6 +95,7 @@ public class BNSClient implements ClientModInitializer {
                 e.setRSpeed(rspeed);
                 e.setBonusAttack(bonusAttack);
                 e.setOwner(client.world.getPlayerByUuid(owneruuid));
+                e.SetOwner(ownername, owneruuid);
                 client.world.addEntity(ID, e);
             });
         });

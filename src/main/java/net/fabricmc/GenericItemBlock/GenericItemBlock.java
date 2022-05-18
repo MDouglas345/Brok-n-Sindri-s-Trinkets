@@ -7,19 +7,27 @@
 
 package net.fabricmc.GenericItemBlock;
 
+import io.netty.channel.VoidChannelPromise;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.EntityShapeContext;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public class GenericItemBlock extends BlockWithEntity{
@@ -77,7 +85,34 @@ public class GenericItemBlock extends BlockWithEntity{
     }
 
     
+    @Override
+    public void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
+        BNSCore.LOGGER.info("Hit by projectile");
+    }
 
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        EntityShapeContext entityShapeContext = (EntityShapeContext)context;
+
+        if (context instanceof EntityShapeContext && entityShapeContext.getEntity() != null && entityShapeContext.getEntity() instanceof GenericThrownItemEntity){
+            return super.getCollisionShape(state, world, pos, context);
+        }   
+        
+        return VoxelShapes.empty();
+        /*EntityShapeContext entityShapeContext;
+        Entity entity;
+        if (context instanceof EntityShapeContext && (entity = (entityShapeContext = (EntityShapeContext)context).getEntity()) != null) {
+            if (entity.fallDistance > 2.5f) {
+                return FALLING_SHAPE;
+            }
+            boolean bl = entity instanceof FallingBlockEntity;
+            if (bl || PowderSnowBlock.canWalkOnPowderSnow(entity) && context.isAbove(VoxelShapes.fullCube(), pos, false) && !context.isDescending()) {
+                return super.getCollisionShape(state, world, pos, context);
+            }
+        }
+        return VoxelShapes.empty();
+        */
+    }
     
     
 }
