@@ -47,7 +47,8 @@ Holdin the secondary key on a Flame imbued item will cause a steam of fire to sh
 
 Holding the secondary key on a Frost imbued item will cause the area to be overcome by a terrible cold.
 
-
+### NPCS
+Obviously a mod named after Brok and Sindri would have them as npcs, right?
 
 ## License
 
