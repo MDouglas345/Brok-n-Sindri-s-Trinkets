@@ -10,7 +10,7 @@ A system that allows players to throw their weapon / tool and have it stay where
 Enchantments that allow players to recall their weapon /tool on demand. Worthy I is the basic recall functionality; Worthy II is a more loyal item that cannot be
 picked up by other players.
 
-### Enchantment Galore 1.0
+### Enchantment Galore 0.6
 
 #### Pinned 
 An enchantment that will cause a player / mob to be forzen in place / moved with the thrown entity. Will only be unpinned once the player dies, disconnects, or 
@@ -26,8 +26,7 @@ An enchantment that causes fire to spawn in the are surrounding a landed item. P
 An enchantment that causes a lightning strike where the item lands. Causes a small explosion on impact.
 
 
-### Visuals 0.6
-
+### Visuals 1.0
 Each enchantment will cause the item to have some visual effect so they are identifiable by abilities
 
 
