@@ -12,6 +12,7 @@ import net.minecraft.util.math.Vec3d;
 public class ReturnState extends GenericThrownItemEntityState {
 
     public double originaldist = 0;
+    PlayerEntity target;
 
     public ReturnState(GenericThrownItemEntity m) {
         super(m);
@@ -25,12 +26,15 @@ public class ReturnState extends GenericThrownItemEntityState {
            
             
            // Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0.5f));
-            if (Master.world.getPlayerByUuid(Master.Owner.ID) == null){
+           if (target == null){
+               target = Master.world.getPlayerByUuid(Master.Owner.ID);
+            if ( target == null){
                 Master.ChangeState(0);
                 return;
             }
+        }
 
-           Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos();
+           Vec3d Destination = target.getPos().add(new Vec3d(0,1,0));
 
             Vec3d DesiredDir = Master.getPos().subtract(Destination).normalize().negate();
 
@@ -87,12 +91,13 @@ public class ReturnState extends GenericThrownItemEntityState {
         }
         catch(Exception e){
 
-          
+            Master.Attack(entityHitResult);
         }
     }
 
     @Override
     public void OnEnter(){
+        target = Master.world.getPlayerByUuid(Master.Owner.ID);
         Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos().add(new Vec3d(0,1,0));
 
         originaldist = Destination.squaredDistanceTo(Master.getPos());

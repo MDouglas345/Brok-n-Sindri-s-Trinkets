@@ -9,7 +9,9 @@ import org.lwjgl.glfw.GLFW;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
-import net.fabricmc.Util.IClientPlayerEntity;
+import net.fabricmc.Renderers.StuckItemsPlayerFeatureRenderer;
+import net.fabricmc.Renderers.StuckItemsQuadrupedFeatureRenderer;
+import net.fabricmc.Renderers.StuckItemsSinglePartFeatureRenderer;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.PacketUtil;
 import net.fabricmc.api.ClientModInitializer;
@@ -19,11 +21,25 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.mixins.ClientPlayerEntityMixin;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder.Living;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.entity.BipedEntityRenderer;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.MobEntityRenderer;
+import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.render.entity.model.BipedEntityModel;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.render.entity.model.QuadrupedEntityModel;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Quaternion;
@@ -53,11 +69,19 @@ public class BNSClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->{
 
-            
-            if (ActionKey.isPressed()){
+            /**
+             * Particles can probably be spawned here depending on how long the key is pressed
+             * (how to sync with other players?)
+             */
+            if (client.player != null && client.player.input.sneaking){
+                HeldTime = 0;
+            }
+
+            if (ActionKey.isPressed() && !client.player.input.sneaking){
                 HeldTime += 1;
             }
             else{
+                
                if (HeldTime > 0){
                 if (HeldTime > 40){HeldTime = 40;}
                 PacketByteBuf P = PacketByteBufs.create();
@@ -78,6 +102,7 @@ public class BNSClient implements ClientModInitializer {
             UUID uuid = buf.readUuid();
             UUID owneruuid = buf.readUuid();
             String ownername = buf.readString();
+            boolean maxed = buf.readBoolean();
             
             
             client.submit(() ->{
@@ -95,12 +120,47 @@ public class BNSClient implements ClientModInitializer {
                 e.setRSpeed(rspeed);
                 e.setBonusAttack(bonusAttack);
                 e.setOwner(client.world.getPlayerByUuid(owneruuid));
+                e.SetMaxed(maxed);
                 e.SetOwner(ownername, owneruuid);
                 client.world.addEntity(ID, e);
             });
         });
 
         BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.GENERIC_ITEM_BLOCK, RenderLayer.getCutout());
+
+        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
+			// minecraft:player SHOULD be printed twice
+			
+            /*
+			if (entityRenderer instanceof PlayerEntityRenderer) {
+				registrationHelper.register(new StuckItemsPlayerFeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>>(context, (PlayerEntityRenderer) entityRenderer));
+                
+			}
+            */
+            
+            /**
+             * Lots of things have unique traits, theres gonna be alot of renderers for each mob... This
+             * will definitely take the longest to complete. Working so far : bipeds, quadrupeds
+             */
+            
+            if (entityRenderer instanceof BipedEntityRenderer || entityRenderer instanceof PlayerEntityRenderer){
+                registrationHelper.register(new StuckItemsPlayerFeatureRenderer<LivingEntity, BipedEntityModel<LivingEntity>>(context,  entityRenderer));
+            }
+            else if (entityType == EntityType.SHEEP || entityType == EntityType.COW || entityType == EntityType.PIG){
+                registrationHelper.register(new StuckItemsQuadrupedFeatureRenderer<LivingEntity, QuadrupedEntityModel<LivingEntity>>(context,  entityRenderer));
+                
+            }
+            else if (entityType == EntityType.VILLAGER || entityType == EntityType.PILLAGER){
+                registrationHelper.register(new StuckItemsSinglePartFeatureRenderer<LivingEntity, SinglePartEntityModel<LivingEntity>>(context,  entityRenderer, "body"));
+            }
+            else if (entityType == EntityType.MAGMA_CUBE || entityType == EntityType.SLIME){
+                registrationHelper.register(new StuckItemsSinglePartFeatureRenderer<LivingEntity, SinglePartEntityModel<LivingEntity>>(context,  entityRenderer, "cube"));
+            }
+            else if (entityType == EntityType.CREEPER){
+                registrationHelper.register(new StuckItemsSinglePartFeatureRenderer<LivingEntity, SinglePartEntityModel<LivingEntity>>(context,  entityRenderer, "head"));
+            }
+
+		});
     }
     
 }

@@ -51,11 +51,14 @@ import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Effects.ParalysisEffect;
+import net.fabricmc.Enchantments.PinnedEnchantment.PinnedWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
 import net.fabricmc.GenericItemBlock.*;
-import net.fabricmc.Util.IClientPlayerEntity;
+
 import net.fabricmc.Util.IPlayerEntityItems;
+import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -67,11 +70,16 @@ import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.server.world.ServerWorld;
@@ -112,6 +120,8 @@ public class BNSCore implements ModInitializer {
 
 	public static BlockEntityType<GenericItemBlockEntity> GENERIC_ITEM_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(GenericItemBlockEntity::new, GENERIC_ITEM_BLOCK).build();
 
+
+
 	public static Enchantment WorthyWeapon = Registry.register(Registry.ENCHANTMENT, 
 														 new Identifier(ModID, "worthyweapon"),
 														 new WorthyWeaponEnchantment());
@@ -119,6 +129,21 @@ public class BNSCore implements ModInitializer {
 	public static Enchantment WorthyTool = Registry.register(Registry.ENCHANTMENT, 
 														 new Identifier(ModID, "worthytool"),
 														 new WorthyToolEnchantment());
+
+	public static Enchantment PinnedWeapon  = Registry.register(Registry.ENCHANTMENT, 
+														new Identifier(ModID, "pinnedweapon"),
+														new PinnedWeaponEnchantment());
+
+	public static Enchantment PinnedTool  = Registry.register(Registry.ENCHANTMENT, 
+														new Identifier(ModID, "pinnedtool"),
+														new PinnedWeaponEnchantment());
+
+
+
+	public static final StatusEffect Paralysis = new ParalysisEffect();
+ 
+					
+
 
 	@Override
 	public void onInitialize() {
@@ -131,6 +156,8 @@ public class BNSCore implements ModInitializer {
 		Registry.register(Registry.BLOCK, new Identifier(ModID, "generic_item_block"), GENERIC_ITEM_BLOCK);
 
 		Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(ModID, "generic_item_block_entity"), GENERIC_ITEM_BLOCK_ENTITY);
+
+		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
 		ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.EstablishThrownItem, (server, client, handler, buf, responseSender) -> {
 
@@ -217,8 +244,15 @@ public class BNSCore implements ModInitializer {
 						world.removeBlock(BEPosition, false);
 						return;
 					}
+					/** 
+					 * refactor returning item to accomodate for the fact that any entity can have 
+					 * an item lodged in it, and the player should still be able tor recall it.
+					 * 
+					 * also, make so that only a "maxed" thrown item lodge into entities if they have Pinned enchantment!
+					 */
 
-					GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity) world.getEntity(entityuuid);
+					/*
+					 GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity) world.getEntity(entityuuid);
 
 					if (EnchantmentHelper.getLevel(WorthyTool, thrownEntity.itemToRender) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, thrownEntity.itemToRender) == 0 ){
 						return;
@@ -230,6 +264,75 @@ public class BNSCore implements ModInitializer {
 
 					thrownEntity.ChangeState(4);
 					return;
+					*/
+					Entity e = world.getEntity(entityuuid);
+					ISavedItem itemEnt = (ISavedItem)e;
+					ItemStack savedItem = itemEnt.getSavedItem();
+
+					if (EnchantmentHelper.getLevel(WorthyTool,savedItem) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, savedItem) == 0 ){
+						return;
+					}
+
+
+
+					if (e instanceof GenericThrownItemEntity){
+						GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity) e;
+
+						
+						if (thrownEntity == null){
+							return;
+						}
+
+						BlockPos Destination = client.getBlockPos();
+						if (thrownEntity.getBlockPos().isWithinDistance(Destination, 4)){
+							/**
+							 * if block is within 2 block lengths of the player, just chuck the item into the player inventory
+							 */
+							if (!client.getInventory().insertStack(savedItem)){
+								return;
+							}
+							
+							
+							thrownEntity.kill();
+						}
+	
+						thrownEntity.ChangeState(4);
+						
+					}
+					else{
+
+						BlockPos Destination = client.getBlockPos();
+						if (e.getBlockPos().isWithinDistance(Destination, 4)){
+							/**
+							 * if block is within 2 block lengths of the player, just chuck the item into the player inventory
+							 */
+							if (!client.getInventory().insertStack(savedItem)){
+								return;
+							}
+							
+							
+							
+						}
+
+						ISavedItem inter = (ISavedItem)e;
+						GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, client, e.getPos(), inter.getSavedItem());
+						world.spawnEntity(thrown);
+						thrown.ChangeState(4);
+						thrown.throwRandomly();
+
+						// remove the paralysis effect from e
+						// remove stuck item details from e
+						LivingEntity living = (LivingEntity)e;
+						living.removeStatusEffect(BNSCore.Paralysis);
+						inter.setSavedItem(new ItemStack(Items.AIR,1));
+						inter.setSavedItemOwner("");
+						//e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this.Master);
+
+					}
+
+
+
+					return;
 				}
 				
 				
@@ -240,19 +343,58 @@ public class BNSCore implements ModInitializer {
 					return;
 				}
 				
-		
-				GenericThrownItemEntity e = GenericThrownItemEntity.CreateNew(world, client, itemstackOrig, timeHeld, false);
+				/**
+				 * Remove the idea of a "held time" and instead if the held time is over 15, the item is now torqued for
+				 * a max throw! Creates two finite states for a thrown item, normal throw and max throw. Also means that
+				 * thrown items. depending on stae, will have a fixed speed. This improves consistency.
+				 * 
+				 * normal throw - items will deflect off entities
+				 * 
+				 * max throw - items will be lodged into entities (only 1 item lodged in entity at time), if item has Pineed enchantment
+				 */
+
+				 
+				
+				 GenericThrownItemEntity e = GenericThrownItemEntity.CreateNew(world, client, itemstackOrig, timeHeld, false);
 				
 				if (!client.isCreative()){
 					itemstackOrig.decrement(1);
 				}
-				client.swingHand(Hand.MAIN_HAND);
+				((LivingEntity)client).swingHand(Hand.MAIN_HAND, true);
 				world.spawnEntity(e);
+				
 			
 			});
 
 
 
 		});
+	}
+
+	public static void removeEntityFromStack(ServerWorld world, String name, int id){
+			UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+
+            uuidstack.Remove(name, id);
+	}
+
+	public static int pushEntityOntoStack(ServerWorld world, String name, UUID uuid){
+				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+
+				int id = stack.Push(name, uuid);
+				return id;
+	}
+
+	public static void removeBEFromStack(ServerWorld world, String name, int id){
+		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+
+        stack.Remove(name, id);
+	}
+
+	public static int pushBEOntoStack(ServerWorld world, String name, BlockPos hitpos){
+		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+
+            int id = stack.Push(name, hitpos);
+
+			return id;
 	}
 }

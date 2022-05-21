@@ -6,10 +6,12 @@
   "mixins": [
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
-    "ClientPlayerEntityMixin"
+    "ClientPlayerEntityMixin",
+    "KeyboardInputMixin",
+    "LivingEntityMixin"
   ],
   "client": [
-
+    "QuadrupedEntityModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

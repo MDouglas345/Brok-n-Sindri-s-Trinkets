@@ -1,4 +1,7 @@
 {
     "enchantment.bns.worthyweapon"  :  "Worthy",
-    "enchantment.bns.worthytool"    :   "Worthy"
+    "enchantment.bns.worthytool"    :   "Worthy",
+    "enchantment.bns.pinnedweapon"  :   "Pinned",
+    "enchantment.bns.pinnedtool"    :   "Pinned",
+    "effect.bns.paralysis"          :   "Paralysis"
 }

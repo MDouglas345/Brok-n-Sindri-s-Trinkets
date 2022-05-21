@@ -12,6 +12,8 @@ package net.fabricmc.GenericThrownItemEntity;
 
 import java.util.UUID;
 
+import org.apache.logging.log4j.core.tools.picocli.CommandLine.MaxValuesforFieldExceededException;
+
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
@@ -21,6 +23,7 @@ import net.fabricmc.GenericThrownItemEntity.States.GroundedState;
 import net.fabricmc.GenericThrownItemEntity.States.ReturnState;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
 import net.fabricmc.GenericThrownItemEntity.States.ThrownState;
+import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.PacketUtil;
 import net.fabricmc.Util.Util;
@@ -29,6 +32,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -38,6 +42,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -57,7 +62,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 
-public class GenericThrownItemEntity extends ThrownItemEntity {
+public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedItem {
 
     public ItemStack                itemToRender;
     public Quaternion               originalRot;
@@ -71,7 +76,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
 
     public int                      StackID;
 
+    public boolean                  Maxed   = false;                   
+
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
+    
 
     public GenericThrownItemEntityState[]  States = 
     {   new ThrownState(this),
@@ -108,24 +116,25 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
     
 
     public void Attack(EntityHitResult entityHitResult){
-        if (!world.isClient){
+        
             // Need to work on the damage calculation to accomodate enchantments and various affects
             
             Item item = itemToRender.getItem();
             float attackDamage = item instanceof MiningToolItem ? ((MiningToolItem)item).getAttackDamage(): item instanceof SwordItem ? ((SwordItem)item).getAttackDamage() : 0;
             entityHitResult.getEntity().damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
 
-            if (Util.randgen.nextFloat() > 0.8){
-            
-                Vec3d dir = getVelocity().multiply(-1).normalize();
-                dir = dir.multiply(getVelocity().length() * 0.2f);
+            if (!Maxed || (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) == 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) == 0)){
+               
+                
+                Vec3d dir = getVelocity().multiply(-1).add(new Vec3d(0,4,0)).normalize();
+                dir = dir.multiply(getVelocity().length() * 0.5f);
                 setVelocity(dir);
 
+                
             }
-           
 
             //Master.updateVelocity(0.2f, dir);
-        }
+        
     }
  
     @Override
@@ -195,6 +204,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
        nbt.putFloat("bonus", bonusAttack);
        nbt.putUuid("owner", this.Owner.ID);
        nbt.putString("ownername", this.Owner.name);
+       nbt.putBoolean("maxed", Maxed);
 
         return nbt;
     }
@@ -208,6 +218,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         rotoffset = nbt.getFloat("roff");
         bonusAttack = nbt.getFloat("bonus");
         this.Owner = new ClientIdentification(nbt.getString("ownername"), nbt.getUuid("owner"));
+        this.Maxed = nbt.getBoolean("maxed");
     }
 
     @Override
@@ -228,12 +239,13 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         createPacket.writeUuid(this.getUuid());
         createPacket.writeUuid(this.Owner.ID);
         createPacket.writeString(this.Owner.name);
+        createPacket.writeBoolean(this.Maxed);
 
         return ServerPlayNetworking.createS2CPacket(NetworkConstants.EstablishThrownItem, createPacket);
 	}
 
 
-    @Override
+   
     protected Item getDefaultItem() {
         // TODO Auto-generated method stub
         return itemToRender.getItem();
@@ -270,6 +282,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
 
     public void SetStackID(int i ){
         this.StackID = i;
+    }
+
+    public void SetMaxed(boolean m){
+        Maxed = m;
     }
     
 
@@ -309,7 +325,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
 				e.setOwner(owner); // Assume the thrower is always THE owner!
 				e.SetOwner(owner);
 				e.setItem(itemstack.copy());
-
+                e.SetMaxed(false);
                 
                 //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
                 e.setBonusAttack(1);
@@ -331,6 +347,49 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
                 return e;
     }
 
+    public void throwRandomly(){
+        
+            float yaw = Util.randgen.nextFloat() * 360;
+            setVelocity(this.getOwner(), Util.randgen.nextFloat() * -90 + 10, yaw, 0, Util.randgen.nextFloat() * 0.5f , 0.4f);
+            setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - yaw, true));
+        
+    }
+
+    public static GenericThrownItemEntity CreateNew(ServerWorld world, String owner, UUID uuid, Vec3d spawnposition, ItemStack itemstack){
+        GenericThrownItemEntity e = new GenericThrownItemEntity(BNSCore.GenericThrownItemEntityType, world);
+        Vec3d pos = spawnposition;
+
+        e.setPos(pos.x, pos.y, pos.z);
+        e.updatePosition(pos.x, pos.y, pos.z);
+        e.updateTrackedPosition(pos.x, pos.y, pos.z);
+        e.setOwner(e); // Assume the thrower is always THE owner!
+        e.SetOwner(owner, uuid);
+        e.setItem(itemstack.copy());
+        e.SetMaxed(false);
+
+
+        
+        //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
+        e.setBonusAttack(1);
+        e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 10, true));
+
+        /**
+         *  pitch = asin(-d.Y);
+         *  yaw = atan2(d.X, d.Z)
+         */
+        
+        
+        
+
+    
+        e.setRSpeed(5f);
+
+        
+
+        return e;
+}
+
+
     public static GenericThrownItemEntity CreateNew(ServerWorld world, PlayerEntity client, ItemStack itemstack, float timeHeld, boolean random){
                 GenericThrownItemEntity e = new GenericThrownItemEntity(BNSCore.GenericThrownItemEntityType, world);
 				Vec3d pos = client.getPos();
@@ -342,8 +401,19 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
 				e.SetOwner(client);
 				e.setItem(itemstack.copy());
 
+                float speed = 0;
+
+                if (timeHeld > 15){
+                    e.SetMaxed(true);
+                    speed = 1.5f;
+                }
+                else{
+                    e.SetMaxed(false);
+                    speed = 0.8f;
+                }
+
                 if (!random){
-				    e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
+				    e.setVelocity(client, client.getPitch(), client.getYaw(), 0, speed , 0f);
 				    e.setBonusAttack(timeHeld / 40f);
                     e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true));
                 }
@@ -382,4 +452,50 @@ public class GenericThrownItemEntity extends ThrownItemEntity {
         this.setBonusAttack(force);
         this.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - yaw, true));
     }
+
+    @Override
+    public void setSavedItem(ItemStack stack) {
+        this.itemToRender = stack;
+        
+    }
+
+    @Override
+    public ItemStack getSavedItem() {
+        // TODO Auto-generated method stub
+        return this.itemToRender;
+    }
+
+    @Override
+    public void setSavedItemOwner(String name) {
+        // TODO Auto-generated method stub
+        if (this.Owner == null){
+            this.Owner = new ClientIdentification(name, null);
+            return;
+        }
+        this.Owner.name = name;
+        
+    }
+
+    @Override
+    public String getSavedItemOwner() {
+        // TODO Auto-generated method stub
+        if (this.Owner == null){
+            return null;
+        }
+        return this.Owner.name;
+    }
+
+    @Override
+    public void setIndexIntoStack(int i) {
+        this.StackID = i;
+        
+    }
+
+    @Override
+    public int getIndexIntoStack() {
+        // TODO Auto-generated method stub
+        return this.StackID;
+    }
+
+  
 }

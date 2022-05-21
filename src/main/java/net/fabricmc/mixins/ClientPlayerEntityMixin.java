@@ -1,24 +1,27 @@
 package net.fabricmc.mixins;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.At;
 
-import net.fabricmc.Util.IClientPlayerEntity;
-import net.minecraft.client.input.KeyboardInput;
+import net.fabricmc.Util.IMovementStopper;
+import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.LivingEntity;
 
 @Mixin(ClientPlayerEntity.class)
-public class ClientPlayerEntityMixin implements IClientPlayerEntity {
+public class ClientPlayerEntityMixin implements IMovementStopper {
 
     private boolean shouldmove = true;
+
+    @Shadow private Input input;
     
-    @Inject(at = @At("HEAD"), method = "tickMovement()V", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "tickMovement()V")
     public void stopInput(CallbackInfo info){
-        if (!shouldmove){
-            info.cancel();;
-        }
+        IMovementStopper mover = (IMovementStopper)input;
+        mover.setShouldMove(shouldmove);
   
     }
 

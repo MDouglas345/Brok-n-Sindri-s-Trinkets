@@ -25,19 +25,31 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BlockHalf;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.brain.task.StopPanickingTask;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolItem;
+import net.minecraft.server.world.ServerWorld;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
+import net.fabricmc.Util.IMovementStopper;
 import net.fabricmc.Util.IPlayerEntityItems;
+import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.Util;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
@@ -120,31 +132,41 @@ public class ThrownState extends GenericThrownItemEntityState{
             need to fix the rotation quaternion! Its not quite right.
        */
 
-       if (!Master.world.isClient){
-            BlockState b = Master.world.getBlockState(blockHitResult.getBlockPos());
-            if (b.getBlock() instanceof GenericItemBlock){
-                // if this entity hits a genericitemblock, bounce.
-                Master.ThrowRandom(0.3f);
+      if (!Master.world.isClient){
+        BlockState b = Master.world.getBlockState(blockHitResult.getBlockPos());
+        if (b.getBlock() instanceof GenericItemBlock){
+            // if this entity hits a genericitemblock, bounce.
+            Master.ThrowRandom(0.3f);
 
-                return;
-            }
+            return;
+        }
+
+       
+    
+        Quaternion q = blockHitResult.getSide().getRotationQuaternion();
+
+        BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
+
+        if (  !(Master.world.getBlockState(hitpos).getBlock() instanceof AirBlock)){
+            Master.ThrowRandom(0.3f);
+
+            return;
+        }
+
+        //IPlayerEntityItems player = (IPlayerEntityItems)(PlayerEntity)Master.getOwner();
+
+        //player.addReturnableItem(hitpos);
+
+
+        //blockHitResult.withSide(blockHitResult.getSide());
+
+        q.hamiltonProduct(this.Master.originalRot);
+
         
-            Quaternion q = blockHitResult.getSide().getRotationQuaternion();
 
-            BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
+        Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
-            //IPlayerEntityItems player = (IPlayerEntityItems)(PlayerEntity)Master.getOwner();
-
-            //player.addReturnableItem(hitpos);
-
-
-            //blockHitResult.withSide(blockHitResult.getSide());
-
-            q.hamiltonProduct(this.Master.originalRot);
-
-            
-
-            Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+        
             GenericItemBlockEntity be = (GenericItemBlockEntity)Master.world.getBlockEntity(hitpos);
             //be.Initalize(Master.itemToRender, Master.originalRot, Master.rotoffset);
         
@@ -164,7 +186,8 @@ public class ThrownState extends GenericThrownItemEntityState{
             be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  id, Master.Owner);
 
             Master.kill();
-       }
+        }
+       
         
     }
 
@@ -173,7 +196,49 @@ public class ThrownState extends GenericThrownItemEntityState{
         // TODO Auto-generated method stub
         Master.SuperOnEntityHit(entityHitResult);
 
-        
+            if(Master.Maxed && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, Master.itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, Master.itemToRender) > 0)){
+                //Pin the entity.
+                /**
+                 * if the entity is a mob, set persistence!
+                 *  ((MobEntity)entity).setPersistent();
+                 */
+                
+                try{
+                    LivingEntity e = (LivingEntity) entityHitResult.getEntity();
+                    e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this.Master);
+                    ISavedItem eSaved = (ISavedItem) e;
+
+                    if (eSaved.getSavedItem().getItem() != Items.AIR){
+                        Master.Attack(entityHitResult);
+                        return;
+                    }
+
+                    if (!Master.world.isClient){
+                        
+                        eSaved.setSavedItem(Master.itemToRender);
+                        eSaved.setSavedItemOwner(Master.Owner.name);
+
+                        // cant be sure if this will be an issue if done only on server
+                       
+
+				        int id = BNSCore.pushEntityOntoStack((ServerWorld)Master.world, Master.Owner.name, e.getUuid());
+                        eSaved.setIndexIntoStack(id);
+
+                        BNSCore.removeEntityFromStack((ServerWorld)Master.world, Master.Owner.name, Master.StackID);
+                    }
+                    
+                    if (e instanceof MobEntity){
+                        ((MobEntity) e).setPersistent();
+                    }
+
+
+
+                    Master.kill();
+                }
+                catch(Exception e){
+
+                }
+            }
 
         
             Master.Attack(entityHitResult);
