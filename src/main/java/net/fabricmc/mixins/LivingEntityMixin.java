@@ -128,6 +128,14 @@ public class LivingEntityMixin implements ISavedItem {
         // TODO Auto-generated method stub
         return this.IndexIntoStack;
     }
+
+    @Override
+    public void reset() {
+        
+        this.setSavedItem(new ItemStack(Items.AIR,1));
+        this.setSavedItemOwner("");
+        
+    }
   
     
 }

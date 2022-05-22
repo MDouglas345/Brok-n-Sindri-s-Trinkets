@@ -8,10 +8,14 @@
     "PlayerInventoryMixin",
     "ClientPlayerEntityMixin",
     "KeyboardInputMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "ServerPlayerEntityMixin"
   ],
   "client": [
     "QuadrupedEntityModelMixin"
+  ],
+  "server" :[
+    
   ],
   "injectors": {
     "defaultRequire": 1

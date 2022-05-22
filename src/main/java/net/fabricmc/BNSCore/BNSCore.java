@@ -212,6 +212,7 @@ public class BNSCore implements ModInitializer {
 							}
 							
 							world.removeBlock(BEPosition, false);
+							return;
 						}
 
 						if (!BEPosition.isWithinDistance(Destination, dist + 2)){
@@ -294,6 +295,7 @@ public class BNSCore implements ModInitializer {
 							
 							
 							thrownEntity.kill();
+							
 						}
 	
 						thrownEntity.ChangeState(4);
@@ -310,6 +312,17 @@ public class BNSCore implements ModInitializer {
 								return;
 							}
 							
+							ISavedItem inter = (ISavedItem)e;
+						
+
+							// remove the paralysis effect from e
+							// remove stuck item details from e
+							LivingEntity living = (LivingEntity)e;
+							living.removeStatusEffect(BNSCore.Paralysis);
+							inter.setSavedItem(new ItemStack(Items.AIR,1));
+							inter.setSavedItemOwner("");
+							
+							return;
 							
 							
 						}

@@ -23,7 +23,7 @@ public class ReturnState extends GenericThrownItemEntityState {
     @Override
     public void Tick() {
         // TODO Auto-generated method stub
-           
+        Master.SuperTick();
             
            // Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0.5f));
            if (target == null){
@@ -47,7 +47,7 @@ public class ReturnState extends GenericThrownItemEntityState {
 
             Master.setVelocity(DesiredDir);
 
-            Master.SuperTick();
+          
             
 
         
@@ -80,9 +80,15 @@ public class ReturnState extends GenericThrownItemEntityState {
                 if (!Master.world.isClient){
                     if (!entity.getInventory().insertStack(Master.itemToRender)){
                         Master.ChangeState(0);
+                        
                     }
+                    else{
+
+                        Master.kill();
+                    }
+
                 }
-                Master.kill();
+                
             }
             else{
 

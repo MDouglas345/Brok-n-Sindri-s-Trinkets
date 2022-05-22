@@ -46,6 +46,7 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.nbt.NbtCompound;
@@ -495,6 +496,13 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public int getIndexIntoStack() {
         // TODO Auto-generated method stub
         return this.StackID;
+    }
+
+    @Override
+    public void reset() {
+        this.setSavedItem(new ItemStack(Items.AIR,1));
+        this.setSavedItemOwner("");
+        
     }
 
   
