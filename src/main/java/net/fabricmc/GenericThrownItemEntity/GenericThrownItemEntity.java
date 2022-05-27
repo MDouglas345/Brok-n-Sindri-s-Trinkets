@@ -23,6 +23,7 @@ import net.fabricmc.GenericThrownItemEntity.States.GroundedState;
 import net.fabricmc.GenericThrownItemEntity.States.ReturnState;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
 import net.fabricmc.GenericThrownItemEntity.States.ThrownState;
+import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.PacketUtil;
@@ -32,6 +33,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -43,6 +45,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -52,6 +55,7 @@ import net.minecraft.item.SwordItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
@@ -77,7 +81,9 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public int                      StackID;
 
-    public boolean                  Maxed   = false;                   
+    public boolean                  Maxed   = false;     
+    
+    DefaultParticleType             PTypeToUse = null;
 
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
     
@@ -107,11 +113,51 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 	}
 
     @Override
+    protected void updateRotation() {
+       /*
+        Vec3d vec3d = this.getVelocity();
+        double d = vec3d.horizontalLength();
+        this.setPitch(ProjectileEntity.updateRotation(this.prevPitch, (float)(MathHelper.atan2(vec3d.y, d) * 57.2957763671875)));
+        this.setYaw(ProjectileEntity.updateRotation(this.prevYaw, (float)(MathHelper.atan2(vec3d.x, vec3d.z) * 57.2957763671875)));
+        */
+
+        
+        Quaternion r = originalRot.copy();
+        r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(rotoffset, 0,0)));
+        Vec3f rot = r.toEulerXyzDegrees();
+
+        this.setPitch(ProjectileEntity.updateRotation(this.prevPitch, rot.getX()));
+        this.setYaw(ProjectileEntity.updateRotation(this.prevYaw, rot.getY()));
+        
+    }
+
+
+    @Override
     public void initDataTracker(){
         super.initDataTracker();
         this.dataTracker.startTracking(STATE, (byte)0);
+        
     }
 
+
+    public void applyQuaternion(Quaternion q){
+        Vec3f rot = q.toEulerXyzDegrees();
+        this.setRotation(rot.getY(), rot.getX());
+        
+    }
+
+    public void applyRotation(float yaw, float pitch){
+        float pYaw = this.getYaw();
+        float pPitch = this.getPitch();
+        
+        ProjectileEntity.updateRotation(pYaw, yaw);
+        ProjectileEntity.updateRotation(pPitch, pitch);
+        this.setRotation(pYaw, pPitch);
+    }
+
+    public void applyRawRotation(float yaw, float pitch){
+        this.setRotation(yaw, pitch);
+    }
 
     
     
@@ -148,8 +194,6 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     @Override
     protected void onBlockHit(BlockHitResult blockHitResult){
         ActiveState.onBlockHit(blockHitResult);
-      
-       
         
         
     }
@@ -176,7 +220,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                 getDataTracker().clearDirty();
             }
         }
-        
+        else{
+           
+        }
+       
+        //BNSCore.LOGGER.info(this.getRotationVector().toString());
         ActiveState.Tick();
         
     }
@@ -223,7 +271,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     }
 
     @Override
-	public Packet createSpawnPacket() {
+	public Packet<?> createSpawnPacket() {
 		PacketByteBuf createPacket = PacketByteBufs.create();
 
         if (this.world.isClient){
@@ -242,10 +290,31 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         createPacket.writeString(this.Owner.name);
         createPacket.writeBoolean(this.Maxed);
 
+        createPacket.writeFloat(this.getYaw());
+        createPacket.writeFloat(this.getPitch());
+
         return ServerPlayNetworking.createS2CPacket(NetworkConstants.EstablishThrownItem, createPacket);
 	}
 
+    public void SpawnTrailingParticles(){
+        if (PTypeToUse == null){
+            return;
+        }
+        int p_amount = 5;
+        float step = 0.25f;
+        Vec3d direction = getRotationVector();
+        /**
+         * either keep using getRotationVector, or find a direction vector using the quaternion and a forward vector
+         */
+        for (int i = 0; i < p_amount; i++){
+            Vec3d spot = direction.multiply(i*step);
+            spot = spot.add(getPos());
 
+            world.addParticle(PTypeToUse,
+            spot.getX(), spot.getY(), spot.getZ(),
+                          0, 0, 0);
+        }
+    }
    
     protected Item getDefaultItem() {
         // TODO Auto-generated method stub
@@ -254,10 +323,20 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void setItem(ItemStack s){
         itemToRender = s;
+
+        if (EnchantmentHelper.getLevel(BNSCore.FrostTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.FrostWeapon, itemToRender) > 0){
+            PTypeToUse = ParticleRegistery.FROST_PARTICLE;
+        }
+        else{
+
+        }
     }
 
     public void setQuat(Quaternion q){
         originalRot = q;
+
+        Vec3f rot = q.toEulerXyz();
+        this.setRotation(rot.getY(), rot.getX());
     }
 
     public void setROff(float r){
@@ -367,12 +446,15 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         e.SetOwner(owner, uuid);
         e.setItem(itemstack.copy());
         e.SetMaxed(false);
+        
+       
 
 
         
         //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
         e.setBonusAttack(1);
         e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 10, true));
+        e.setRotation(0, 90);
 
         /**
          *  pitch = asin(-d.Y);
@@ -383,7 +465,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         
 
     
-        e.setRSpeed(5f);
+        e.setRSpeed(80f);
 
         
 
@@ -398,9 +480,13 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				e.setPos(pos.x, client.getEyeY(), pos.z);
 				e.updatePosition(pos.x, client.getEyeY(), pos.z);
 				e.updateTrackedPosition(pos.x, client.getEyeY(), pos.z);
+            
 				e.setOwner(client); // Assume the thrower is always THE owner!
 				e.SetOwner(client);
 				e.setItem(itemstack.copy());
+                
+
+                //e.setRotation(client.getYaw(), client.getPitch());
 
                 float speed = 0;
 
@@ -412,21 +498,30 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                     e.SetMaxed(false);
                     speed = 0.8f;
                 }
-
+                Quaternion q;
                 if (!random){
+                    q = new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true);
 				    e.setVelocity(client, client.getPitch(), client.getYaw(), 0, speed , 0f);
 				    e.setBonusAttack(timeHeld / 40f);
-                    e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true));
+                    e.setQuat(q);
+                    
+                    Vec3f rot = q.toEulerXyzDegrees();
+                    //e.setRotation(rot.getY(), 0);
+                   //e.setRotation(rot.getY(), rot.getX());
+                   //e.setRotation(client.getYaw(), client.getPitch());
                 }
                 else{
                     float yaw = Util.randgen.nextFloat() * 360;
                     e.setVelocity(client, Util.randgen.nextFloat() * -90 + 10, yaw, 0, Util.randgen.nextFloat() * 0.5f , 0.4f);
 				    e.setBonusAttack(timeHeld / 40f);
                     e.setQuat(new Quaternion(Vec3f.POSITIVE_Y, 180 - yaw, true));
+
+                    e.setRotation(yaw, 90);
+
                 }
 				
 
-			
+                BNSCore.LOGGER.info(e.getRotationVector().toString());
 				e.setRSpeed(timeHeld*4f);
 
 				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());

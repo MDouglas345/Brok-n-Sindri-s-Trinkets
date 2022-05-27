@@ -28,6 +28,8 @@ import net.minecraft.util.math.Vec3f;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.FluidBlock;
+import net.minecraft.block.PlantBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -45,8 +47,10 @@ import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolItem;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
+import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.IMovementStopper;
 import net.fabricmc.Util.IPlayerEntityItems;
 import net.fabricmc.Util.ISavedItem;
@@ -55,8 +59,11 @@ import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
 
+
 public class ThrownState extends GenericThrownItemEntityState{
     float ageToGrav = 1;
+    int p_amount = 5;
+    float step = 0.25f;
     public ThrownState(GenericThrownItemEntity m){
         super(m);
         ageToGrav = Master.rotSpeed;
@@ -64,16 +71,31 @@ public class ThrownState extends GenericThrownItemEntityState{
 
     @Override
     public void Tick() {
-       
-
         Master.rotoffset -= Master.rotSpeed;
-       
+        Master.SuperTick();
+
+        
+        /*
+        Quaternion r = Master.originalRot.copy();
+        r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(Master.rotoffset, 0,0)));
+        this.Master.applyQuaternion(r);
+        */
+
+        //Quaternion r = Quaternion.fromEulerXyzDegrees(new Vec3f(Master.getYaw(), Master.getPitch(), 0));
+        //r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(Master.rotoffset, 0,0)));
+        //Master.applyQuaternion(r);
+
+        //Master.applyRotation(Master.getYaw(), Master.getPitch() - Master.rotSpeed);
 
         if (Master.age > Master.rotSpeed/5){
             Master.setNoGravity(false);
         }
 
-        Master.SuperTick();
+        Vec3d direction = Master.getRotationVector();
+
+        Master.SpawnTrailingParticles();
+
+        
         
         // TODO Auto-generated method stub
         
@@ -146,8 +168,8 @@ public class ThrownState extends GenericThrownItemEntityState{
         Quaternion q = blockHitResult.getSide().getRotationQuaternion();
 
         BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
-
-        if (  !(Master.world.getBlockState(hitpos).getBlock() instanceof AirBlock)){
+        Block block = Master.world.getBlockState(hitpos).getBlock();
+        if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock)){
             Master.ThrowRandom(0.3f);
 
             return;
@@ -174,8 +196,19 @@ public class ThrownState extends GenericThrownItemEntityState{
         
         
             //Master.ChangeState(3);
+            
+            /**
+             * yet another bug : Master.world is universal to both nether and overworld (with bias to overworld?)
+             * meaning : no matter whether the player is in the nether or overworld, the entity is registered as if in both, 
+             * so when players try to recall their weapon in the overworld, it will prioritze a weapon that may not be in the overworld
+             * thus getting stuck and player not able to recall anything.
+             * 
+             * solution? find a way to get the player's (thrower's) world and register the stack stuff there.
+             */
 
             BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(Master.world.getLevelProperties());
+            //((ServerWorld)Master.world).getServer().getWorld(
+            
 
             UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(Master.world.getLevelProperties());
 

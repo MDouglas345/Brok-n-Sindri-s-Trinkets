@@ -50,12 +50,15 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends B
 
     private final EntityRenderDispatcher dispatcher;
     private final ItemRenderer           itemRenderer;
+    //private Random random;
     
     public StuckItemsPlayerFeatureRenderer(EntityRendererFactory.Context context, LivingEntityRenderer<?, ?> entityRenderer) {
         super((FeatureRendererContext<T, M>) entityRenderer);
         //TODO Auto-generated constructor stub
         this.dispatcher = context.getRenderDispatcher();
         itemRenderer = context.getItemRenderer();
+        //random = new Random();
+        
     }
 
    
@@ -109,20 +112,29 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends B
         thrown.setItem(item);
         thrown.setQuat(Quaternion.fromEulerXyz(new Vec3f(0, 0, 0)));
 
+        /*
         
-        float side = random.nextFloat();
+        float side = random.nextFloat() > 0.5f ? 1.0f : 0.2f;
 
-        Vec3d P = this.getPointOnPart(new Vec3d(random.nextFloat(), MathHelper.clamp(random.nextFloat(), 0.0f, 0.3f), side), cuboid);
+        Vec3d P = this.getPointOnPart(new Vec3d(MathHelper.clamp(random.nextFloat(), 0.5, 0.6), MathHelper.clamp(random.nextFloat(), 0.7f, 0.9f), side), cuboid);
 
-        Vec3d S = this.getPointOnPart(new Vec3d(random.nextFloat(), MathHelper.clamp(random.nextFloat(), 0.0f, 0.3f), random.nextFloat() > 0.5f ? 1.0f : 0.0f), cuboid);
-        S = S.multiply(2); // may need adjustments
-
+        Vec3d S = this.getPointOnPart(new Vec3d(random.nextFloat(), MathHelper.clamp(random.nextFloat(), 0.2f, 0.3f), -side), cuboid);
+       
+       
+        S = S.multiply(1.2);
+        P = new Vec3d(P.x, P.y, -S.z);
+        
+        */
+        double side = random.nextDouble() >0.5 ? -0.5 : 0.5;
+        
+        Vec3d P = new Vec3d(Util.getRandomDouble(random, -0.1, 0.1), Util.getRandomDouble(random,0.3, 0.4), side);
+        Vec3d S = new Vec3d(Util.getRandomDouble(random, -0.3, 0.3), Util.getRandomDouble(random,-0.1, 0.3), -side);
         //BNSCore.LOGGER.info(P.toString() + " " + S.toString());
 
-        Vec3d D = P.subtract(S);
+        Vec3d D = P.subtract(S).normalize();
         Vec3d itemFacing = Vec3d.fromPolar(thrown.getPitch(), thrown.getYaw());
 
-        Quaternion toPenetration = Util.getDirectionalRotation(itemFacing, D);
+        Quaternion toPenetration = Util.getDirectionalRotation(new Vec3d(0,1,0), D);
                  
         matrixStack.push();
         //modelPart.rotate(matrixStack);

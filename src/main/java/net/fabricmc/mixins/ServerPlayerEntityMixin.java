@@ -23,7 +23,7 @@ import net.minecraft.util.math.Vec3f;
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
     
-    @Inject(at = @At("HEAD"), method = "onDisconnect(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V")
+    @Inject(at = @At("HEAD"), method = "onDisconnect()V")
     public void onDisconnectHEAD(CallbackInfo info){
         BNSCore.LOGGER.info("In the head of onDisconnect");
         ISavedItem ISI = (ISavedItem)this;

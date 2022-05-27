@@ -49,7 +49,7 @@ public class LivingEntityMixin implements ISavedItem {
         dt.startTracking(OWNER, "");
     }
 
-    @Inject(at = @At("HEAD"), method = "onDeath(Lnet/minecraft/entity/damage/DamageSource;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V")
+    @Inject(at = @At("HEAD"), method = "onDeath(Lnet/minecraft/entity/damage/DamageSource;)V")
     public void onDeathHEAD(DamageSource soure, CallbackInfo info){
         ISavedItem ISI = (ISavedItem)this;
         LivingEntity e = (LivingEntity)(Object)this;
@@ -74,7 +74,7 @@ public class LivingEntityMixin implements ISavedItem {
         
     }
 
-    @Inject(at = @At("HEAD"), method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V")
+    @Inject(at = @At("HEAD"), method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V")
     public void writeCustomDataToNbtHEAD(NbtCompound nbt, CallbackInfo info){
         NbtCompound item = new NbtCompound();
         ItemStack itemstack = this.getSavedItem();
@@ -85,7 +85,7 @@ public class LivingEntityMixin implements ISavedItem {
         nbt.putString("ItemOwner", this.getSavedItemOwner());
     }
 
-    @Inject (at = @At("HEAD"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V")
+    @Inject (at = @At("HEAD"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
     public void readCustomDataToNbtHEAD(NbtCompound nbt, CallbackInfo info){
         this.setSavedItem(ItemStack.fromNbt((NbtCompound)nbt.get("SavedItem")));
         this.setSavedItemOwner(nbt.getString("ItemOwner"));

@@ -1,11 +1,13 @@
 package net.fabricmc.GenericItemBlock;
 
+import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory.Context;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation.Mode;
 import net.minecraft.client.util.math.MatrixStack;
@@ -20,8 +22,11 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
     private boolean lit;
     float off = 0;
 
+    private final EntityRenderDispatcher dispatcher;
+
     public GenericItemBlockEntityRenderer(Context ctx) {
         this.itemRenderer = MinecraftClient.getInstance().getItemRenderer();
+        this.dispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
         
      }
 
@@ -40,7 +45,14 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
         matrices.scale(1.3f, 1.3f, 1.3f);
         matrices.multiply(r);
        
-        this.itemRenderer.renderItem(block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
+       
+        //this.itemRenderer.renderItem(block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
+
+        GenericThrownItemEntity thrown = new GenericThrownItemEntity(blockEntity.getWorld(), blockEntity.getPos().getX(), blockEntity.getPos().getY(), blockEntity.getPos().getZ());
+        thrown.setItem(block.SavedItem);
+        thrown.setQuat(Quaternion.fromEulerXyz(new Vec3f(0, 0, 0)));
+
+        this.dispatcher.render(thrown, 0, 0, 0, 0, 0, matrices, vertexConsumers, light);
         //this.itemRenderer.renderItem((LivingEntity) block.getOwner(), block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, entity.world, light, 0, 0);
         matrices.pop();
         

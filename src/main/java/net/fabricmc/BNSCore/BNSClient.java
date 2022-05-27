@@ -9,6 +9,8 @@ import org.lwjgl.glfw.GLFW;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
+import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Particles.FrostParticle.FrostParticle;
 import net.fabricmc.Renderers.StuckItemsPlayerFeatureRenderer;
 import net.fabricmc.Renderers.StuckItemsQuadrupedFeatureRenderer;
 import net.fabricmc.Renderers.StuckItemsSinglePartFeatureRenderer;
@@ -19,6 +21,7 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
@@ -103,6 +106,8 @@ public class BNSClient implements ClientModInitializer {
             UUID owneruuid = buf.readUuid();
             String ownername = buf.readString();
             boolean maxed = buf.readBoolean();
+
+            
             
             
             client.submit(() ->{
@@ -122,11 +127,14 @@ public class BNSClient implements ClientModInitializer {
                 e.setOwner(client.world.getPlayerByUuid(owneruuid));
                 e.SetMaxed(maxed);
                 e.SetOwner(ownername, owneruuid);
+               
                 client.world.addEntity(ID, e);
             });
         });
 
         BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.GENERIC_ITEM_BLOCK, RenderLayer.getCutout());
+
+        ParticleFactoryRegistry.getInstance().register(ParticleRegistery.FROST_PARTICLE, FrostParticle.Factory::new);
 
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
 			// minecraft:player SHOULD be printed twice

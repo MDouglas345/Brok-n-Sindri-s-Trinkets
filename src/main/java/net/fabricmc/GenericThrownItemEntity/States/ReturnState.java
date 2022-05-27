@@ -1,6 +1,7 @@
 package net.fabricmc.GenericThrownItemEntity.States;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
+import net.fabricmc.Particles.ParticleRegistery;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,6 +24,7 @@ public class ReturnState extends GenericThrownItemEntityState {
     @Override
     public void Tick() {
         // TODO Auto-generated method stub
+        Master.rotoffset += Master.rotSpeed;
         Master.SuperTick();
             
            // Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0.5f));
@@ -48,7 +50,7 @@ public class ReturnState extends GenericThrownItemEntityState {
             Master.setVelocity(DesiredDir);
 
           
-            
+            Master.SpawnTrailingParticles();
 
         
         

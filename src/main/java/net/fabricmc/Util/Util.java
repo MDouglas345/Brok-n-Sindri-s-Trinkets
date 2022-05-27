@@ -49,11 +49,60 @@ public class Util {
 
         Vec3d rotationAxis = from.crossProduct(to).normalize();
 
-        return new Quaternion(new Vec3f((float)rotationAxis.x, (float)rotationAxis.y, (float)rotationAxis.z), rotationAngle, false);
+        Quaternion q = new Quaternion(new Vec3f((float)rotationAxis.x, (float)rotationAxis.y, (float)rotationAxis.z), rotationAngle, false);
+        q.normalize();
+
+        return q;
+    }
+
+    public static Vec3d rotatePointByQuat(Vec3d orig, Quaternion rotation){
+
+        // pray that this works
+        Vec3d u = new Vec3d(rotation.getX(), rotation.getY(), rotation.getZ());
+
+        float s = rotation.getW();
+
+        Vec3d res = u.multiply(u.dotProduct(orig) * 2.0f);
+
+        res = res.add( orig.multiply(s*s - u.dotProduct(u)));
+
+        res = res.add(u.crossProduct(orig).multiply(2.0f * s));
+
+        return res;
+    }
+
+    public static Vec3d getRandomDirectionUnitSphere(double minyaw, double maxyaw, double minpitch, double maxpitch){
+        double yaw = Util.RadiansToDegree((float) Util.getRandomDouble(minyaw, maxyaw)) ;
+        double pitch = Util.RadiansToDegree((float) Util.getRandomDouble(minpitch, maxpitch));
+        
+
+        return Vec3d.fromPolar((float)pitch, (float)yaw);
+
+    }
+
+    public static float RadiansToDegree(float rad){
+        return rad * (180/MathHelper.PI);
+    }
+
+    public static Vec3d getRandomDirectionUnitSphere(){
+        
+        double yaw = Util.getRandomDouble(0, 2 * MathHelper.PI);
+        double pitch = Util.getRandomDouble(0, 2 * MathHelper.PI);
+
+        return Vec3d.fromPolar((float)pitch, (float)yaw);
+
     }
 
     public static double getRandomDouble(double min, double max){
         return randgen.nextDouble() * (max - min) + min;
+    }
+
+    public static double getRandomDouble(Random rand, double min, double max){
+        return rand.nextDouble() * (max - min) + min;
+    }
+
+    public static float getRandomFloat(float min, float max){
+        return randgen.nextFloat() * (max - min) + min;
     }
 
     public static BlockPos getAdjacentBlock(BlockPos pos, Direction dir){

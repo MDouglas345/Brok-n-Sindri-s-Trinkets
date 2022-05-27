@@ -6,8 +6,6 @@
   "mixins": [
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
-    "ClientPlayerEntityMixin",
-    "KeyboardInputMixin",
     "LivingEntityMixin",
     "ServerPlayerEntityMixin"
   ],

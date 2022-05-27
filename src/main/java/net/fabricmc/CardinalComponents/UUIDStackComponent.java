@@ -162,7 +162,17 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
     @Override
     public UUID Peek(String key) {
         // TODO Auto-generated method stub
-        return null;
+        if (!data.containsKey(key)){
+            return null;
+        }
+        Stack<IDedUUID> t = data.get(key);
+
+        try{
+            return t.peek().uuid;
+        }
+        catch(Exception e){
+            return null;
+        }
     }
 
     @Override

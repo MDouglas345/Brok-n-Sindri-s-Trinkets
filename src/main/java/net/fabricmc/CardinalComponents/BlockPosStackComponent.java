@@ -194,8 +194,17 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
 
     @Override
     public BlockPos Peek(String key) {
-        // TODO Auto-generated method stub
-        return null;
+        if (!data.containsKey(key)){
+            return null;
+        }
+       Stack<IDedBlockPos> t = data.get(key);
+
+       try{
+            return t.peek().blockpos;
+        }
+        catch(Exception e){
+            return null;
+        }
     }
 
     @Override

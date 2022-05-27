@@ -48,10 +48,14 @@
 package net.fabricmc.BNSCore;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
+import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
 import net.fabricmc.Effects.ParalysisEffect;
+import net.fabricmc.Enchantments.FrostEnchantment.FrostToolEnchantment;
+import net.fabricmc.Enchantments.FrostEnchantment.FrostWeaponEnchantment;
+import net.fabricmc.Enchantments.PinnedEnchantment.PinnedToolEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
@@ -76,6 +80,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
@@ -121,23 +126,30 @@ public class BNSCore implements ModInitializer {
 	public static BlockEntityType<GenericItemBlockEntity> GENERIC_ITEM_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(GenericItemBlockEntity::new, GENERIC_ITEM_BLOCK).build();
 
 
-
 	public static Enchantment WorthyWeapon = Registry.register(Registry.ENCHANTMENT, 
-														 new Identifier(ModID, "worthyweapon"),
-														 new WorthyWeaponEnchantment());
+												new Identifier(BNSCore.ModID, "worthyweapon"),
+												new WorthyWeaponEnchantment());
 
 	public static Enchantment WorthyTool = Registry.register(Registry.ENCHANTMENT, 
-														 new Identifier(ModID, "worthytool"),
-														 new WorthyToolEnchantment());
+												new Identifier(BNSCore.ModID, "worthytool"),
+												new WorthyToolEnchantment());
 
 	public static Enchantment PinnedWeapon  = Registry.register(Registry.ENCHANTMENT, 
-														new Identifier(ModID, "pinnedweapon"),
-														new PinnedWeaponEnchantment());
+												new Identifier(BNSCore.ModID, "pinnedweapon"),
+												new PinnedWeaponEnchantment());
 
 	public static Enchantment PinnedTool  = Registry.register(Registry.ENCHANTMENT, 
-														new Identifier(ModID, "pinnedtool"),
-														new PinnedWeaponEnchantment());
+												new Identifier(BNSCore.ModID, "pinnedtool"),
+												new PinnedToolEnchantment());
+	
+	public static Enchantment FrostWeapon = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "frostweapon"),
+												new FrostWeaponEnchantment());
 
+	public static Enchantment FrostTool = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "frosttool"),
+												new FrostToolEnchantment());
+	
 
 
 	public static final StatusEffect Paralysis = new ParalysisEffect();
@@ -159,12 +171,16 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
+		
+
 		ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.EstablishThrownItem, (server, client, handler, buf, responseSender) -> {
 
 			float timeHeld = (float)buf.readByte();
 
+
+			
 			server.submit(() ->{
-				ServerWorld world = server.getOverworld();
+				ServerWorld world = server.getWorld(client.world.getRegistryKey());
 
 				//IClientPlayerEntity player = (IClientPlayerEntity) client;
                 //player.toggleShouldMove();
@@ -175,10 +191,10 @@ public class BNSCore implements ModInitializer {
 					UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
 					BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
 
-					UUID entityuuid = uuidstack.Pop(client.getEntityName());
+					UUID entityuuid = uuidstack.Peek(client.getEntityName());
 
 					if (entityuuid == null){
-						BlockPos BEPosition = bpstack.Pop(client.getEntityName());
+						BlockPos BEPosition = bpstack.Peek(client.getEntityName());
 
 						if (BEPosition == null){
 							return;
@@ -190,11 +206,18 @@ public class BNSCore implements ModInitializer {
 							return;
 						}
 
+						if (!restingEntity.getWorld().getRegistryKey().toString().equals(client.world.getRegistryKey().toString())){
+							//potential solution : spawn the entity in the same world as the client  and have it fly to the player.
+							return;	
+						}
+
 						if (EnchantmentHelper.getLevel(WorthyTool, restingEntity.SavedItem) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, restingEntity.SavedItem) == 0 ){
+							bpstack.Pop(client.getEntityName());
 							return;
 						}
 
 						
+						bpstack.Pop(client.getEntityName());
 
 						/**
 						 * How do you check if the entity is too far from the player? what is the radius of a loaded chunk?
@@ -267,6 +290,12 @@ public class BNSCore implements ModInitializer {
 					return;
 					*/
 					Entity e = world.getEntity(entityuuid);
+
+					if (!e.world.getRegistryKey().toString().equals(client.world.getRegistryKey().toString())){
+						return;	
+					}
+					uuidstack.Pop(client.getEntityName());
+
 					ISavedItem itemEnt = (ISavedItem)e;
 					ItemStack savedItem = itemEnt.getSavedItem();
 
@@ -318,9 +347,11 @@ public class BNSCore implements ModInitializer {
 							// remove the paralysis effect from e
 							// remove stuck item details from e
 							LivingEntity living = (LivingEntity)e;
+							
 							living.removeStatusEffect(BNSCore.Paralysis);
 							inter.setSavedItem(new ItemStack(Items.AIR,1));
 							inter.setSavedItemOwner("");
+							
 							
 							return;
 							
@@ -374,14 +405,20 @@ public class BNSCore implements ModInitializer {
 					itemstackOrig.decrement(1);
 				}
 				((LivingEntity)client).swingHand(Hand.MAIN_HAND, true);
+
+				
+				//client.getWorld().spawnEntity(e);
 				world.spawnEntity(e);
 				
+				//((ServerWorld)client.getWorld()).spawnEntity(e);
 			
 			});
 
 
 
 		});
+		
+		ParticleRegistery.registerParticles();
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){
