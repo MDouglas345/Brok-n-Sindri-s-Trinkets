@@ -65,6 +65,7 @@ import net.fabricmc.Util.IPlayerEntityItems;
 import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -87,6 +88,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -96,6 +99,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import java.util.UUID;
 
@@ -117,7 +121,7 @@ public class BNSCore implements ModInitializer {
 			new Identifier(ModID, "generic_thrown_item"),
 			FabricEntityTypeBuilder.<GenericThrownItemEntity>create(SpawnGroup.MISC, GenericThrownItemEntity::new)
 					.dimensions(EntityDimensions.fixed(0.65F, 0.65F)) // dimensions in Minecraft units of the projectile
-					.trackRangeBlocks(10).trackedUpdateRate(10) // necessary for all thrown projectiles (as it prevents it from breaking, lol)
+					.trackRangeBlocks(100).trackedUpdateRate(20) // necessary for all thrown projectiles (as it prevents it from breaking, lol)
 					.build() // VERY IMPORTANT DONT DELETE FOR THE LOVE OF GOD PSLSSSSSS
 	);
 
@@ -171,7 +175,19 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		
+		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+            
+                dispatcher.register(CommandManager.literal("BNS").then(CommandManager.literal("bar")
+				.executes(context -> {
+					MinecraftServer server = context.getSource().getServer();
+					BNSCore.resetStacks(server.getWorld(World.OVERWORLD));
+					BNSCore.resetStacks(server.getWorld(World.NETHER));
+					BNSCore.resetStacks(server.getWorld(World.END));
+					BNSCore.LOGGER.info("Resetting Stacks!");
+					return 1;
+				
+				})));
+        });
 
 		ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.EstablishThrownItem, (server, client, handler, buf, responseSender) -> {
 
@@ -188,8 +204,11 @@ public class BNSCore implements ModInitializer {
 				if (timeHeld < 5){
 					// recall the last throw / landed item in stack!
 					//otherwise throw whatever is in the players hand
-					UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
-					BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+					//UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+					//BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+
+					UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world);
+					BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world);
 
 					UUID entityuuid = uuidstack.Peek(client.getEntityName());
 
@@ -216,8 +235,6 @@ public class BNSCore implements ModInitializer {
 							return;
 						}
 
-						
-						bpstack.Pop(client.getEntityName());
 
 						/**
 						 * How do you check if the entity is too far from the player? what is the radius of a loaded chunk?
@@ -233,10 +250,14 @@ public class BNSCore implements ModInitializer {
 							if (!client.getInventory().insertStack(restingEntity.SavedItem)){
 								return;
 							}
+
+							bpstack.Pop(client.getEntityName());
 							
 							world.removeBlock(BEPosition, false);
 							return;
 						}
+
+						bpstack.Pop(client.getEntityName());
 
 						if (!BEPosition.isWithinDistance(Destination, dist + 2)){
 							// if the BE is too far!
@@ -290,6 +311,11 @@ public class BNSCore implements ModInitializer {
 					return;
 					*/
 					Entity e = world.getEntity(entityuuid);
+
+					if (e == null){
+						uuidstack.Pop(client.getEntityName());
+						return;
+					}
 
 					if (!e.world.getRegistryKey().toString().equals(client.world.getRegistryKey().toString())){
 						return;	
@@ -422,29 +448,54 @@ public class BNSCore implements ModInitializer {
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){
-			UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+			//UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+			UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world);
 
             uuidstack.Remove(name, id);
 	}
 
 	public static int pushEntityOntoStack(ServerWorld world, String name, UUID uuid){
-				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
-
+				//UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world);
 				int id = stack.Push(name, uuid);
 				return id;
 	}
 
 	public static void removeBEFromStack(ServerWorld world, String name, int id){
-		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
 
         stack.Remove(name, id);
 	}
 
 	public static int pushBEOntoStack(ServerWorld world, String name, BlockPos hitpos){
-		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
 
             int id = stack.Push(name, hitpos);
 
 			return id;
 	}
+
+	public static void resetStacks(ServerWorld world){
+		BlockPosStackComponent bstack = BNSCore.getBlockStack(world);
+		UUIDStackComponent eStack = BNSCore.getEntitytack(world);
+
+		bstack.Reset();
+		eStack.Reset();
+	}
+
+	public static BlockPosStackComponent getBlockStack(ServerWorld world){
+		return  mycomponents.BlockEntityPositions.get(world);
+	}
+
+	public static UUIDStackComponent getEntitytack(ServerWorld world){
+		return  mycomponents.EntityUUIDs.get(world);
+	}
+
+
+
+	public void HandleBlockRecall(ServerWorld world){
+		
+	}	
 }

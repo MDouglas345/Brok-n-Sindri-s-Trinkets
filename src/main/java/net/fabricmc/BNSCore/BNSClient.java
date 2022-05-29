@@ -161,7 +161,7 @@ public class BNSClient implements ClientModInitializer {
             else if (entityType == EntityType.VILLAGER || entityType == EntityType.PILLAGER){
                 registrationHelper.register(new StuckItemsSinglePartFeatureRenderer<LivingEntity, SinglePartEntityModel<LivingEntity>>(context,  entityRenderer, "body"));
             }
-            else if (entityType == EntityType.MAGMA_CUBE || entityType == EntityType.SLIME){
+            else if (entityType == EntityType.SLIME){
                 registrationHelper.register(new StuckItemsSinglePartFeatureRenderer<LivingEntity, SinglePartEntityModel<LivingEntity>>(context,  entityRenderer, "cube"));
             }
             else if (entityType == EntityType.CREEPER){

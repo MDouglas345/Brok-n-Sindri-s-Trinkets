@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.MaxValuesforFieldExceededException;
 
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
@@ -75,7 +76,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public boolean                  run          = true;
     public float                    bonusAttack = 0;
 
-    public float                    rotSpeed = 0;
+    public float                    rotSpeed = 80;
 
     public ClientIdentification     Owner;
 
@@ -84,6 +85,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public boolean                  Maxed   = false;     
     
     DefaultParticleType             PTypeToUse = null;
+
+    public float                    TimeToGrav = 20;
 
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
     
@@ -124,10 +127,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         
         Quaternion r = originalRot.copy();
         r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(rotoffset, 0,0)));
-        Vec3f rot = r.toEulerXyzDegrees();
+        Vec3f rot = r.toEulerXyz();
 
         this.setPitch(ProjectileEntity.updateRotation(this.prevPitch, rot.getX()));
-        this.setYaw(ProjectileEntity.updateRotation(this.prevYaw, rot.getY()));
+        //this.setYaw(ProjectileEntity.updateRotation(this.prevYaw, rot.get()));
         
     }
 
@@ -180,7 +183,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                 
             }
 
-            //Master.updateVelocity(0.2f, dir);
+           
+
+            
+            
         
     }
  
@@ -366,6 +372,13 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void SetMaxed(boolean m){
         Maxed = m;
+
+        if (m){
+            this.TimeToGrav = 15;
+        }
+        else{
+            this.TimeToGrav = 5;
+        }
     }
     
 
@@ -420,7 +433,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				
 
 			
-				e.setRSpeed(5f);
+				e.setRSpeed(80f);
 
                 
 
@@ -492,7 +505,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 if (timeHeld > 15){
                     e.SetMaxed(true);
-                    speed = 1.5f;
+                    speed = 1.2f;
                 }
                 else{
                     e.SetMaxed(false);
@@ -522,11 +535,14 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				
 
                 BNSCore.LOGGER.info(e.getRotationVector().toString());
-				e.setRSpeed(timeHeld*4f);
+				e.setRSpeed(speed*80f);
 
-				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+				//UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
+                //int id = stack.Push(client.getEntityName(), e.getUuid());
 
-				int id = stack.Push(client.getEntityName(), e.getUuid());
+                int id = BNSCore.pushEntityOntoStack(world, client.getEntityName(), e.uuid);
+
+				
 
 				e.SetStackID(id);
 

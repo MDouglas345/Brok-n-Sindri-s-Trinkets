@@ -87,7 +87,7 @@ public class ThrownState extends GenericThrownItemEntityState{
 
         //Master.applyRotation(Master.getYaw(), Master.getPitch() - Master.rotSpeed);
 
-        if (Master.age > Master.rotSpeed/5){
+        if (Master.age > Master.TimeToGrav){
             Master.setNoGravity(false);
         }
 
@@ -165,7 +165,7 @@ public class ThrownState extends GenericThrownItemEntityState{
 
        
     
-        Quaternion q = blockHitResult.getSide().getRotationQuaternion();
+       
 
         BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
         Block block = Master.world.getBlockState(hitpos).getBlock();
@@ -182,9 +182,18 @@ public class ThrownState extends GenericThrownItemEntityState{
 
         //blockHitResult.withSide(blockHitResult.getSide());
 
-        q.hamiltonProduct(this.Master.originalRot);
-
         
+        
+        Quaternion q = blockHitResult.getSide().getRotationQuaternion();
+
+        q.hamiltonProduct(Master.originalRot);
+        
+
+        /*
+        Quaternion q = Master.originalRot.copy();
+        q.conjugate();
+        q.hamiltonProduct(blockHitResult.getSide().getRotationQuaternion());
+        */
 
         Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
@@ -206,6 +215,7 @@ public class ThrownState extends GenericThrownItemEntityState{
              * solution? find a way to get the player's (thrower's) world and register the stack stuff there.
              */
 
+            /*
             BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(Master.world.getLevelProperties());
             //((ServerWorld)Master.world).getServer().getWorld(
             
@@ -215,6 +225,12 @@ public class ThrownState extends GenericThrownItemEntityState{
             uuidstack.Remove(Master.Owner.name, Master.StackID);
 
             int id = stack.Push(Master.Owner.name, hitpos);
+
+            */
+
+            BNSCore.removeEntityFromStack((ServerWorld) Master.world, Master.Owner.name, Master.StackID);
+
+            int id = BNSCore.pushBEOntoStack((ServerWorld) Master.world, Master.Owner.name, hitpos);
 
             be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  id, Master.Owner);
 
@@ -273,8 +289,15 @@ public class ThrownState extends GenericThrownItemEntityState{
                 }
             }
 
-        
-            Master.Attack(entityHitResult);
+            try{
+                if (!Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
+
+                    Master.Attack(entityHitResult);
+                }
+            }
+            catch(Exception e){
+                Master.Attack(entityHitResult);
+            }
         
         
             /*

@@ -2,6 +2,7 @@ package net.fabricmc.GenericThrownItemEntity.States;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Util.Util;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -27,6 +28,7 @@ public class ReturnState extends GenericThrownItemEntityState {
         Master.rotoffset += Master.rotSpeed;
         Master.SuperTick();
             
+        
            // Vec3d Destination = Master.getOwner().getPos().add(new Vec3d(0,1,0.5f));
            if (target == null){
                target = Master.world.getPlayerByUuid(Master.Owner.ID);
@@ -108,7 +110,12 @@ public class ReturnState extends GenericThrownItemEntityState {
         target = Master.world.getPlayerByUuid(Master.Owner.ID);
         Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos().add(new Vec3d(0,1,0));
 
+        Vec3d dir = Master.getPos().subtract(Destination).normalize();
+
+        Master.originalRot = Util.getDirectionalRotation(new Vec3d(0,0,1), dir);
+
         originaldist = Destination.squaredDistanceTo(Master.getPos());
+        
     }
    
         

@@ -6,9 +6,11 @@ import dev.onyxstudios.cca.api.v3.level.LevelComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.level.LevelComponentInitializer;
 import dev.onyxstudios.cca.api.v3.scoreboard.ScoreboardComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.scoreboard.ScoreboardComponentInitializer;
+import dev.onyxstudios.cca.api.v3.world.WorldComponentFactoryRegistry;
+import dev.onyxstudios.cca.api.v3.world.WorldComponentInitializer;
 import net.minecraft.util.Identifier;
 
-public class mycomponents implements ScoreboardComponentInitializer, LevelComponentInitializer{
+public class mycomponents implements ScoreboardComponentInitializer, LevelComponentInitializer, WorldComponentInitializer   {
 
     public static final ComponentKey<BlockPosStackComponent> BlockEntityPositions = 
         ComponentRegistry.getOrCreate(new Identifier("bns", "blockentitypositions"), BlockPosStackComponent.class);
@@ -25,7 +27,14 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
     @Override
     public void registerLevelComponentFactories(LevelComponentFactoryRegistry registry) {
         // TODO Auto-generated method stub
+        //registry.register(BlockEntityPositions, BlockPosStackComponent::new);
+        //registry.register(EntityUUIDs, UUIDStackComponent::new);
+    }
+
+    @Override
+    public void registerWorldComponentFactories(WorldComponentFactoryRegistry registry) {
         registry.register(BlockEntityPositions, BlockPosStackComponent::new);
         registry.register(EntityUUIDs, UUIDStackComponent::new);
+        
     }
 }

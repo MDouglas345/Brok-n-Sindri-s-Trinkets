@@ -127,7 +127,7 @@ public class GenericItemBlockEntity extends BlockEntity{
         for (int i = 0; i < p_amount; i++){
             Vec3d dir = Util.getRandomDirectionUnitSphere(0, 2 * MathHelper.PI, 0, MathHelper.PI / 2);
             dir.normalize();
-            dir = dir.multiply(Util.getRandomDouble(1, 2));
+            dir = dir.multiply(Util.getRandomDouble(0.1, 0.5));
             world.addParticle(PTypeToUse,
             spot.getX(), spot.getY(), spot.getZ(),
                           dir.x, dir.y, dir.z);

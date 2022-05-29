@@ -27,6 +27,7 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -120,13 +121,15 @@ public class GenericItemBlock extends BlockWithEntity implements Waterloggable{
                 return ActionResult.FAIL;
             }
 
-            player.getInventory().insertStack(entity.SavedItem);
+            if (!player.getInventory().insertStack(entity.SavedItem)){
+                return ActionResult.FAIL;
+            }
             
             world.removeBlock(pos, false);
 
-            BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
-
-            stack.Remove(entity.Owner.name, entity.IndexIntoStack);
+            /// replace with BNSCore.removeBE~~~
+            BNSCore.removeBEFromStack((ServerWorld) world, entity.Owner.name, entity.IndexIntoStack);
+    
         }
  
         return ActionResult.SUCCESS;
@@ -145,6 +148,7 @@ public class GenericItemBlock extends BlockWithEntity implements Waterloggable{
         if (context instanceof EntityShapeContext && entityShapeContext.getEntity() != null && entityShapeContext.getEntity() instanceof GenericThrownItemEntity){
             return super.getCollisionShape(state, world, pos, context);
         }   
+        
         
         return VoxelShapes.empty();
         /*EntityShapeContext entityShapeContext;

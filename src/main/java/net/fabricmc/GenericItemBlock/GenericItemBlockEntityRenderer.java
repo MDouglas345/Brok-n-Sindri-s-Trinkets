@@ -21,6 +21,7 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
     private float scale;
     private boolean lit;
     float off = 0;
+   
 
     private final EntityRenderDispatcher dispatcher;
 
@@ -36,6 +37,9 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
         GenericItemBlockEntity block = (GenericItemBlockEntity)blockEntity;
 
         Quaternion r = block.Quat.copy();
+
+        //r.hamiltonProduct(Quaternion.fromEulerXyz(0, off, 0));
+
         r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(block.Offset, 0,0)));
         //r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(off, 0,0)));
 
@@ -56,7 +60,7 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
         //this.itemRenderer.renderItem((LivingEntity) block.getOwner(), block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, entity.world, light, 0, 0);
         matrices.pop();
         
-        //off += 0.05;
+        //off += 0.5 * tickDelta;
 
 
     }

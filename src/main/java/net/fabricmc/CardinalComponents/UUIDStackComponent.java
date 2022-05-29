@@ -14,6 +14,7 @@ import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldProperties;
 
 public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
@@ -22,9 +23,13 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
 
     public UUIDStackComponent(WorldProperties p){
 
+
+        
     }
 
-
+    public UUIDStackComponent(World w){
+            
+    }
 
     @Override
     public void readFromNbt(NbtCompound tag) {
@@ -179,6 +184,12 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
     public UUID Peek(String key, int id) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void Reset() {
+        // TODO Auto-generated method stub
+        data = new HashMap<String, Stack<IDedUUID>>();
     }
 
     

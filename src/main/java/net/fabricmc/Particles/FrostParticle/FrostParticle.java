@@ -22,7 +22,7 @@ public class FrostParticle extends SpriteBillboardParticle {
         this.y = yd;
         this.z = zd;
         this.scale *= 0.75F;
-        this.maxAge = 13;
+        this.maxAge = 16;
         this.setSpriteForAge(spriteSet);
 
         this.red = 1f;
@@ -34,6 +34,7 @@ public class FrostParticle extends SpriteBillboardParticle {
     public void tick() {
         super.tick();
         fadeOut();
+        
     }
 
     @Override

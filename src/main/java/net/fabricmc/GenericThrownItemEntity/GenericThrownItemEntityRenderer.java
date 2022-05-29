@@ -23,6 +23,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
@@ -68,9 +69,10 @@ public class GenericThrownItemEntityRenderer extends EntityRenderer<GenericThrow
       
       matrices.multiply(r);
 
-      //matrices.multiply(Quaternion.fromEulerXyzDegrees(new Vec3f(entity.getPitch(), entity.getYaw(), 0)));
+      //matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(MathHelper.lerp(tickDelta, entity.prevYaw, entity.getYaw())));
+      //matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(MathHelper.lerp(tickDelta, entity.prevPitch, entity.getPitch())));
       
-      matrices.scale(1.3f, 1.3f, 1.3f);
+      //matrices.scale(1.3f, 1.3f, 1.3f);
       //this.itemRenderer.renderItem(entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getId());
       this.itemRenderer.renderItem((LivingEntity) entity.getOwner(), entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, entity.world, light, 0, 0);
       //this.SpawnLineOfParticles((ClientWorld) entity.world, entity.getPos(), r,  0.5f);

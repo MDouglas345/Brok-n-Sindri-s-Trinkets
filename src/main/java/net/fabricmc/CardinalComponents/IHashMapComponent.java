@@ -13,5 +13,7 @@ public interface IHashMapComponent<K,V> extends Component{
     public V Peek(K key);
 
     public V Peek(K key, int id);
+
+    public void Reset();
     
 }

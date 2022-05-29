@@ -18,6 +18,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldProperties;
 
 public class BlockPosStackComponent implements IHashMapComponent<String, BlockPos> {
@@ -34,6 +35,10 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
 
      public BlockPosStackComponent(WorldProperties p){
 
+     }
+
+     public BlockPosStackComponent(World w){
+         
      }
 
     private HashMap<String,Stack<IDedBlockPos>> data = new HashMap<String, Stack<IDedBlockPos>>();
@@ -211,6 +216,13 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
     public BlockPos Peek(String key, int id) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+
+    @Override
+    public void Reset() {
+        // TODO Auto-generated method stub
+        data = new HashMap<String, Stack<IDedBlockPos>>();
     }
 
     
