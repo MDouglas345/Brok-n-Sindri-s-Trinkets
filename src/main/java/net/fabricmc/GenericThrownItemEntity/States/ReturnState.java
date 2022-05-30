@@ -66,16 +66,17 @@ public class ReturnState extends GenericThrownItemEntityState {
             Master.SpawnTrailingParticles();
 
 
-
-            if (target.squaredDistanceTo(Master) < 1){
-                if (!target.getInventory().insertStack(Master.itemToRender)){
-                    Master.ChangeState(0);
-                }
-                else{
-                    Master.kill();
-                }
+            if (!Master.world.isClient){
+                if (target.distanceTo(Master) < 1){
+                    if (!target.getInventory().insertStack(Master.itemToRender)){
+                        Master.ChangeState(0);
+                    }
+                    else{
+                        Master.kill();
+                    }
+                    
                 
-               
+                }
             }
         
         

@@ -240,7 +240,7 @@ public class BNSCore implements ModInitializer {
 						 * How do you check if the entity is too far from the player? what is the radius of a loaded chunk?
 						 */
 
-						int dist = (server.getPlayerManager().getViewDistance()- 2 ) * 16; //modify this to fix bug where item is close but acts like its far
+						int dist = (server.getPlayerManager().getViewDistance()) * 16; //modify this to fix bug where item is close but acts like its far
 						BlockPos Destination = client.getBlockPos();
 
 						if (BEPosition.isWithinDistance(Destination, 4)){
