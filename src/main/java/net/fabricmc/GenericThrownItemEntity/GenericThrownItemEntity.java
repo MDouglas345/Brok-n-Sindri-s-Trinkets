@@ -10,6 +10,7 @@
  */
 package net.fabricmc.GenericThrownItemEntity;
 
+import java.util.Random;
 import java.util.UUID;
 
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.MaxValuesforFieldExceededException;
@@ -32,6 +33,7 @@ import net.fabricmc.Util.Util;
 import net.fabricmc.Util.ClientIdentification.ClientIdentification;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantment;
@@ -63,10 +65,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedItem {
@@ -88,6 +92,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     DefaultParticleType             PTypeToUse = null;
 
     public float                    TimeToGrav = 20;
+
+    Random                          rand;
 
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
     
@@ -248,6 +254,23 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         else{
            
         }
+
+        Vec3d Pos = getPos();
+        Vec3d Pos2 = getVelocity();
+        BlockHitResult hitResult = world.raycast(new RaycastContext(Pos, Pos.add(Pos2), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this));
+
+        if (hitResult.getType() != HitResult.Type.MISS){
+            BlockPos hitpos = hitResult.getBlockPos();
+            BlockState state = world.getBlockState(hitpos);
+            Block b = state.getBlock();
+            float h = state.getHardness(world, hitpos);
+            
+            if (!state.isToolRequired() && h < 0.1 && h != -1.0){
+                world.breakBlock(hitpos,true);
+            }
+            
+            
+        }
        
         //BNSCore.LOGGER.info(this.getRotationVector().toString());
         ActiveState.Tick();
@@ -263,7 +286,9 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         
     }
 
-    
+    public boolean canHit(Entity e){
+        return super.canHit(e);
+    }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt){
@@ -315,8 +340,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         createPacket.writeString(this.Owner.name);
         createPacket.writeBoolean(this.Maxed);
 
-        createPacket.writeFloat(this.getYaw());
-        createPacket.writeFloat(this.getPitch());
+        createPacket.writeInt(this.StackID);
 
         return ServerPlayNetworking.createS2CPacket(NetworkConstants.EstablishThrownItem, createPacket);
 	}
@@ -387,6 +411,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void SetStackID(int i ){
         this.StackID = i;
+        this.rand = new Random(i);
     }
 
     public void SetMaxed(boolean m){
@@ -571,8 +596,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void ThrowRandom(float force){
         
-        float yaw = Util.randgen.nextFloat() * 360;
-        float pitch =  Util.randgen.nextFloat() * -90 + 10;
+        float yaw = this.rand.nextFloat() * 360;
+        float pitch =  this.rand.nextFloat() * -90 + 10;
         float roll = 0;
         
         float f = -MathHelper.sin(yaw * ((float)Math.PI / 180)) * MathHelper.cos(pitch * ((float)Math.PI / 180));

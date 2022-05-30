@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.lwjgl.glfw.GLFW;
 
+import it.unimi.dsi.fastutil.Stack;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
@@ -106,6 +107,7 @@ public class BNSClient implements ClientModInitializer {
             UUID owneruuid = buf.readUuid();
             String ownername = buf.readString();
             boolean maxed = buf.readBoolean();
+            int StackID = buf.readInt();
 
             
             
@@ -127,6 +129,7 @@ public class BNSClient implements ClientModInitializer {
                 e.setOwner(client.world.getPlayerByUuid(owneruuid));
                 e.SetMaxed(maxed);
                 e.SetOwner(ownername, owneruuid);
+                e.SetStackID(StackID);
                
                 client.world.addEntity(ID, e);
             });

@@ -6,12 +6,17 @@ import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.PlantBlock;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
 public class ReturnState extends GenericThrownItemEntityState {
@@ -58,9 +63,20 @@ public class ReturnState extends GenericThrownItemEntityState {
 
             Master.setVelocity(DesiredDir);
 
-          
             Master.SpawnTrailingParticles();
 
+
+
+            if (target.squaredDistanceTo(Master) < 1){
+                if (!target.getInventory().insertStack(Master.itemToRender)){
+                    Master.ChangeState(0);
+                }
+                else{
+                    Master.kill();
+                }
+                
+               
+            }
         
         
         

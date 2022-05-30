@@ -75,22 +75,7 @@ public class ThrownState extends GenericThrownItemEntityState{
         Master.rotoffset -= Master.rotSpeed;
         Master.SuperTick();
         
-        Vec3d Pos = Master.getPos();
-        Vec3d Pos2;
-        BlockHitResult hitResult = this.Master.world.raycast(new RaycastContext(Pos, Pos.add(Pos), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this.Master));
-
-        if (hitResult.getType() != HitResult.Type.MISS){
-            BlockPos hitpos = hitResult.getBlockPos();
-            BlockState state = Master.world.getBlockState(hitpos);
-            Block b = state.getBlock();
-
-            
-            if (!state.isToolRequired()){
-                Master.world.breakBlock(hitpos,true);
-            }
-            
-            
-        }
+       
         
         /*
         Quaternion r = Master.originalRot.copy();
@@ -171,7 +156,8 @@ public class ThrownState extends GenericThrownItemEntityState{
             need to fix the rotation quaternion! Its not quite right.
        */
 
-      if (!Master.world.isClient){
+      //if (!Master.world.isClient){
+
         BlockState b = Master.world.getBlockState(blockHitResult.getBlockPos());
         if (b.getBlock() instanceof GenericItemBlock){
             // if this entity hits a genericitemblock, bounce.
@@ -185,18 +171,18 @@ public class ThrownState extends GenericThrownItemEntityState{
        
 
         BlockPos hitpos = Util.getAdjacentBlock(blockHitResult.getBlockPos(), blockHitResult.getSide());
-        Block block = Master.world.getBlockState(hitpos).getBlock();
+        BlockState state = Master.world.getBlockState(hitpos);
+        Block block = state.getBlock();
+
+        
+        
         if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock)){
             Master.ThrowRandom(0.3f);
 
             return;
         }
 
-        if (block instanceof PlantBlock){
-            BlockState state = Master.world.getBlockState(hitpos);
-            
-            state.onBlockBreakStart(Master.world, hitpos, (PlayerEntity) Master.getOwner());
-        }
+       
         //IPlayerEntityItems player = (IPlayerEntityItems)(PlayerEntity)Master.getOwner();
 
         //player.addReturnableItem(hitpos);
@@ -205,7 +191,7 @@ public class ThrownState extends GenericThrownItemEntityState{
         //blockHitResult.withSide(blockHitResult.getSide());
 
         
-        
+        if (!Master.world.isClient){
         Quaternion q = blockHitResult.getSide().getRotationQuaternion();
 
         q.hamiltonProduct(Master.originalRot);
@@ -258,6 +244,7 @@ public class ThrownState extends GenericThrownItemEntityState{
 
             Master.kill();
         }
+       // }
        
         
     }
