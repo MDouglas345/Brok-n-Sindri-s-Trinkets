@@ -1,8 +1,11 @@
 package net.fabricmc.GenericThrownItemEntity.States;
 
+
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.Util;
+import net.minecraft.block.Block;
+import net.minecraft.block.PlantBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -42,12 +45,16 @@ public class ReturnState extends GenericThrownItemEntityState {
 
             Vec3d DesiredDir = Master.getPos().subtract(Destination).normalize().negate();
 
+            // experimental custom rotation turning.
+            Master.originalRot = Util.getDirectionalRotation(new Vec3d(0,0,1), DesiredDir);
+            
+
             double newdist = Destination.squaredDistanceTo(Master.getPos());
             newdist = newdist / originaldist;
 
             DesiredDir = DesiredDir.multiply(Math.max(0.8, newdist * 2));
 
-            DesiredDir = Master.getVelocity().lerp(DesiredDir, 0.8f);
+            DesiredDir = Master.getVelocity().lerp(DesiredDir, 0.2f);
 
             Master.setVelocity(DesiredDir);
 
@@ -68,7 +75,12 @@ public class ReturnState extends GenericThrownItemEntityState {
 
     @Override
     public void onBlockHit(BlockHitResult blockHitResult) {
-        // TODO Auto-generated method stub
+
+        Block block = Master.world.getBlockState(blockHitResult.getBlockPos()).getBlock();
+
+        if (block instanceof PlantBlock){
+            Master.world.removeBlock(blockHitResult.getBlockPos(), false);
+        }
         
     }
 

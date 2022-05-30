@@ -43,6 +43,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -163,22 +164,40 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     }
 
     
-    
+    public void Deflect(float power){
+        Vec3d dir = getVelocity().multiply(-1).add(new Vec3d(0,4,0)).normalize();
+        dir = dir.multiply(getVelocity().length() * power);
+        setVelocity(dir);
+    }
 
     public void Attack(EntityHitResult entityHitResult){
         
             // Need to work on the damage calculation to accomodate enchantments and various affects
+            Entity entity = entityHitResult.getEntity();
             
+            if (entity == null){
+                return;
+            }
+
+            if ((entity instanceof LivingEntity) && (((LivingEntity)entity).isBlocking())){
+                Deflect(0.3f);
+                return;
+            }
+
+            if (entity instanceof LivingEntity){
+                LivingEntity e = (LivingEntity) entity;
+                e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this);
+            }
+
             Item item = itemToRender.getItem();
             float attackDamage = item instanceof MiningToolItem ? ((MiningToolItem)item).getAttackDamage(): item instanceof SwordItem ? ((SwordItem)item).getAttackDamage() : 0;
+            
             entityHitResult.getEntity().damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
 
             if (!Maxed || (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) == 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) == 0)){
                
                 
-                Vec3d dir = getVelocity().multiply(-1).add(new Vec3d(0,4,0)).normalize();
-                dir = dir.multiply(getVelocity().length() * 0.5f);
-                setVelocity(dir);
+               Deflect(0.5f);
 
                 
             }

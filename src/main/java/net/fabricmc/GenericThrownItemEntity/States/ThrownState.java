@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -73,7 +74,23 @@ public class ThrownState extends GenericThrownItemEntityState{
     public void Tick() {
         Master.rotoffset -= Master.rotSpeed;
         Master.SuperTick();
+        
+        Vec3d Pos = Master.getPos();
+        Vec3d Pos2;
+        BlockHitResult hitResult = this.Master.world.raycast(new RaycastContext(Pos, Pos.add(Pos), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this.Master));
 
+        if (hitResult.getType() != HitResult.Type.MISS){
+            BlockPos hitpos = hitResult.getBlockPos();
+            BlockState state = Master.world.getBlockState(hitpos);
+            Block b = state.getBlock();
+
+            
+            if (!state.isToolRequired()){
+                Master.world.breakBlock(hitpos,true);
+            }
+            
+            
+        }
         
         /*
         Quaternion r = Master.originalRot.copy();
@@ -175,6 +192,11 @@ public class ThrownState extends GenericThrownItemEntityState{
             return;
         }
 
+        if (block instanceof PlantBlock){
+            BlockState state = Master.world.getBlockState(hitpos);
+            
+            state.onBlockBreakStart(Master.world, hitpos, (PlayerEntity) Master.getOwner());
+        }
         //IPlayerEntityItems player = (IPlayerEntityItems)(PlayerEntity)Master.getOwner();
 
         //player.addReturnableItem(hitpos);
@@ -254,7 +276,7 @@ public class ThrownState extends GenericThrownItemEntityState{
                 
                 try{
                     LivingEntity e = (LivingEntity) entityHitResult.getEntity();
-                    e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this.Master);
+                    
                     ISavedItem eSaved = (ISavedItem) e;
 
                     if (eSaved.getSavedItem().getItem() != Items.AIR){
