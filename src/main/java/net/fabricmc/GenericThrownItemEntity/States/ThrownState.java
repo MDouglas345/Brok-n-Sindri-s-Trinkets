@@ -207,6 +207,8 @@ public class ThrownState extends GenericThrownItemEntityState{
 
         
             GenericItemBlockEntity be = (GenericItemBlockEntity)Master.world.getBlockEntity(hitpos);
+            
+            
             //be.Initalize(Master.itemToRender, Master.originalRot, Master.rotoffset);
         
             //be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  player.getStack().size()-1, Master.Owner);

@@ -35,7 +35,9 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
     public void render(T blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
 
         GenericItemBlockEntity block = (GenericItemBlockEntity)blockEntity;
-
+        if (block.Quat == null){
+            return;
+        }
         Quaternion r = block.Quat.copy();
 
         //r.hamiltonProduct(Quaternion.fromEulerXyz(0, off, 0));

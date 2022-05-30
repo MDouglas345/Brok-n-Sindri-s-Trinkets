@@ -190,7 +190,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                 return;
             }
 
-            if (entity instanceof LivingEntity){
+            if (entity instanceof LivingEntity && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) > 0)){
                 LivingEntity e = (LivingEntity) entity;
                 e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this);
             }
