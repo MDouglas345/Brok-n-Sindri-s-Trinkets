@@ -42,6 +42,31 @@
  * 
  * 
  * Check powdersnowbloc#getcollisionshape to find out how to make blocks that are only collidable with certain types
+ * 
+ * 
+ * 
+ * new task!
+ * Create a way to determin whether a block was placed by a player. Reason is to prevent replacing blocks that can introduce griefin? 
+ * 
+ * Approach : Use the world components from cardinal components to save data about every placed block, and whether they were placed by player
+ * 
+ * Data structure : A hashmap that uses the XYZ coord : boolean for quick loop up.
+ * 
+ * Adding to data structure : ? Find out where the player places a block and mixinto that
+ * 
+ * Removing from data structure : Mixin into Block.onBreak() and cast the object to the interface for removing.
+ * 
+ * Obtaining value : Given a block pos, return the boolean, or null.
+ * 
+ * 
+ * Reminder! Check for bugf with creeper exploding with a stuck item. it causes issues with recalling weapon.
+ * 
+ * New bug found : When player is very far from their respawn point and they die with worhty weapons,
+ * there is a chance the GenericThrownItemEntities will be despawn, without settling and creating permanent 
+ * Block Entities. 
+ * 
+ * work around : when a player dies, brute force creating these BE all around instead of creating thrown entities.
+ * Cons : Jarring AF and unsatisfactory.
  */
 
 
@@ -50,6 +75,7 @@ package net.fabricmc.BNSCore;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
+import net.fabricmc.CardinalComponents.PlayerBlockComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
 import net.fabricmc.Effects.ParalysisEffect;
@@ -240,7 +266,7 @@ public class BNSCore implements ModInitializer {
 						 * How do you check if the entity is too far from the player? what is the radius of a loaded chunk?
 						 */
 
-						int dist = (server.getPlayerManager().getViewDistance()) * 16; //modify this to fix bug where item is close but acts like its far
+						int dist = (server.getPlayerManager().getViewDistance()) * 8; //modify this to fix bug where item is close but acts like its far
 						BlockPos Destination = client.getBlockPos();
 
 						if (BEPosition.isWithinDistance(Destination, 4)){
@@ -259,11 +285,11 @@ public class BNSCore implements ModInitializer {
 
 						bpstack.Pop(client.getEntityName());
 
-						if (!BEPosition.isWithinDistance(Destination, dist + 2)){
+						if (!BEPosition.isWithinDistance(Destination, dist -4)){
 							// if the BE is too far!
 							Vec3d Direction = Vec3d.of(Destination.subtract(BEPosition));
 							Direction = Direction.normalize();
-							Direction = Direction.multiply(dist);
+							Direction = Direction.multiply(dist-6);
 							Vec3d position = Vec3d.of(Destination).subtract(Direction);
 
 							GenericThrownItemEntity e = GenericThrownItemEntity.CreateNew(world, (PlayerEntity) world.getEntity(restingEntity.Owner.ID), position, restingEntity.SavedItem);
@@ -477,6 +503,24 @@ public class BNSCore implements ModInitializer {
 			return id;
 	}
 
+	public static void removePlayerBlock(ServerWorld world, String name){
+		PlayerBlockComponent stack = BNSCore.getPlayerBlockStack(world);
+
+		stack.Remove(name, 0);
+	}
+
+	public static void pushPlayerBlock(ServerWorld world, String name, boolean value){
+		PlayerBlockComponent stack = BNSCore.getPlayerBlockStack(world);
+
+		stack.Push(name, value);
+	}
+
+	public static boolean getPlayerBlock(ServerWorld world, String name){
+		PlayerBlockComponent stack = BNSCore.getPlayerBlockStack(world);
+		Boolean res = stack.Peek(name); 
+		return res == null ? false : res;
+	}
+
 	public static void resetStacks(ServerWorld world){
 		BlockPosStackComponent bstack = BNSCore.getBlockStack(world);
 		UUIDStackComponent eStack = BNSCore.getEntitytack(world);
@@ -491,6 +535,11 @@ public class BNSCore implements ModInitializer {
 
 	public static UUIDStackComponent getEntitytack(ServerWorld world){
 		return  mycomponents.EntityUUIDs.get(world);
+	}
+
+	public static PlayerBlockComponent getPlayerBlockStack(ServerWorld world){
+		return mycomponents.PlayerBlocks.get(world);
+		//return null;
 	}
 
 

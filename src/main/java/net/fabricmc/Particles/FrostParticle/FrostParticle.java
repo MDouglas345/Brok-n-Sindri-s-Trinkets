@@ -17,7 +17,7 @@ public class FrostParticle extends SpriteBillboardParticle {
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
 
-        this.velocityMultiplier = 1F;
+        this.velocityMultiplier = 0.8F;
         this.x = xd;
         this.y = yd;
         this.z = zd;
@@ -25,6 +25,8 @@ public class FrostParticle extends SpriteBillboardParticle {
         this.maxAge = 16;
         this.setSpriteForAge(spriteSet);
 
+       
+        this.alpha = 0.8f;
         this.red = 1f;
         this.green = 1f;
         this.blue = 1f;
@@ -34,6 +36,7 @@ public class FrostParticle extends SpriteBillboardParticle {
     public void tick() {
         super.tick();
         fadeOut();
+        this.velocityY -= 0.01;
         
     }
 
@@ -44,7 +47,8 @@ public class FrostParticle extends SpriteBillboardParticle {
     }
 
     private void fadeOut() {
-        this.alpha = (-(1/(float)maxAge) * age + 1);
+        this.alpha = (-(1/(float)maxAge) * age * 0.8f + 0.8f);
+        //this.alpha = 0.8f * ()
     }
 
 

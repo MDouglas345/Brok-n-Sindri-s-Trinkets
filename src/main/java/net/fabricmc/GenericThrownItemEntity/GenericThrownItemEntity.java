@@ -10,6 +10,7 @@
  */
 package net.fabricmc.GenericThrownItemEntity;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericThrownItemEntity.States.BounceState;
 import net.fabricmc.GenericThrownItemEntity.States.GenericThrownItemEntityState;
 import net.fabricmc.GenericThrownItemEntity.States.GroundedState;
@@ -41,6 +43,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -66,6 +69,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
@@ -89,11 +93,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public boolean                  Maxed   = false;     
     
-    DefaultParticleType             PTypeToUse = null;
+    public DefaultParticleType             PTypeToUse = null;
 
     public float                    TimeToGrav = 20;
 
-    Random                          rand;
+    public Random                          rand;
 
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
     
@@ -198,7 +202,14 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             Item item = itemToRender.getItem();
             float attackDamage = item instanceof MiningToolItem ? ((MiningToolItem)item).getAttackDamage(): item instanceof SwordItem ? ((SwordItem)item).getAttackDamage() : 0;
             
-            entityHitResult.getEntity().damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
+            
+            entity.damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
+
+            PlayerEntity source = (PlayerEntity) getOwner();
+
+            if (source != null){
+                Util.ApplyOnTargetDamageEnchantments(source, entity, itemToRender);
+            }
 
             if (!Maxed || (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) == 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) == 0)){
                
@@ -218,6 +229,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) { // called on entity hit.
 		ActiveState.onEntityHit(entityHitResult);
+       
 
         
 	}
@@ -255,6 +267,24 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
            
         }
 
+        if (!world.isClient && this.isDespawned()){ // maybe also add if the server has ended?
+
+            world.setBlockState(getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+
+        
+            GenericItemBlockEntity be = (GenericItemBlockEntity)world.getBlockEntity(getBlockPos());
+            
+
+            BNSCore.removeEntityFromStack((ServerWorld) world, Owner.name, StackID);
+
+            int id = BNSCore.pushBEOntoStack((ServerWorld) world, Owner.name, getBlockPos());
+
+            be.Initalize(itemToRender, new Quaternion(0,0,0,1), (float)Util.getRandomDouble(100, 200),  id, Owner);
+
+            this.kill();
+
+        }
+
         Vec3d Pos = getPos();
         Vec3d Pos2 = getVelocity();
         BlockHitResult hitResult = world.raycast(new RaycastContext(Pos, Pos.add(Pos2), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this));
@@ -288,6 +318,53 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public boolean canHit(Entity e){
         return super.canHit(e);
+    }
+
+    public boolean isDespawned(){
+        Box box = new Box(getBlockPos().add(new BlockPos(-128,-128,-128)), getBlockPos().add(new BlockPos(128,128,128)) );
+
+        List<PlayerEntity> players = Util.getNearbyPlayers(world, box);
+
+        if (players.isEmpty()){
+            return true;
+
+        }
+        int i = this.getType().getSpawnGroup().getImmediateDespawnRange(); // might need to set this manually!
+        boolean res = true;
+        for (PlayerEntity player : players){
+            if (player.isDead()){continue;}
+            double d = player.squaredDistanceTo(this);
+            if (d < (double)(i * i)) {
+                res = false;
+            }
+        }
+
+        return res;
+        
+        
+      
+        /*
+
+        PlayerEntity entity = world.getClosestPlayer(this, -1.0); // Mob entity does it like that?
+        
+        if (entity == null){
+            return true;
+        }
+        if (Owner.isOwner(entity) && entity.isDead()){
+            entity = world.getClosestPlayer(this, -1.0); // Mob entity does it like that?
+        }
+
+        if (entity != null) {
+            int i = this.getType().getSpawnGroup().getImmediateDespawnRange(); // might need to set this manually!
+            double d = entity.squaredDistanceTo(this);
+            if (d > (double)(i * i)) {
+                return true;
+            }
+        }
+
+        return false;
+        */
+
     }
 
     @Override

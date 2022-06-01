@@ -6,7 +6,8 @@
   "custom": {
       "cardinal-components": [
           "bns:blockentitypositions",
-          "bns:entityuuids"
+          "bns:entityuuids",
+          "bns:playerblocks"
       ]
   },
 

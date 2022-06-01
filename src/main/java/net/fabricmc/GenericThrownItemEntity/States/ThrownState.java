@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
@@ -34,6 +35,8 @@ import net.minecraft.block.PlantBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.data.client.BlockStateSupplier;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.task.StopPanickingTask;
@@ -52,6 +55,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Util.EnchantmentData;
 import net.fabricmc.Util.IMovementStopper;
 import net.fabricmc.Util.IPlayerEntityItems;
 import net.fabricmc.Util.ISavedItem;
@@ -59,6 +63,7 @@ import net.fabricmc.Util.Util;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Enchantments.IWorldBehvaior;
 
 
 public class ThrownState extends GenericThrownItemEntityState{
@@ -158,6 +163,15 @@ public class ThrownState extends GenericThrownItemEntityState{
 
       //if (!Master.world.isClient){
 
+        /**
+         * Make life easy : 
+         * 
+         * Frost behvaior
+         * When a Frost Imbued item hits a block, surrounding blocks will have a change to turn into snow blocks.
+         * if the block the item hits is a player placed block, it will not turn into a snow block.
+         * make big frost particle effect that goes out wide (perhaps in dependent on the side hit) // VISUAL
+         */
+
         BlockState b = Master.world.getBlockState(blockHitResult.getBlockPos());
         if (b.getBlock() instanceof GenericItemBlock){
             // if this entity hits a genericitemblock, bounce.
@@ -165,7 +179,8 @@ public class ThrownState extends GenericThrownItemEntityState{
 
             return;
         }
-
+        
+        
        
     
        
@@ -175,6 +190,11 @@ public class ThrownState extends GenericThrownItemEntityState{
         Block block = state.getBlock();
 
         
+        //block.replace(state, new BlockState(block, , mapCodec), world, pos, flags);
+
+        
+        
+        //something better would be to check if the blockstate.isAir? or isSolidBlock? maybe better.
         
         if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock)){
             Master.ThrowRandom(0.3f);
@@ -183,13 +203,18 @@ public class ThrownState extends GenericThrownItemEntityState{
         }
 
        
-        //IPlayerEntityItems player = (IPlayerEntityItems)(PlayerEntity)Master.getOwner();
+      /**
+       * This is where environmental effects will come into place. 
+       * Look into creating custom behavior in the Enchantment classes's themselves and just call it here!
+       */
+        
+       EnchantmentData enchantmentData = Util.getSpecialThrownEnchantment(Master.itemToRender);
 
-        //player.addReturnableItem(hitpos);
-
-
-        //blockHitResult.withSide(blockHitResult.getSide());
-
+       if (enchantmentData != null){
+           IWorldBehvaior worldBehvaior = (IWorldBehvaior)(enchantmentData.enchantment);
+           worldBehvaior.OnBlockThrownHit(Master.world, hitpos, enchantmentData.level);
+       }
+        
         
         if (!Master.world.isClient){
         Quaternion q = blockHitResult.getSide().getRotationQuaternion();
@@ -197,11 +222,7 @@ public class ThrownState extends GenericThrownItemEntityState{
         q.hamiltonProduct(Master.originalRot);
         
 
-        /*
-        Quaternion q = Master.originalRot.copy();
-        q.conjugate();
-        q.hamiltonProduct(blockHitResult.getSide().getRotationQuaternion());
-        */
+        
 
         Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
@@ -209,12 +230,6 @@ public class ThrownState extends GenericThrownItemEntityState{
             GenericItemBlockEntity be = (GenericItemBlockEntity)Master.world.getBlockEntity(hitpos);
             
             
-            //be.Initalize(Master.itemToRender, Master.originalRot, Master.rotoffset);
-        
-            //be.Initalize(Master.itemToRender, q, (float)Util.getRandomDouble(100, 200),  player.getStack().size()-1, Master.Owner);
-        
-        
-            //Master.ChangeState(3);
             
             /**
              * yet another bug : Master.world is universal to both nether and overworld (with bias to overworld?)
@@ -225,18 +240,7 @@ public class ThrownState extends GenericThrownItemEntityState{
              * solution? find a way to get the player's (thrower's) world and register the stack stuff there.
              */
 
-            /*
-            BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(Master.world.getLevelProperties());
-            //((ServerWorld)Master.world).getServer().getWorld(
-            
-
-            UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(Master.world.getLevelProperties());
-
-            uuidstack.Remove(Master.Owner.name, Master.StackID);
-
-            int id = stack.Push(Master.Owner.name, hitpos);
-
-            */
+           
 
             BNSCore.removeEntityFromStack((ServerWorld) Master.world, Master.Owner.name, Master.StackID);
 

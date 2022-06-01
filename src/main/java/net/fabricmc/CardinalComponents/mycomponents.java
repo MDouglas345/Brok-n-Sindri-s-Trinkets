@@ -17,6 +17,9 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
 
     public static final ComponentKey<UUIDStackComponent> EntityUUIDs = 
         ComponentRegistry.getOrCreate(new Identifier("bns", "entityuuids"), UUIDStackComponent.class);
+    
+    public static final ComponentKey<PlayerBlockComponent> PlayerBlocks =
+        ComponentRegistry.getOrCreate(new Identifier("bns", "playerblocks"), PlayerBlockComponent.class);    
 
     @Override
     public void registerScoreboardComponentFactories(ScoreboardComponentFactoryRegistry registry) {
@@ -35,6 +38,7 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
     public void registerWorldComponentFactories(WorldComponentFactoryRegistry registry) {
         registry.register(BlockEntityPositions, BlockPosStackComponent::new);
         registry.register(EntityUUIDs, UUIDStackComponent::new);
+        registry.register(PlayerBlocks, PlayerBlockComponent::new);
         
     }
 }

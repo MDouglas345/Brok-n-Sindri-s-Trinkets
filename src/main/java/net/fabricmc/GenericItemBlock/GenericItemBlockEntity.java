@@ -110,8 +110,9 @@ public class GenericItemBlockEntity extends BlockEntity{
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, GenericItemBlockEntity be) {
-       be.SpawnPulsingParticles(world, be.getPos());
-
+        
+        be.SpawnPulsingParticles(world, be.getPos());
+        
        
     }
 
@@ -122,12 +123,13 @@ public class GenericItemBlockEntity extends BlockEntity{
         if (PTypeToUse == null){return;}
 
         Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
-
+        
         int p_amount = 5;
         for (int i = 0; i < p_amount; i++){
             Vec3d dir = Util.getRandomDirectionUnitSphere(0, 2 * MathHelper.PI, 0, MathHelper.PI / 2);
             dir.normalize();
-            dir = dir.multiply(Util.getRandomDouble(0.1, 0.5));
+            dir = dir.multiply(Util.getRandomDouble(0.01, 0.05));
+            
             world.addParticle(PTypeToUse,
             spot.getX(), spot.getY(), spot.getZ(),
                           dir.x, dir.y, dir.z);

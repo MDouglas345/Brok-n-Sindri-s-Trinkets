@@ -51,6 +51,7 @@ public class LivingEntityMixin implements ISavedItem {
 
     @Inject(at = @At("HEAD"), method = "onDeath(Lnet/minecraft/entity/damage/DamageSource;)V")
     public void onDeathHEAD(DamageSource soure, CallbackInfo info){
+        
         ISavedItem ISI = (ISavedItem)this;
         LivingEntity e = (LivingEntity)(Object)this;
 

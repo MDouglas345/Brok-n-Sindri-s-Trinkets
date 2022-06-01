@@ -2,13 +2,29 @@ package net.fabricmc.Util;
 
 import java.util.Random;
 
-
+import net.fabricmc.BNSCore.BNSCore;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.EnchantmentHelper.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.entity.player.PlayerEntity;
+
 
 public class Util {
 
@@ -126,5 +142,52 @@ public class Util {
         }
 
         return null;
+    }
+
+
+    public static void ApplyOnTargetDamageEnchantments(LivingEntity user, Entity target, ItemStack stack){
+         Consumer consumer = (enchantments, level) -> enchantments.onTargetDamaged(user, target, level);
+        if (stack.isEmpty()) {
+            return;
+        }
+        NbtList nbtList = stack.getEnchantments();
+        for (int i = 0; i < nbtList.size(); ++i) {
+            NbtCompound nbtCompound = nbtList.getCompound(i);
+            Registry.ENCHANTMENT.getOrEmpty(EnchantmentHelper.getIdFromNbt(nbtCompound)).ifPresent(enchantment -> consumer.accept((Enchantment)enchantment, EnchantmentHelper.getLevelFromNbt(nbtCompound)));
+        }
+    }
+
+    public static EnchantmentData getSpecialThrownEnchantment(ItemStack stack){
+        int level = EnchantmentHelper.getLevel(BNSCore.FrostWeapon, stack);
+        if ( level > 0){
+            return new EnchantmentData(BNSCore.FrostWeapon, level);
+        }
+        
+        level = EnchantmentHelper.getLevel(BNSCore.FrostTool, stack);
+        if ( level > 0){
+            return new EnchantmentData(BNSCore.FrostTool, level);
+        }
+
+        return null;
+    }
+
+    public static List<PlayerEntity> getNearbyPlayers(World world, Box box){
+        List<PlayerEntity> res = new ArrayList<>();
+        
+        for (PlayerEntity player : world.getPlayers()){
+            if (box.contains(player.getPos())){
+                res.add(player);
+            }
+        }
+
+        return res;
+    } 
+
+    
+
+
+    @FunctionalInterface
+    static interface Consumer {
+        public void accept(Enchantment var1, int level);
     }
 }
