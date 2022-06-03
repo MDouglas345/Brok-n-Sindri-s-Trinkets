@@ -1,4 +1,4 @@
-package net.fabricmc.Particles.FrostParticle;
+package net.fabricmc.Particles.TrailingFrostParticle;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -11,15 +11,15 @@ import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
 
-public class FrostParticle extends SpriteBillboardParticle {
+public class TrailingFrostParticle extends SpriteBillboardParticle {
 
-    protected FrostParticle(ClientWorld level, double xCoord, double yCoord, double zCoord,
+    protected TrailingFrostParticle(ClientWorld level, double xCoord, double yCoord, double zCoord,
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
 
         this.velocityMultiplier = 0.9F;
        
-        this.scale = 0.4f;
+        this.scale = 0.2f;
         this.maxAge = 16;
         this.setSpriteForAge(spriteSet);
 
@@ -34,21 +34,10 @@ public class FrostParticle extends SpriteBillboardParticle {
 
     @Override
     public void tick() {
-
-        
-        if (!this.onGround){
-            this.velocityY -= 0.03;
-        }
-        else{
-            this.velocityX *= 1.001;
-            this.velocityZ *= 1.001;
-            this.velocityY = 0;
-        }
-        
         super.tick();
         fadeOut();
-       
-
+        this.velocityY -= 0.03;
+        
     }
 
     @Override
@@ -73,7 +62,7 @@ public class FrostParticle extends SpriteBillboardParticle {
 
         public Particle createParticle(DefaultParticleType particleType, ClientWorld level, double x, double y, double z,
                                        double dx, double dy, double dz) {
-            return new FrostParticle(level, x, y, z, this.sprites, dx, dy, dz);
+            return new TrailingFrostParticle(level, x, y, z, this.sprites, dx, dy, dz);
         }
     }
 

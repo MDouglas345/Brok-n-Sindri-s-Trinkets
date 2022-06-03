@@ -20,6 +20,7 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericThrownItemEntity.States.BounceState;
 import net.fabricmc.GenericThrownItemEntity.States.GenericThrownItemEntityState;
@@ -28,6 +29,7 @@ import net.fabricmc.GenericThrownItemEntity.States.ReturnState;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
 import net.fabricmc.GenericThrownItemEntity.States.ThrownState;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Util.EnchantmentData;
 import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.PacketUtil;
@@ -50,6 +52,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.BlazeEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -99,6 +102,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public Random                          rand;
 
+    public EnchantmentData                 enchantmentData;
+
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
     
 
@@ -126,6 +131,17 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         setNoGravity(true);
 	}
 
+    public Vec3f customRotationVec(){
+        Quaternion r = originalRot.copy();
+        r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(rotoffset, 0,0)));
+
+        Vec3f dir = new Vec3f(0,1,0);
+        dir.rotate(r);
+        dir.normalize();
+
+        return dir;
+    }
+
     @Override
     protected void updateRotation() {
        /*
@@ -138,6 +154,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         
         Quaternion r = originalRot.copy();
         r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(rotoffset, 0,0)));
+
+       
+        
+
         Vec3f rot = r.toEulerXyz();
 
         this.setPitch(ProjectileEntity.updateRotation(this.prevPitch, rot.getX()));
@@ -183,6 +203,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public void Attack(EntityHitResult entityHitResult){
         
             // Need to work on the damage calculation to accomodate enchantments and various affects
+           
             Entity entity = entityHitResult.getEntity();
             
             if (entity == null){
@@ -194,9 +215,13 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                 return;
             }
 
-            if (entity instanceof LivingEntity && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) > 0)){
-                LivingEntity e = (LivingEntity) entity;
-                e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this);
+            
+            if (entity instanceof LivingEntity && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) > 0)&& this.Maxed){
+
+                this.PinEntity(entityHitResult);
+            }
+            else{
+                Deflect(0.3f);
             }
 
             Item item = itemToRender.getItem();
@@ -205,25 +230,62 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             
             entity.damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
 
+        
+
             PlayerEntity source = (PlayerEntity) getOwner();
 
             if (source != null){
                 Util.ApplyOnTargetDamageEnchantments(source, entity, itemToRender);
             }
 
-            if (!Maxed || (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) == 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) == 0)){
-               
-                
-               Deflect(0.5f);
-
-                
+            if (enchantmentData != null){
+                IWorldBehvaior behavior = (IWorldBehvaior)enchantmentData.enchantment;
+                behavior.OnEntityThrownHit(world, entityHitResult, enchantmentData.level, Maxed);
             }
+
+         
 
            
 
             
             
         
+    }
+
+    public void PinEntity(EntityHitResult entityHitResult){
+        try{
+            LivingEntity e = (LivingEntity) entityHitResult.getEntity();
+            
+            ISavedItem eSaved = (ISavedItem) e;
+
+            e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this);
+
+
+            if (!world.isClient){
+                
+                eSaved.setSavedItem(itemToRender);
+                eSaved.setSavedItemOwner(Owner.name);
+
+                // cant be sure if this will be an issue if done only on server
+               
+
+                int id = BNSCore.pushEntityOntoStack((ServerWorld)world, Owner.name, e.getUuid());
+                eSaved.setIndexIntoStack(id);
+
+                BNSCore.removeEntityFromStack((ServerWorld)world, Owner.name, StackID);
+            }
+            
+            if (e instanceof MobEntity){
+                ((MobEntity) e).setPersistent();
+            }
+
+            discard();
+
+
+        }
+        catch(Exception e){
+
+        }
     }
  
     @Override
@@ -269,7 +331,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
         if (!world.isClient && this.isDespawned()){ // maybe also add if the server has ended?
 
-            world.setBlockState(getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+             world.setBlockState(getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
         
             GenericItemBlockEntity be = (GenericItemBlockEntity)world.getBlockEntity(getBlockPos());
@@ -295,7 +357,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             Block b = state.getBlock();
             float h = state.getHardness(world, hitpos);
             
-            if (!state.isToolRequired() && h < 0.1 && h != -1.0){
+            if (!state.isToolRequired() && h < 0.25 && h != -1.0){
                 world.breakBlock(hitpos,true);
             }
             
@@ -381,6 +443,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
        nbt.putUuid("owner", this.Owner.ID);
        nbt.putString("ownername", this.Owner.name);
        nbt.putBoolean("maxed", Maxed);
+       nbt.putInt("stackid", this.StackID);
 
         return nbt;
     }
@@ -395,6 +458,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         bonusAttack = nbt.getFloat("bonus");
         this.Owner = new ClientIdentification(nbt.getString("ownername"), nbt.getUuid("owner"));
         this.Maxed = nbt.getBoolean("maxed");
+
+        this.StackID = nbt.getInt("stackid");
+        this.rand = new Random(StackID);
+
+        enchantmentData = Util.getSpecialThrownEnchantment(itemToRender);
     }
 
     @Override
@@ -423,23 +491,20 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 	}
 
     public void SpawnTrailingParticles(){
+        if (enchantmentData == null){return;}
+
         if (PTypeToUse == null){
             return;
         }
-        int p_amount = 5;
-        float step = 0.25f;
-        Vec3d direction = getRotationVector();
-        /**
-         * either keep using getRotationVector, or find a direction vector using the quaternion and a forward vector
-         */
-        for (int i = 0; i < p_amount; i++){
-            Vec3d spot = direction.multiply(i*step);
-            spot = spot.add(getPos());
+   
+        Vec3f dir = customRotationVec();
+        Vec3d direction = new Vec3d(dir.getX(), dir.getY(), dir.getZ());
 
-            world.addParticle(PTypeToUse,
-            spot.getX(), spot.getY(), spot.getZ(),
-                          0, 0, 0);
-        }
+        IWorldBehvaior behavior = (IWorldBehvaior)enchantmentData.enchantment;
+
+        behavior.SpawnTrailingParticles(world, getPos(), direction, enchantmentData.level, Maxed);
+
+        
     }
    
     protected Item getDefaultItem() {
@@ -450,6 +515,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public void setItem(ItemStack s){
         itemToRender = s;
 
+        enchantmentData = Util.getSpecialThrownEnchantment(itemToRender);
+
         if (EnchantmentHelper.getLevel(BNSCore.FrostTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.FrostWeapon, itemToRender) > 0){
             PTypeToUse = ParticleRegistery.FROST_PARTICLE;
         }
@@ -457,6 +524,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
         }
     }
+
+    
 
     public void setQuat(Quaternion q){
         originalRot = q;

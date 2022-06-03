@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.block.AirBlock;
@@ -208,29 +209,36 @@ public class ThrownState extends GenericThrownItemEntityState{
        * Look into creating custom behavior in the Enchantment classes's themselves and just call it here!
        */
         
-       EnchantmentData enchantmentData = Util.getSpecialThrownEnchantment(Master.itemToRender);
+       
 
-       if (enchantmentData != null){
-           IWorldBehvaior worldBehvaior = (IWorldBehvaior)(enchantmentData.enchantment);
-           worldBehvaior.OnBlockThrownHit(Master.world, hitpos, enchantmentData.level);
+       if (Master.enchantmentData != null){
+           IWorldBehvaior worldBehvaior = (IWorldBehvaior)(Master.enchantmentData.enchantment);
+           worldBehvaior.OnBlockThrownHit(Master.world, hitpos, Master.enchantmentData.level, Master.Maxed);
+    
+           
+            Vec3d partpos = Vec3d.of(hitpos);
+            partpos = partpos.add(new Vec3d(0.5,0.5,0.5));
+            worldBehvaior.SpawnBlockContactParticles(Master.world, partpos, Master.enchantmentData.level, Master.Maxed);
+        
        }
         
+
         
         if (!Master.world.isClient){
-        Quaternion q = blockHitResult.getSide().getRotationQuaternion();
+            Quaternion q = blockHitResult.getSide().getRotationQuaternion();
 
-        q.hamiltonProduct(Master.originalRot);
-        
+            q.hamiltonProduct(Master.originalRot);
+            
 
-        
+            
 
-        Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+            Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
-        
+            
             GenericItemBlockEntity be = (GenericItemBlockEntity)Master.world.getBlockEntity(hitpos);
-            
-            
-            
+                
+                
+                
             /**
              * yet another bug : Master.world is universal to both nether and overworld (with bias to overworld?)
              * meaning : no matter whether the player is in the nether or overworld, the entity is registered as if in both, 
@@ -240,7 +248,7 @@ public class ThrownState extends GenericThrownItemEntityState{
              * solution? find a way to get the player's (thrower's) world and register the stack stuff there.
              */
 
-           
+        
 
             BNSCore.removeEntityFromStack((ServerWorld) Master.world, Master.Owner.name, Master.StackID);
 
@@ -259,55 +267,20 @@ public class ThrownState extends GenericThrownItemEntityState{
     public void onEntityHit(EntityHitResult entityHitResult) {
         // TODO Auto-generated method stub
         Master.SuperOnEntityHit(entityHitResult);
-
-            if(Master.Maxed && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, Master.itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, Master.itemToRender) > 0)){
                 //Pin the entity.
                 /**
                  * if the entity is a mob, set persistence!
                  *  ((MobEntity)entity).setPersistent();
                  */
                 
-                try{
-                    LivingEntity e = (LivingEntity) entityHitResult.getEntity();
-                    
-                    ISavedItem eSaved = (ISavedItem) e;
-
-                    if (eSaved.getSavedItem().getItem() != Items.AIR){
-                        Master.Attack(entityHitResult);
-                        return;
-                    }
-
-                    if (!Master.world.isClient){
-                        
-                        eSaved.setSavedItem(Master.itemToRender);
-                        eSaved.setSavedItemOwner(Master.Owner.name);
-
-                        // cant be sure if this will be an issue if done only on server
-                       
-
-				        int id = BNSCore.pushEntityOntoStack((ServerWorld)Master.world, Master.Owner.name, e.getUuid());
-                        eSaved.setIndexIntoStack(id);
-
-                        BNSCore.removeEntityFromStack((ServerWorld)Master.world, Master.Owner.name, Master.StackID);
-                    }
-                    
-                    if (e instanceof MobEntity){
-                        ((MobEntity) e).setPersistent();
-                    }
-
-
-
-                    Master.kill();
-                }
-                catch(Exception e){
-
-                }
-            }
 
             try{
                 if (!Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
 
                     Master.Attack(entityHitResult);
+                }
+                else{
+                    Master.Deflect(0.3f);
                 }
             }
             catch(Exception e){
@@ -315,18 +288,6 @@ public class ThrownState extends GenericThrownItemEntityState{
             }
         
         
-            /*
-            if (Util.randgen.nextFloat() > 0.8){
-                StuckState s = (StuckState) Master.States[1];
-                s.setStuckEntity(entityHitResult.getEntity());
-                Master.ChangeState(1);
-           }
-           else{
-               
-              
-               //Master.ChangeState(2);
-           }
-           */
         
 
         

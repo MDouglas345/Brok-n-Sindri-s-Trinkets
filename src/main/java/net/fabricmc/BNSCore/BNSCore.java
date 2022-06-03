@@ -67,6 +67,8 @@
  * 
  * work around : when a player dies, brute force creating these BE all around instead of creating thrown entities.
  * Cons : Jarring AF and unsatisfactory.
+ * 
+ * Look into creating a mixin to determin whether a chunk is loaded or not. Could be useful for making things smoother
  */
 
 

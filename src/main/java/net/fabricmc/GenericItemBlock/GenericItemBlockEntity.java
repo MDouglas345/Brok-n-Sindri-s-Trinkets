@@ -3,7 +3,9 @@ package net.fabricmc.GenericItemBlock;
 import javax.annotation.Nullable;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Util.EnchantmentData;
 import net.fabricmc.Util.Util;
 import net.fabricmc.Util.ClientIdentification.ClientIdentification;
 import net.minecraft.block.BlockState;
@@ -29,6 +31,7 @@ public class GenericItemBlockEntity extends BlockEntity{
     public  float                           Offset;
     public  int                             IndexIntoStack;
     public  ClientIdentification            Owner; // replace with client identification
+    public EnchantmentData                  enchantmentData;
 
     DefaultParticleType             PTypeToUse = null;
 
@@ -45,6 +48,10 @@ public class GenericItemBlockEntity extends BlockEntity{
         Owner = owner;
         BNSCore.LOGGER.info("We have done something good " + SavedItem.toString());
         this.markDirty();
+
+        enchantmentData = Util.getSpecialThrownEnchantment(SavedItem);
+
+
 
        
     }
@@ -90,10 +97,8 @@ public class GenericItemBlockEntity extends BlockEntity{
         this.IndexIntoStack = tag.getInt("index");
         this.Owner = ClientIdentification.fromNBT(tag);
         
-        if ((EnchantmentHelper.getLevel(BNSCore.FrostTool, SavedItem) > 0) || (EnchantmentHelper.getLevel(BNSCore.FrostWeapon, SavedItem) > 0)){
-            //if item has Frost, spawn frost particles
-            PTypeToUse = ParticleRegistery.FROST_PARTICLE;
-        }
+
+        enchantmentData = Util.getSpecialThrownEnchantment(SavedItem);
     }
 
     
@@ -120,20 +125,12 @@ public class GenericItemBlockEntity extends BlockEntity{
         //potentily needs to transalte the origin point to the center
 
         // also needs a velocity vector that points randomly outwards from the position;
-        if (PTypeToUse == null){return;}
+        if (enchantmentData == null){return;}
 
-        Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
+        IWorldBehvaior behavior = (IWorldBehvaior)enchantmentData.enchantment;
+        behavior.SpawnPulsingParticles(pos, world);
+
         
-        int p_amount = 5;
-        for (int i = 0; i < p_amount; i++){
-            Vec3d dir = Util.getRandomDirectionUnitSphere(0, 2 * MathHelper.PI, 0, MathHelper.PI / 2);
-            dir.normalize();
-            dir = dir.multiply(Util.getRandomDouble(0.01, 0.05));
-            
-            world.addParticle(PTypeToUse,
-            spot.getX(), spot.getY(), spot.getZ(),
-                          dir.x, dir.y, dir.z);
-        }
     }
     
 }

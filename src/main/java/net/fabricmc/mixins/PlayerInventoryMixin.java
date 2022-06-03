@@ -119,7 +119,7 @@ public class PlayerInventoryMixin {
                         //SavedItems.add(stack.copy());
                         pi.player.world.spawnEntity(GenericThrownItemEntity.CreateNew((ServerWorld) pi.player.world, pi.player, stack, 1, true));
                         BNSCore.LOGGER.info(stack.toString());
-                        
+                        list.set(i, ItemStack.EMPTY);
                     }
                 }
 
