@@ -1,4 +1,4 @@
-package net.fabricmc.Enchantments.FrostEnchantment;
+package net.fabricmc.Enchantments.FlameEnchantment;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Enchantments.IWorldBehvaior;
@@ -6,31 +6,28 @@ import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.Util;
+import net.minecraft.block.AbstractFireBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentTarget;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
+public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
 
-    /**
-     * Need to find out how to make one enchantment require another0
-     */
-    
-    public FrostEnchantment(EnchantmentTarget t) {
-     
-            super(Enchantment.Rarity.COMMON, t , new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+    protected FlameEnchantment(EnchantmentTarget type) {
+        super(Rarity.COMMON, type, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+        //TODO Auto-generated constructor stub
     }
 
     @Override
@@ -44,22 +41,10 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
         return 1;
     }
 
-    @Override
-    protected boolean canAccept(Enchantment other) {
-        return !(other instanceof IWorldBehvaior);
-    }
-
-    
-    @Override
-    public void onTargetDamaged(LivingEntity user, Entity target, int level) {
-        if (target instanceof LivingEntity){
-            ((LivingEntity)target).addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 5 * level));
-        }
-    }
+   
 
     @Override
     public void OnBlockThrownHit(World world, Entity source, BlockPos pos, int level, boolean max) {
-        
         /**
          * Based on enchantment level, create a boxed area around the position, and for every block in that area
          * check the distance to the origin, and based of that and some % chance, turn the block into a snow block
@@ -104,36 +89,47 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
                         BlockState blockstate = world.getBlockState(current);
 
                         //determine whether the block is valid for replacement!
-                        if (!blockstate.getMaterial().isSolid() && !blockstate.getMaterial().isLiquid()){continue;}
+                        //if (!blockstate.getMaterial().isSolid() && !blockstate.getMaterial().isLiquid()){continue;}
 
                         if (blockstate.getBlock() instanceof GenericItemBlock){continue;}
 
                         float currentDistToOrig = current.getManhattanDistance(pos);
 
-                        float chanceToTurn =  (currentDistToOrig/RelativeDistance)- Util.getRandomFloat(0, 0.2f);
+                        float chanceToTurn =  (1 - (currentDistToOrig/RelativeDistance)) + Util.getRandomFloat(0, 0.2f);
 
-                        if (chanceToTurn < 0.4){
-                            world.setBlockState(current, Blocks.PACKED_ICE.getDefaultState());
+                        if (chanceToTurn > 0.8 && AbstractFireBlock.canPlaceAt(world, current, Direction.UP)){
+                            BlockState blockState2 = AbstractFireBlock.getState(world, current);
+                        
+                            ((ServerWorld)world).setBlockState(current, blockState2, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
                         }
 
                        
                   }
               }
           }
-
         
     }
 
     @Override
     public void OnEntityThrownHit(World world, Entity source, EntityHitResult result, int level, boolean max) {
         // TODO Auto-generated method stub
+        if (world.isClient){return;}
+        Entity e = result.getEntity();
+
+        if (e instanceof LivingEntity){
+            ((LivingEntity)e).setOnFireFor(2*level);
+        }
         
     }
 
     @Override
+    protected boolean canAccept(Enchantment other) {
+        return !(other instanceof IWorldBehvaior);
+    }
+
+    @Override
     public void SpawnTrailingParticles(World world, Vec3d pos, Vec3d dir, int level, boolean max) {
-       
-        int p_amount = 5;
+        int p_amount = 3;
         float step = 0.25f;
         Vec3d direction = new Vec3d(dir.getX(), dir.getY(), dir.getZ());
         /**
@@ -143,7 +139,7 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
             Vec3d spot = direction.multiply(i*step);
             spot = spot.add(pos);
 
-            world.addParticle(ParticleRegistery.TRAILING_FROST_PARTICLE,
+            world.addParticle(ParticleRegistery.TRAILING_FLAME_PARTICLE,
             spot.getX(), spot.getY(), spot.getZ(),
                           0, 0, 0);
         }
@@ -152,24 +148,26 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
 
     @Override
     public void SpawnBlockContactParticles(World world, Vec3d pos, int level, boolean max) {
-       if (world.isClient){
-           return;
-       }
-       if (Util.randgen.nextFloat() > 0.2f){
-             return;
-       }
-        for (int i = 0; i < 10; i++){
-            Vec3d dir = Util.getRandomDirectionUnitSphere();
+        if (world.isClient){
+            return;
+        }
+         for (int i = 0; i < 15; i++){
+             Vec3d dir = Util.getRandomDirectionUnitSphere().multiply(5);
+            
+             Vec3d newpos = pos.add(dir);
+             dir = dir.normalize();
+             dir = dir.multiply(1.8f);
 
-            dir = dir.multiply(1.1);
-            /**
-             * ajust speed here?
-             */
 
-             ((ServerWorld)world).spawnParticles(ParticleRegistery.CONTACT_FROST_PARTICLE, 
-                                                     pos.x, pos.y, pos.z, 2,
-                                                            dir.x, dir.y, dir.z, 1.2);
-       }
+             /**
+              * ajust speed here?
+              */
+            
+              ((ServerWorld)world).spawnParticles(ParticleRegistery.CONTACT_FLAME_PARTICLE, 
+                                                      pos.x, pos.y, pos.z, 4,
+                                                             0, 0, 0, 3f);
+        }
+
         
     }
 
@@ -178,25 +176,29 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
         // TODO Auto-generated method stub
         if (Util.randgen.nextFloat() > 0.2f){
             return;
-      }
-        Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
-        
-        int p_amount = 1;
-        for (int i = 0; i < p_amount; i++){
-            Vec3d dir = Util.getRandomDirectionUnitSphere();
-            dir.normalize();
-            dir = dir.multiply(Util.getRandomDouble(0.01, 0.05));
-            
-            world.addParticle(ParticleRegistery.FROST_PARTICLE,
-            spot.getX(), spot.getY(), spot.getZ(),
-                          dir.x, dir.y, dir.z);
         }
+
+         // TODO Auto-generated method stub
+         Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
+        
+         int p_amount = 3;
+         for (int i = 0; i < p_amount; i++){
+            Vec3d dir = Util.getRandomDirectionUnitSphere();
+            dir = dir.normalize();
+            dir = dir.multiply(Util.randgen.nextFloat() * 0.5);
+            dir = spot.add(dir);
+             
+             world.addParticle(ParticleRegistery.FLAME_PARTICLE,
+             dir.getX(), dir.getY(), dir.getZ(),
+                           0, 0, 0);
+         }
+        
     }
 
     @Override
     public void OnTick(GenericThrownItemEntity ntity, World world) {
-       
+        // TODO Auto-generated method stub
+        
     }
+    
 }
-
-

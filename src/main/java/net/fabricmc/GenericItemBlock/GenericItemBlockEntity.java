@@ -128,7 +128,7 @@ public class GenericItemBlockEntity extends BlockEntity{
         if (enchantmentData == null){return;}
 
         IWorldBehvaior behavior = (IWorldBehvaior)enchantmentData.enchantment;
-        behavior.SpawnPulsingParticles(pos, world);
+        behavior.SpawnPulsingParticles(pos, world, enchantmentData.level);
 
         
     }

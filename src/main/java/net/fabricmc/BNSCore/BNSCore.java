@@ -81,8 +81,12 @@ import net.fabricmc.CardinalComponents.PlayerBlockComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
 import net.fabricmc.Effects.ParalysisEffect;
+import net.fabricmc.Enchantments.FlameEnchantment.FlameToolEnchantment;
+import net.fabricmc.Enchantments.FlameEnchantment.FlameWeaponEnchantment;
 import net.fabricmc.Enchantments.FrostEnchantment.FrostToolEnchantment;
 import net.fabricmc.Enchantments.FrostEnchantment.FrostWeaponEnchantment;
+import net.fabricmc.Enchantments.LightningEnchantment.LightningToolEnchantment;
+import net.fabricmc.Enchantments.LightningEnchantment.LightningWeaponEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedToolEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
@@ -174,6 +178,14 @@ public class BNSCore implements ModInitializer {
 												new Identifier(BNSCore.ModID, "pinnedtool"),
 												new PinnedToolEnchantment());
 	
+	public static Enchantment FlameWeapon = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "flameweapon"),
+												new FlameWeaponEnchantment());
+
+	public static Enchantment FlameTool = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "flametool"),
+												new FlameToolEnchantment());
+	
 	public static Enchantment FrostWeapon = Registry.register(Registry.ENCHANTMENT,
 												new Identifier(BNSCore.ModID, "frostweapon"),
 												new FrostWeaponEnchantment());
@@ -181,6 +193,14 @@ public class BNSCore implements ModInitializer {
 	public static Enchantment FrostTool = Registry.register(Registry.ENCHANTMENT,
 												new Identifier(BNSCore.ModID, "frosttool"),
 												new FrostToolEnchantment());
+									
+	public static Enchantment LightningWeapon = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "lightningweapon"),
+												new LightningWeaponEnchantment());
+
+	public static Enchantment LightningTool = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "lightningtool"),
+												new LightningToolEnchantment());
 	
 
 
@@ -413,10 +433,15 @@ public class BNSCore implements ModInitializer {
 						}
 
 						ISavedItem inter = (ISavedItem)e;
-						GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, client, e.getPos(), inter.getSavedItem());
+						Vec3d Direction = client.getPos().subtract(e.getPos());
+						Direction = Direction.normalize();
+						int dist = (server.getPlayerManager().getViewDistance()) * 8;
+						Direction = Direction.multiply(dist-6);
+						Vec3d position = Vec3d.of(Destination).subtract(Direction);
+						GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, client,position, inter.getSavedItem());
 						world.spawnEntity(thrown);
 						thrown.ChangeState(4);
-						thrown.throwRandomly();
+						
 
 						// remove the paralysis effect from e
 						// remove stuck item details from e

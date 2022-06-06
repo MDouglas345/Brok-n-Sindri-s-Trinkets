@@ -1,4 +1,4 @@
-package net.fabricmc.Particles.ContactFrostParticle;
+package net.fabricmc.Particles.ContactFlameParticle;
 
 import net.fabricmc.Particles.FrostParticle.FrostParticle;
 import net.fabricmc.api.EnvType;
@@ -10,29 +10,29 @@ import net.minecraft.client.particle.SpriteBillboardParticle;
 import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class ContactFrostParticle extends SpriteBillboardParticle {
+public class ContactFlameParticle extends SpriteBillboardParticle {
 
     float maxSize = 0.1f;
     float minSize = 0.2f;
 
 
-    protected ContactFrostParticle(ClientWorld level, double xCoord, double yCoord, double zCoord,
+    protected ContactFlameParticle(ClientWorld level, double xCoord, double yCoord, double zCoord,
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
 
-        this.velocityMultiplier = 0.7F;
+        this.velocityMultiplier = 0.9F;
        
-        this.scale = 0.f;
-        this.maxAge = 40;
+        this.scale = 1f;
+        this.maxAge = 25;
         this.setSpriteForAge(spriteSet);
 
         this.gravityStrength = 0.01f;
         
         this.angle = 0;
-        
 
        
         this.alpha = 0.8f;
@@ -42,17 +42,7 @@ public class ContactFrostParticle extends SpriteBillboardParticle {
 
         
 
-        /**
-         * A fancy way of getting particles to move faster if they are goin horizontally than vertically.
-         */
-        Vec3d vel = new Vec3d(xd, yd, zd);
-        float dot = (float)vel.dotProduct(new Vec3d(0,1,0)); // if able to get normal of a contact, use that instead.
-        dot = MathHelper.abs(dot);
-
-        if (dot < 0.2){
-            this.velocityMultiplier = 0.9f;
-            this.maxAge += 10;
-        }
+       
     }
 
 
@@ -62,11 +52,14 @@ public class ContactFrostParticle extends SpriteBillboardParticle {
         fadeOut();
         //sizeUpOverTime();
         
-
+        this.velocityY += 0.02;
         this.angle += 0.0005f;
 
+        if (this.age > 22){
+            this.world.addParticle(ParticleTypes.SMOKE, x, y, z, velocityX, velocityY, velocityZ);
+        }
         
-        
+        //whiteOutOverTime();
         //this.velocityY -= 0.01;
         
     }
@@ -75,6 +68,28 @@ public class ContactFrostParticle extends SpriteBillboardParticle {
     public float getSize(float delta){
         return MathHelper.lerp((age/maxAge) * 3f + 0.2f, 0.2f, 1.1f);
         
+    }
+
+    public void whiteOutOverTime(){
+        float amount = 0.02f;
+
+        this.blue += amount;
+        this.green += amount;
+        this.red += amount;
+    }
+
+    @Override
+    public int getBrightness(float tint) {
+        // might be able to do some fun stuff here
+        float f = -((float)this.age + tint) / (float)this.maxAge + 1f;
+        f = MathHelper.clamp(f, 0.0f, 1.0f);
+        int i = super.getBrightness(tint);
+        int j = i & 0xFF;
+        int k = i >> 16 & 0xFF;
+        if ((j += (int)(f * 15.0f * 16.0f)) > 240) {
+            j = 240;
+        }
+        return j | k << 16;
     }
 
     @Override
@@ -105,7 +120,7 @@ public class ContactFrostParticle extends SpriteBillboardParticle {
 
         public Particle createParticle(DefaultParticleType particleType, ClientWorld level, double x, double y, double z,
                                        double dx, double dy, double dz) {
-            return new ContactFrostParticle(level, x, y, z, this.sprites, dx, dy, dz);
+            return new ContactFlameParticle(level, x, y, z, this.sprites, dx, dy, dz);
         }
     }
     

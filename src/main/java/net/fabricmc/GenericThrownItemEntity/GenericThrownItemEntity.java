@@ -68,6 +68,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -198,6 +200,12 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         Vec3d dir = getVelocity().multiply(-1).add(new Vec3d(0,4,0)).normalize();
         dir = dir.multiply(getVelocity().length() * power);
         setVelocity(dir);
+
+        if (Maxed){Maxed = false;}
+        
+        if (!world.isClient){
+            world.playSound(null, getBlockPos(), SoundEvents.BLOCK_METAL_HIT, SoundCategory.HOSTILE, 1.0f, 1.0f);
+        }
     }
 
     public void Attack(EntityHitResult entityHitResult){
@@ -212,6 +220,9 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
             if ((entity instanceof LivingEntity) && (((LivingEntity)entity).isBlocking())){
                 Deflect(0.3f);
+                if (!entity.world.isClient){
+                    entity.world.playSound(null, entity.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.HOSTILE, 1.0f, 1.0f);
+                }
                 return;
             }
 
@@ -240,7 +251,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
             if (enchantmentData != null){
                 IWorldBehvaior behavior = (IWorldBehvaior)enchantmentData.enchantment;
-                behavior.OnEntityThrownHit(world, entityHitResult, enchantmentData.level, Maxed);
+
+               
+               
+                behavior.OnEntityThrownHit(world, source, entityHitResult, enchantmentData.level, Maxed);
             }
 
          
@@ -258,10 +272,12 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             
             ISavedItem eSaved = (ISavedItem) e;
 
-            e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this);
+           
 
-
+           
             if (!world.isClient){
+
+                e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this);
                 
                 eSaved.setSavedItem(itemToRender);
                 eSaved.setSavedItemOwner(Owner.name);
@@ -366,6 +382,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
        
         //BNSCore.LOGGER.info(this.getRotationVector().toString());
         ActiveState.Tick();
+
+        if (enchantmentData != null){
+            IWorldBehvaior behvaior = (IWorldBehvaior)enchantmentData.enchantment;
+            behvaior.OnTick(this, world);
+        }
         
     }
 
@@ -493,10 +514,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public void SpawnTrailingParticles(){
         if (enchantmentData == null){return;}
 
-        if (PTypeToUse == null){
-            return;
-        }
-   
+       
         Vec3f dir = customRotationVec();
         Vec3d direction = new Vec3d(dir.getX(), dir.getY(), dir.getZ());
 

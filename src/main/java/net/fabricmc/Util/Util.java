@@ -7,10 +7,13 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentHelper.*;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -102,8 +105,8 @@ public class Util {
 
     public static Vec3d getRandomDirectionUnitSphere(){
         
-        double yaw = Util.getRandomDouble(0, 2 * MathHelper.PI);
-        double pitch = Util.getRandomDouble(0, 2 * MathHelper.PI);
+        double yaw = Util.getRandomDouble(0, 360);
+        double pitch = Util.getRandomDouble(0, 360);
 
         return Vec3d.fromPolar((float)pitch, (float)yaw);
 
@@ -168,6 +171,27 @@ public class Util {
             return new EnchantmentData(BNSCore.FrostTool, level);
         }
 
+
+        level = EnchantmentHelper.getLevel(BNSCore.FlameWeapon, stack);
+        if ( level > 0){
+            return new EnchantmentData(BNSCore.FlameWeapon, level);
+        }
+        
+        level = EnchantmentHelper.getLevel(BNSCore.FlameTool, stack);
+        if ( level > 0){
+            return new EnchantmentData(BNSCore.FlameTool, level);
+        }
+
+        level = EnchantmentHelper.getLevel(BNSCore.LightningWeapon, stack);
+        if ( level > 0){
+            return new EnchantmentData(BNSCore.LightningWeapon, level);
+        }
+        
+        level = EnchantmentHelper.getLevel(BNSCore.LightningTool, stack);
+        if ( level > 0){
+            return new EnchantmentData(BNSCore.LightningTool, level);
+        }
+
         return null;
     }
 
@@ -183,7 +207,41 @@ public class Util {
         return res;
     } 
 
-    
+    public static void createVisualLightningStrike(BlockPos target, ServerWorld world){
+        LightningEntity lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
+
+        if (lightningEntity != null) {
+            lightningEntity.refreshPositionAfterTeleport(target.getX(), target.getY(), target.getZ());
+            lightningEntity.setCosmetic(true);
+            world.spawnEntity(lightningEntity);
+        }
+    }
+
+    public static void createLightningStrike(BlockPos target, ServerWorld world, Entity source, int radius){
+            LightningEntity lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
+
+            createVisualLightningStrike(target, world);
+
+            List<Entity> list = world.getOtherEntities(null, new Box(target.getX() - radius, target.getY() - radius, target.getZ() - radius, target.getX() + radius, target.getY() + radius, target.getZ() + radius), Entity::isAlive);
+            for (Entity entity2 : list) {
+                if (source != null && source.equals(entity2)){
+                    continue;
+                }
+                createVisualLightningStrike(entity2.getBlockPos(), world);
+                entity2.onStruckByLightning((ServerWorld)world, lightningEntity);
+            }
+
+           
+        
+    }
+
+    public static double angleBetween(Vec3d A, Vec3d B){
+        Vec3d cross = A.crossProduct(B);
+        double mag = cross.length();
+        double dot = A.dotProduct(B);
+
+        return MathHelper.atan2(mag, dot);
+    }
 
 
     @FunctionalInterface

@@ -16,6 +16,7 @@ import net.fabricmc.Renderers.StuckItemsPlayerFeatureRenderer;
 import net.fabricmc.Renderers.StuckItemsQuadrupedFeatureRenderer;
 import net.fabricmc.Renderers.StuckItemsSinglePartFeatureRenderer;
 import net.fabricmc.Util.NetworkConstants;
+import net.fabricmc.Util.NetworkHandler;
 import net.fabricmc.Util.PacketUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -134,6 +135,8 @@ public class BNSClient implements ClientModInitializer {
                 client.world.addEntity(ID, e);
             });
         });
+
+        NetworkHandler.registerClientResponses();
 
         BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.GENERIC_ITEM_BLOCK, RenderLayer.getCutout());
 

@@ -213,7 +213,7 @@ public class ThrownState extends GenericThrownItemEntityState{
 
        if (Master.enchantmentData != null){
            IWorldBehvaior worldBehvaior = (IWorldBehvaior)(Master.enchantmentData.enchantment);
-           worldBehvaior.OnBlockThrownHit(Master.world, hitpos, Master.enchantmentData.level, Master.Maxed);
+           worldBehvaior.OnBlockThrownHit(Master.world, Master.getOwner(), hitpos, Master.enchantmentData.level, Master.Maxed);
     
            
             Vec3d partpos = Vec3d.of(hitpos);
