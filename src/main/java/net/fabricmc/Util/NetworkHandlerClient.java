@@ -17,29 +17,17 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
-public class NetworkHandler {
+public class NetworkHandlerClient {
 
     public static void registerClientResponses(){
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.SpawnBranchLightning, new handleSpawnedBranchLightning());
     }
 
-    public static void spawnBranchLightning(ServerWorld world, Vec3d pos, Vec3d Target){
-        PacketByteBuf createPacket = PacketByteBufs.create();
+   
 
-        createPacket.writeDouble(pos.x);
-        createPacket.writeDouble(pos.y);
-        createPacket.writeDouble(pos.z);
+    
 
-        createPacket.writeDouble(Target.x);
-        createPacket.writeDouble(Target.y);
-        createPacket.writeDouble(Target.z);
-
-        List<ServerPlayerEntity> players = world.getPlayers(player -> (player.getPos().distanceTo(pos) <= 50));
-
-        for (ServerPlayerEntity player : players){
-            ServerPlayNetworking.send(player, NetworkConstants.SpawnBranchLightning, createPacket);
-        }
-    }
+    
 
 
     private static class handleSpawnedBranchLightning implements PlayChannelHandler{

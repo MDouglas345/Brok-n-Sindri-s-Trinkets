@@ -5,7 +5,7 @@ import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
-import net.fabricmc.Util.NetworkHandler;
+import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.Util.Util;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -154,7 +154,7 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
             currentblock = currentblock.add(entity.getBlockPos());
 
             if (!world.getBlockState(currentblock).isAir()){
-                NetworkHandler.spawnBranchLightning((ServerWorld) world, pos, new Vec3d(currentblock.getX(), currentblock.getY(), currentblock.getZ()));
+                NetworkHandlerServer.spawnBranchLightning((ServerWorld) world, pos, new Vec3d(currentblock.getX(), currentblock.getY(), currentblock.getZ()));
             }
 
             /* 

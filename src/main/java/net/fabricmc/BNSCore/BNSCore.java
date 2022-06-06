@@ -93,12 +93,11 @@ import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
 import net.fabricmc.GenericItemBlock.*;
 
-import net.fabricmc.Util.IPlayerEntityItems;
-import net.fabricmc.Util.ISavedItem;
-import net.fabricmc.Util.NetworkConstants;
+
+import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -106,38 +105,26 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
+
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.MiningToolItem;
-import net.minecraft.item.SwordItem;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
+
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vec3i;
+
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.UUID;
 
-import javax.print.attribute.standard.Destination;
 
-import org.apache.logging.log4j.core.pattern.ThreadIdPatternConverter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,265 +224,8 @@ public class BNSCore implements ModInitializer {
 				})));
         });
 
-		ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.EstablishThrownItem, (server, client, handler, buf, responseSender) -> {
-
-			float timeHeld = (float)buf.readByte();
-
-
-			
-			server.submit(() ->{
-				ServerWorld world = server.getWorld(client.world.getRegistryKey());
-
-				//IClientPlayerEntity player = (IClientPlayerEntity) client;
-                //player.toggleShouldMove();
-			
-				if (timeHeld < 5){
-					// recall the last throw / landed item in stack!
-					//otherwise throw whatever is in the players hand
-					//UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
-					//BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
-
-					UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world);
-					BlockPosStackComponent bpstack = mycomponents.BlockEntityPositions.get(world);
-
-					UUID entityuuid = uuidstack.Peek(client.getEntityName());
-
-					if (entityuuid == null){
-						BlockPos BEPosition = bpstack.Peek(client.getEntityName());
-
-						if (BEPosition == null){
-							return;
-						}
-						
-						GenericItemBlockEntity restingEntity = (GenericItemBlockEntity) world.getBlockEntity(BEPosition);
-
-						if (restingEntity == null){
-							return;
-						}
-
-						if (!restingEntity.getWorld().getRegistryKey().toString().equals(client.world.getRegistryKey().toString())){
-							//potential solution : spawn the entity in the same world as the client  and have it fly to the player.
-							return;	
-						}
-
-						if (EnchantmentHelper.getLevel(WorthyTool, restingEntity.SavedItem) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, restingEntity.SavedItem) == 0 ){
-							bpstack.Pop(client.getEntityName());
-							return;
-						}
-
-
-						/**
-						 * How do you check if the entity is too far from the player? what is the radius of a loaded chunk?
-						 */
-
-						int dist = (server.getPlayerManager().getViewDistance()) * 8; //modify this to fix bug where item is close but acts like its far
-						BlockPos Destination = client.getBlockPos();
-
-						if (BEPosition.isWithinDistance(Destination, 4)){
-							/**
-							 * if block is within 2 block lengths of the player, just chuck the item into the player inventory
-							 */
-							if (!client.getInventory().insertStack(restingEntity.SavedItem)){
-								return;
-							}
-
-							bpstack.Pop(client.getEntityName());
-							
-							world.removeBlock(BEPosition, false);
-							return;
-						}
-
-						bpstack.Pop(client.getEntityName());
-
-						if (!BEPosition.isWithinDistance(Destination, dist -4)){
-							// if the BE is too far!
-							Vec3d Direction = Vec3d.of(Destination.subtract(BEPosition));
-							Direction = Direction.normalize();
-							Direction = Direction.multiply(dist-6);
-							Vec3d position = Vec3d.of(Destination).subtract(Direction);
-
-							GenericThrownItemEntity e = GenericThrownItemEntity.CreateNew(world, (PlayerEntity) world.getEntity(restingEntity.Owner.ID), position, restingEntity.SavedItem);
-
-							world.spawnEntity(e);
-
-							e.ChangeState(4);
-
-						}else{
-							// if the BE is within range!
-							
-						
-							Vec3d position = Vec3d.of(BEPosition);
-						
-							GenericThrownItemEntity e = GenericThrownItemEntity.CreateNew(world, (PlayerEntity) world.getEntity(restingEntity.Owner.ID), position, restingEntity.SavedItem);
-
-							world.spawnEntity(e);
-
-							e.ChangeState(4);
-
-						}
-
-						world.removeBlock(BEPosition, false);
-						return;
-					}
-					/** 
-					 * refactor returning item to accomodate for the fact that any entity can have 
-					 * an item lodged in it, and the player should still be able tor recall it.
-					 * 
-					 * also, make so that only a "maxed" thrown item lodge into entities if they have Pinned enchantment!
-					 */
-
-					/*
-					 GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity) world.getEntity(entityuuid);
-
-					if (EnchantmentHelper.getLevel(WorthyTool, thrownEntity.itemToRender) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, thrownEntity.itemToRender) == 0 ){
-						return;
-					}
-					
-					if (thrownEntity == null){
-						return;
-					}
-
-					thrownEntity.ChangeState(4);
-					return;
-					*/
-					Entity e = world.getEntity(entityuuid);
-
-					if (e == null){
-						uuidstack.Pop(client.getEntityName());
-						return;
-					}
-
-					if (!e.world.getRegistryKey().toString().equals(client.world.getRegistryKey().toString())){
-						return;	
-					}
-					uuidstack.Pop(client.getEntityName());
-
-					ISavedItem itemEnt = (ISavedItem)e;
-					ItemStack savedItem = itemEnt.getSavedItem();
-
-					if (EnchantmentHelper.getLevel(WorthyTool,savedItem) == 0 && EnchantmentHelper.getLevel(WorthyWeapon, savedItem) == 0 ){
-						return;
-					}
-
-
-
-					if (e instanceof GenericThrownItemEntity){
-						GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity) e;
-
-						
-						if (thrownEntity == null){
-							return;
-						}
-
-						BlockPos Destination = client.getBlockPos();
-						if (thrownEntity.getBlockPos().isWithinDistance(Destination, 4)){
-							/**
-							 * if block is within 2 block lengths of the player, just chuck the item into the player inventory
-							 */
-							if (!client.getInventory().insertStack(savedItem)){
-								return;
-							}
-							
-							
-							thrownEntity.kill();
-							
-						}
+		NetworkHandlerServer.registerServerResponses();
 	
-						thrownEntity.ChangeState(4);
-						
-					}
-					else{
-
-						BlockPos Destination = client.getBlockPos();
-						if (e.getBlockPos().isWithinDistance(Destination, 4)){
-							/**
-							 * if block is within 2 block lengths of the player, just chuck the item into the player inventory
-							 */
-							if (!client.getInventory().insertStack(savedItem)){
-								return;
-							}
-							
-							ISavedItem inter = (ISavedItem)e;
-						
-
-							// remove the paralysis effect from e
-							// remove stuck item details from e
-							LivingEntity living = (LivingEntity)e;
-							
-							living.removeStatusEffect(BNSCore.Paralysis);
-							inter.setSavedItem(new ItemStack(Items.AIR,1));
-							inter.setSavedItemOwner("");
-							
-							
-							return;
-							
-							
-						}
-
-						ISavedItem inter = (ISavedItem)e;
-						Vec3d Direction = client.getPos().subtract(e.getPos());
-						Direction = Direction.normalize();
-						int dist = (server.getPlayerManager().getViewDistance()) * 8;
-						Direction = Direction.multiply(dist-6);
-						Vec3d position = Vec3d.of(Destination).subtract(Direction);
-						GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, client,position, inter.getSavedItem());
-						world.spawnEntity(thrown);
-						thrown.ChangeState(4);
-						
-
-						// remove the paralysis effect from e
-						// remove stuck item details from e
-						LivingEntity living = (LivingEntity)e;
-						living.removeStatusEffect(BNSCore.Paralysis);
-						inter.setSavedItem(new ItemStack(Items.AIR,1));
-						inter.setSavedItemOwner("");
-						//e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), this.Master);
-
-					}
-
-
-
-					return;
-				}
-				
-				
-				
-				ItemStack itemstackOrig = client.getMainHandStack();
-
-				if (!(itemstackOrig.getItem() instanceof SwordItem) && !(itemstackOrig.getItem() instanceof MiningToolItem)){
-					return;
-				}
-				
-				/**
-				 * Remove the idea of a "held time" and instead if the held time is over 15, the item is now torqued for
-				 * a max throw! Creates two finite states for a thrown item, normal throw and max throw. Also means that
-				 * thrown items. depending on stae, will have a fixed speed. This improves consistency.
-				 * 
-				 * normal throw - items will deflect off entities
-				 * 
-				 * max throw - items will be lodged into entities (only 1 item lodged in entity at time), if item has Pineed enchantment
-				 */
-
-				 
-				
-				 GenericThrownItemEntity e = GenericThrownItemEntity.CreateNew(world, client, itemstackOrig, timeHeld, false);
-				
-				if (!client.isCreative()){
-					itemstackOrig.decrement(1);
-				}
-				((LivingEntity)client).swingHand(Hand.MAIN_HAND, true);
-
-				
-				//client.getWorld().spawnEntity(e);
-				world.spawnEntity(e);
-				
-				//((ServerWorld)client.getWorld()).spawnEntity(e);
-			
-			});
-
-
-
-		});
 		
 		ParticleRegistery.registerParticles();
 	}

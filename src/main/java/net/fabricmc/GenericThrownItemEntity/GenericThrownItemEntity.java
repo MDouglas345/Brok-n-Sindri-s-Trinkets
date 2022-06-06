@@ -659,7 +659,9 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public static GenericThrownItemEntity CreateNew(ServerWorld world, String owner, UUID uuid, Vec3d spawnposition, ItemStack itemstack){
         GenericThrownItemEntity e = new GenericThrownItemEntity(BNSCore.GenericThrownItemEntityType, world);
         Vec3d pos = spawnposition;
-
+        if (uuid == null){
+            uuid = e.getUuid();
+        }
         e.setPos(pos.x, pos.y, pos.z);
         e.updatePosition(pos.x, pos.y, pos.z);
         e.updateTrackedPosition(pos.x, pos.y, pos.z);
@@ -670,7 +672,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         
        
 
-
+        e.SetStackID(e.getId());
         
         //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
         e.setBonusAttack(1);

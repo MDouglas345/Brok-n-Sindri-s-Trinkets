@@ -9,7 +9,8 @@
     "LivingEntityMixin",
     "ServerPlayerEntityMixin",
     "BlockItemMixin",
-    "BlockMixin"
+    "BlockMixin",
+    "EntityMixin"
   ],
   "client": [
     "QuadrupedEntityModelMixin"
