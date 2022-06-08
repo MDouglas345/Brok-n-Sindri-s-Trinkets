@@ -76,6 +76,8 @@ public class BranchLightningParticle  extends SpriteBillboardParticle{
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         Quaternion quaternion;
+
+        
         Vec3d vec3d = camera.getPos();
         float f = (float)(MathHelper.lerp((double)tickDelta, this.prevPosX, this.x) - vec3d.getX());
         float g = (float)(MathHelper.lerp((double)tickDelta, this.prevPosY, this.y) - vec3d.getY());

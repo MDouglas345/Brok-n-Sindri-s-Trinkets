@@ -29,6 +29,7 @@ import net.fabricmc.GenericThrownItemEntity.States.ReturnState;
 import net.fabricmc.GenericThrownItemEntity.States.StuckState;
 import net.fabricmc.GenericThrownItemEntity.States.ThrownState;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.Util.EnchantmentData;
 import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
@@ -69,6 +70,7 @@ import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -213,6 +215,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             // Need to work on the damage calculation to accomodate enchantments and various affects
            
             Entity entity = entityHitResult.getEntity();
+
+            if (!world.isClient){
+                playImpactSound((ServerWorld) world, entity.getBlockPos(), this.Maxed); 
+            }
             
             if (entity == null){
                 return;
@@ -670,7 +676,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         e.setItem(itemstack.copy());
         e.SetMaxed(false);
         
-       
+        playThrowSound(world, e.getBlockPos(), e.Maxed);
 
         e.SetStackID(e.getId());
         
@@ -695,6 +701,17 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         return e;
 }
 
+    public static void playThrowSound(ServerWorld world, BlockPos pos, boolean max){
+        world.playSound(null, pos, SoundEvents.ITEM_TRIDENT_THROW, SoundCategory.BLOCKS, 1f, max ? 1f : 0.8f);
+    }
+
+    public static void playImpactSound(ServerWorld world, BlockPos pos, boolean max){
+        world.playSound(null, pos, SoundEvents.ITEM_TRIDENT_HIT, SoundCategory.BLOCKS, 1f, max ? 1f : 0.8f);
+    }
+
+    public static void playReturnSound(ServerWorld world, BlockPos pos, boolean max){
+        world.playSound(null, pos, SoundEvents.ITEM_TRIDENT_RETURN, SoundCategory.BLOCKS, 1f, max ? 1f : 0.8f);
+    }
 
     public static GenericThrownItemEntity CreateNew(ServerWorld world, PlayerEntity client, ItemStack itemstack, float timeHeld, boolean random){
                 GenericThrownItemEntity e = new GenericThrownItemEntity(BNSCore.GenericThrownItemEntityType, world);
@@ -707,6 +724,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				e.setOwner(client); // Assume the thrower is always THE owner!
 				e.SetOwner(client);
 				e.setItem(itemstack.copy());
+                
                 
 
                 //e.setRotation(client.getYaw(), client.getPitch());
@@ -721,6 +739,9 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                     e.SetMaxed(false);
                     speed = 0.8f;
                 }
+
+                playThrowSound(world, e.getBlockPos(), e.Maxed);
+
                 Quaternion q;
                 if (!random){
                     q = new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true);

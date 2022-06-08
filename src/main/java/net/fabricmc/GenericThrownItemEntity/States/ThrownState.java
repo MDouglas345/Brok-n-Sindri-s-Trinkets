@@ -225,6 +225,8 @@ public class ThrownState extends GenericThrownItemEntityState{
 
         
         if (!Master.world.isClient){
+
+            GenericThrownItemEntity.playImpactSound((ServerWorld) Master.world, Master.getBlockPos(), Master.Maxed);
             Quaternion q = blockHitResult.getSide().getRotationQuaternion();
 
             q.hamiltonProduct(Master.originalRot);
@@ -267,26 +269,22 @@ public class ThrownState extends GenericThrownItemEntityState{
     public void onEntityHit(EntityHitResult entityHitResult) {
         // TODO Auto-generated method stub
         Master.SuperOnEntityHit(entityHitResult);
-                //Pin the entity.
-                /**
-                 * if the entity is a mob, set persistence!
-                 *  ((MobEntity)entity).setPersistent();
-                 */
-                
-
-            try{
-                if (!Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
-
-                    Master.Attack(entityHitResult);
-                }
-                else{
-                    Master.Deflect(0.3f);
-                }
-            }
-            catch(Exception e){
-                Master.Attack(entityHitResult);
-            }
+        //Pin the entity.
+        /**
+         * if the entity is a mob, set persistence!
+         *  ((MobEntity)entity).setPersistent();
+         */
         
+
+    
+        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
+
+            Master.Attack(entityHitResult);
+        }
+        else{
+            Master.Deflect(0.3f);
+        }
+            
         
         
 

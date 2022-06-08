@@ -18,6 +18,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -140,14 +142,14 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
     @Override
     public void OnTick(GenericThrownItemEntity entity, World world) {
         // TODO Auto-generated method stub
-        
+        float bonus = world.isThundering()  || world.isRaining()? 0.08f : 0;
         /**
          * 
          * Get nearby blocks / entities in a radius around the entity
          * random chance for a bolt to hit from entity to targee.(Need to fiigure out appraoch for the lightning bolt bit)
          */
 
-        if (Util.randgen.nextFloat() > 0.01 && !world.isClient){
+        if ((Util.randgen.nextFloat() + bonus) > 0.01 && !world.isClient){
             Vec3d pos = entity.getPos();
             
             BlockPos currentblock = new BlockPos(Util.getRandomDouble(-6, 6), Util.getRandomDouble(-1, 4), Util.getRandomDouble(-6, 6));
@@ -155,6 +157,7 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
 
             if (!world.getBlockState(currentblock).isAir()){
                 NetworkHandlerServer.spawnBranchLightning((ServerWorld) world, pos, new Vec3d(currentblock.getX(), currentblock.getY(), currentblock.getZ()));
+                world.playSound(null, entity.getBlockPos(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 0.1f, 1f);
             }
 
             /* 

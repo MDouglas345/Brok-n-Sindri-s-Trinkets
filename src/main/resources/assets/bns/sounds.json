@@ -1,0 +1,13 @@
+{
+    "throw" :{
+        "sounds":[
+            "bns:throwsound"
+        ]
+    },
+
+    "impact" :{
+        "sounds":[
+            "bns:impactsound"
+        ]
+    }
+}
