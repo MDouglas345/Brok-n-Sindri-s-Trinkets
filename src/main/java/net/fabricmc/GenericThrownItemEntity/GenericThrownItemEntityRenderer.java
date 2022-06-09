@@ -5,7 +5,7 @@ package net.fabricmc.GenericThrownItemEntity;
 
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.Util;
-
+import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 
