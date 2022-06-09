@@ -566,7 +566,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void SetOwner(PlayerEntity entity){
         // may cause bugs if player name is absurdly long. i.e < 255 characters
-        this.Owner = new ClientIdentification(entity.getName().asString(), entity.getUuid());
+        this.Owner = new ClientIdentification(entity.getName().getString(), entity.getUuid());
     }
 
     public void SetOwner(String name, UUID id){

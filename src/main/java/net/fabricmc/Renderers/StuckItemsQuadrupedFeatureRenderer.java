@@ -102,7 +102,7 @@ public class StuckItemsQuadrupedFeatureRenderer<T extends LivingEntity, M extend
         //Random random = Util.randgen;
 
         ModelPart modelPart = ((IAccessModelParts)(QuadrupedEntityModel)this.getContextModel()).getBody();
-        ModelPart.Cuboid cuboid = modelPart.getRandomCuboid(random);
+        ModelPart.Cuboid cuboid = modelPart.getRandomCuboid((net.minecraft.util.math.random.Random) random);
         
 
         ItemStack item = ((ISavedItem)livingEntity).getSavedItem();

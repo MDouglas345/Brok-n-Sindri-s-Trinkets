@@ -103,7 +103,7 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends B
         //Random random = Util.randgen;
 
         ModelPart modelPart = ((BipedEntityModel)this.getContextModel()).body;
-        ModelPart.Cuboid cuboid = modelPart.getRandomCuboid(random);
+        ModelPart.Cuboid cuboid = modelPart.getRandomCuboid((net.minecraft.util.math.random.Random) random);
         
 
         ItemStack item = ((ISavedItem)livingEntity).getSavedItem();

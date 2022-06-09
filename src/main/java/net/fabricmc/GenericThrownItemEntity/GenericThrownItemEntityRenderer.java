@@ -1,35 +1,28 @@
 package net.fabricmc.GenericThrownItemEntity;
 
-import org.apache.commons.compress.harmony.unpack200.bytecode.forms.IincForm;
-import org.lwjgl.system.CallbackI.I;
 
-import net.fabricmc.BNSCore.BNSCore;
+
+
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.Util;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.OverlayTexture;
+
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
-import net.minecraft.client.render.entity.ItemEntityRenderer;
+
 import net.minecraft.client.render.entity.EntityRendererFactory.Context;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation.Mode;
-import net.minecraft.client.texture.SpriteAtlasTexture;
+
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix3f;
-import net.minecraft.util.math.Matrix4f;
+
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
+
 
 
 public class GenericThrownItemEntityRenderer extends EntityRenderer<GenericThrownItemEntity>{

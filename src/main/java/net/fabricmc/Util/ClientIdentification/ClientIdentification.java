@@ -38,7 +38,7 @@ public class ClientIdentification {
     public  boolean isOwner(PlayerEntity entity){
 
         if (!OnlineMode){
-            if (this.name.equals(entity.getName().asString())){
+            if (this.name.equals(entity.getName().getString())){
                 return true;
             }
             return false;
