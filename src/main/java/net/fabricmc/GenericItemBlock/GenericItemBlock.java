@@ -31,7 +31,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -117,7 +117,7 @@ public class GenericItemBlock extends BlockWithEntity implements Waterloggable{
             if (!entity.Owner.isOwner(player)&& ( EnchantmentHelper.getLevel(BNSCore.WorthyTool, entity.SavedItem) == 2 || EnchantmentHelper.getLevel(BNSCore.WorthyWeapon, entity.SavedItem) == 2 ) ){
                 // the player that is not the owner and tries to pick up the item, and if the itemstack has either worthytool or worthyweapon enchantment, they should
                 // not be able to pick it up
-                player.sendMessage(new LiteralText("You are not Worthy!"), true);
+                player.sendMessage(Text.of("You are not Worthy!"), true);
                 return ActionResult.FAIL;
             }
 
