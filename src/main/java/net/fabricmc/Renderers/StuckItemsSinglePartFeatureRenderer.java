@@ -104,8 +104,7 @@ public class StuckItemsSinglePartFeatureRenderer<T extends LivingEntity, M exten
         Random random = new Random(((Entity)livingEntity).getId());
         //Random random = Util.randgen;
 
-        ModelPart modelPart = ((SinglePartEntityModel<T>)this.getContextModel()).getPart().getChild(part);
-        ModelPart.Cuboid cuboid = modelPart.getRandomCuboid(random);
+        
         
 
         ItemStack item = ((ISavedItem)livingEntity).getSavedItem();

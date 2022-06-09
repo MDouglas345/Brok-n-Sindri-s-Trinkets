@@ -69,6 +69,9 @@
  * Cons : Jarring AF and unsatisfactory.
  * 
  * Look into creating a mixin to determin whether a chunk is loaded or not. Could be useful for making things smoother
+ * 
+ * 
+ * Reminder : When changing mc versions within VSCode F1 -> Java : Clean Workplace -> restart and delete
  */
 
 

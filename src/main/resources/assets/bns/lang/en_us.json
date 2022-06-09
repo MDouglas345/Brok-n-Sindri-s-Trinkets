@@ -9,5 +9,7 @@
     "enchantment.bns.flametool"     :   "Flame Imbued",
     "enchantment.bns.lightningtool" :   "Lightning Imbued",
     "enchantment.bns.lightningweapon" :   "Lightning Imbued",
-    "effect.bns.paralysis"          :   "Paralysis"
+    "effect.bns.paralysis"          :   "Paralysis",
+    "key.bns.actionkey"        : "Throw Key",
+    "category.bns.keys"             : "Brok N Sindri"
 }
