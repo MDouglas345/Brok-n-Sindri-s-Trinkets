@@ -42,14 +42,14 @@ public class GenericItemBlockEntityRenderer<T extends BlockEntity> implements Bl
 
         //r.hamiltonProduct(Quaternion.fromEulerXyz(0, off, 0));
 
-        r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(block.Offset, 0,0)));
+       // r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(block.Offset, 0,0)));
         //r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(off, 0,0)));
 
         matrices.push();
         //matrices.multiply(entity.originalRot);
         matrices.translate(0.5f, 0.5f, 0.5f);
-        matrices.scale(1.3f, 1.3f, 1.3f);
         matrices.multiply(r);
+        matrices.scale(1.3f, 1.3f, 1.3f);
        
        
         //this.itemRenderer.renderItem(block.SavedItem, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);

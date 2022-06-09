@@ -21,6 +21,8 @@ public class NetworkHandlerClient {
 
     public static void registerClientResponses(){
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.SpawnBranchLightning, new handleSpawnedBranchLightning());
+        ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.SpawnFrostContact, new handleSpawnedFrostContact());
+        ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.SpawnFlameContact, new handleSpawnedFlameContact());
     }
 
    
@@ -43,6 +45,46 @@ public class NetworkHandlerClient {
                         client.world.addParticle(ParticleRegistery.BRANCH_LIGHTNING_PARTICLE,
                                             pos.getX(), pos.getY(), pos.getZ(), 
                                             randompos.getX(), randompos.getY(), randompos.getZ());
+                });
+        }
+    }
+
+    private static class handleSpawnedFrostContact implements PlayChannelHandler{
+
+        @Override
+        public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf,
+                PacketSender responseSender) {
+                    
+                    Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+                    double  power = buf.readDouble();
+            
+                client.submit(() ->{
+                    for (int i = 0; i <10 * power; i++){
+                        Vec3d dir = Util.getRandomDirectionUnitSphere().multiply(power * 5);
+                        client.world.addParticle(ParticleRegistery.CONTACT_FROST_PARTICLE,
+                                            pos.getX(), pos.getY(), pos.getZ(), 
+                                            dir.getX(), dir.getY(), dir.getZ());
+                    }
+                });
+        }
+    }
+
+    private static class handleSpawnedFlameContact implements PlayChannelHandler{
+
+        @Override
+        public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf,
+                PacketSender responseSender) {
+                    
+                    Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+                    double  power = buf.readDouble();
+            
+                client.submit(() ->{
+                    for (int i = 0; i <10 * power; i++){
+                        Vec3d dir = Util.getRandomDirectionUnitSphere().multiply(power * 10);
+                        client.world.addParticle(ParticleRegistery.CONTACT_FLAME_PARTICLE,
+                                            pos.getX(), pos.getY(), pos.getZ(), 
+                                            dir.getX(), dir.getY(), dir.getZ());
+                    }
                 });
         }
     }

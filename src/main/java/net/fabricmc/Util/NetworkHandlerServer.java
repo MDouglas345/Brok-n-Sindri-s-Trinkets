@@ -39,6 +39,40 @@ public class NetworkHandlerServer {
         }
     }
 
+    public static void spawnFrostContact(ServerWorld world, Vec3d pos, double power){
+        PacketByteBuf createPacket = PacketByteBufs.create();
+
+        createPacket.writeDouble(pos.x);
+        createPacket.writeDouble(pos.y);
+        createPacket.writeDouble(pos.z);
+
+        createPacket.writeDouble(power);
+        
+
+        List<ServerPlayerEntity> players = world.getPlayers(player -> (player.getPos().distanceTo(pos) <= 50));
+
+        for (ServerPlayerEntity player : players){
+            ServerPlayNetworking.send(player, NetworkConstants.SpawnFrostContact, createPacket);
+        }
+    }
+
+    public static void spawnFlameContact(ServerWorld world, Vec3d pos, double power){
+        PacketByteBuf createPacket = PacketByteBufs.create();
+
+        createPacket.writeDouble(pos.x);
+        createPacket.writeDouble(pos.y);
+        createPacket.writeDouble(pos.z);
+
+        createPacket.writeDouble(power);
+        
+
+        List<ServerPlayerEntity> players = world.getPlayers(player -> (player.getPos().distanceTo(pos) <= 50));
+
+        for (ServerPlayerEntity player : players){
+            ServerPlayNetworking.send(player, NetworkConstants.SpawnFlameContact, createPacket);
+        }
+    }
+
     public static class handleActionKey implements PlayChannelHandler{
         /**
          * Approach to make this clean and dry:

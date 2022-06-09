@@ -5,6 +5,7 @@ import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.Util.Util;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -155,21 +156,8 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
        if (world.isClient){
            return;
        }
-       if (Util.randgen.nextFloat() > 0.2f){
-             return;
-       }
-        for (int i = 0; i < 10; i++){
-            Vec3d dir = Util.getRandomDirectionUnitSphere();
-
-            dir = dir.multiply(1.1);
-            /**
-             * ajust speed here?
-             */
-
-             ((ServerWorld)world).spawnParticles(ParticleRegistery.CONTACT_FROST_PARTICLE, 
-                                                     pos.x, pos.y, pos.z, 2,
-                                                            dir.x, dir.y, dir.z, 1.2);
-       }
+      
+       NetworkHandlerServer.spawnFrostContact((ServerWorld) world, pos, max ? 2 : 4);
         
     }
 
@@ -181,7 +169,7 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
       }
         Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
         
-        int p_amount = 1;
+        int p_amount = 3;
         for (int i = 0; i < p_amount; i++){
             Vec3d dir = Util.getRandomDirectionUnitSphere();
             dir.normalize();

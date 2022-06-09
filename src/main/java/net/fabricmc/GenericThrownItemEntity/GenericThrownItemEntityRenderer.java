@@ -74,7 +74,8 @@ public class GenericThrownItemEntityRenderer extends EntityRenderer<GenericThrow
       
       //matrices.scale(1.3f, 1.3f, 1.3f);
       //this.itemRenderer.renderItem(entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getId());
-      this.itemRenderer.renderItem((LivingEntity) entity.getOwner(), entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, entity.world, light, 0, 0);
+      this.itemRenderer.renderItem((LivingEntity) entity.getOwner(), entity.itemToRender, Mode.FIRST_PERSON_RIGHT_HAND,
+                                                 false, matrices, vertexConsumers, entity.world, light, OverlayTexture.DEFAULT_UV, 0);
       //this.SpawnLineOfParticles((ClientWorld) entity.world, entity.getPos(), r,  0.5f);
 
       matrices.pop();
