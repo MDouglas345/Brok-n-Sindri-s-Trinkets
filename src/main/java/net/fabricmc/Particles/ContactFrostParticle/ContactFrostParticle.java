@@ -23,9 +23,9 @@ public class ContactFrostParticle extends SpriteBillboardParticle {
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
 
-        this.velocityMultiplier = 0.7F;
+        this.velocityMultiplier = 0.99f;
        
-        this.scale = 0.f;
+        this.scale = 0.2f;
         this.maxAge = 40;
         this.setSpriteForAge(spriteSet);
 
@@ -45,14 +45,6 @@ public class ContactFrostParticle extends SpriteBillboardParticle {
         /**
          * A fancy way of getting particles to move faster if they are goin horizontally than vertically.
          */
-        Vec3d vel = new Vec3d(xd, yd, zd);
-        float dot = (float)vel.dotProduct(new Vec3d(0,1,0)); // if able to get normal of a contact, use that instead.
-        dot = MathHelper.abs(dot);
-
-        if (dot < 0.2){
-            this.velocityMultiplier = 0.9f;
-            this.maxAge += 10;
-        }
     }
 
 

@@ -13,10 +13,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class ReturnState extends GenericThrownItemEntityState {
@@ -33,7 +35,7 @@ public class ReturnState extends GenericThrownItemEntityState {
     @Override
     public void Tick() {
         // TODO Auto-generated method stub
-        Master.rotoffset += Master.rotSpeed;
+        Master.rotoffset = MathHelper.lerp(0.8f, Master.rotoffset, Master.rotoffset + Master.rotSpeed);
         Master.SuperTick();
             
         
@@ -144,6 +146,10 @@ public class ReturnState extends GenericThrownItemEntityState {
         Master.originalRot = Util.getDirectionalRotation(new Vec3d(0,0,1), dir);
 
         originaldist = Destination.squaredDistanceTo(Master.getPos());
+
+        if (!Master.world.isClient){
+            Master.playReturnSound((ServerWorld) Master.world, Master.getBlockPos(), Master.Maxed);
+        }
         
     }
    

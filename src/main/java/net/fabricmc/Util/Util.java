@@ -11,9 +11,11 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -241,6 +243,29 @@ public class Util {
         double dot = A.dotProduct(B);
 
         return MathHelper.atan2(mag, dot);
+    }
+
+    public static Quaternion rotateItemForBlock(ItemStack item, Quaternion original, BlockHitResult blockHitResult){
+        
+        Quaternion res = blockHitResult.getSide().getRotationQuaternion();
+        res.hamiltonProduct(original);
+        if (item.getItem() instanceof SwordItem){
+            Vec3f angles = original.toEulerXyz();
+           // original.conjugate();
+            // hamiltonProduct here so that sword rotates along the Y 
+            //res.hamiltonProduct(Quaternion.fromEulerXyz((float)Util.getRandomDouble(8*3.14159 / 9, 41*3.14159/36), 0, 0));
+            
+            res.hamiltonProduct(Quaternion.fromEulerXyz((float)Util.getRandomDouble(8*3.14159 / 9, 41*3.14159/36), 0, 0));
+            //res.hamiltonProduct(Quaternion.fromEulerXyz(0, 0, angles.getX()));
+        }
+        else{
+            //res.hamiltonProduct(Quaternion.fromEulerXyz((float)Util.getRandomDouble(13*3.14159 / 12, 7*3.14159/6), 0, 0));
+            //original.conjugate();
+           
+            res.hamiltonProduct(Quaternion.fromEulerXyz((float)Util.getRandomDouble(13*3.14159 / 12, 7*3.14159/6), 0, 0));
+        }
+
+        return res;
     }
 
 

@@ -76,6 +76,7 @@ package net.fabricmc.BNSCore;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.PlayerBlockComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
@@ -226,8 +227,9 @@ public class BNSCore implements ModInitializer {
 
 		NetworkHandlerServer.registerServerResponses();
 	
-		
 		ParticleRegistery.registerParticles();
+
+		SoundRegistry.registerSounds();
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){

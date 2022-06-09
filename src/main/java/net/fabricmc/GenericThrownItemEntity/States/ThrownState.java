@@ -22,6 +22,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
@@ -44,6 +45,7 @@ import net.minecraft.entity.ai.brain.task.StopPanickingTask;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.Angerable;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
@@ -78,7 +80,7 @@ public class ThrownState extends GenericThrownItemEntityState{
 
     @Override
     public void Tick() {
-        Master.rotoffset -= Master.rotSpeed;
+        Master.rotoffset = MathHelper.lerp(0.8f, Master.rotoffset, Master.rotoffset -Master.rotSpeed);
         Master.SuperTick();
         
        
@@ -225,13 +227,18 @@ public class ThrownState extends GenericThrownItemEntityState{
 
         
         if (!Master.world.isClient){
-            Quaternion q = blockHitResult.getSide().getRotationQuaternion();
-
-            q.hamiltonProduct(Master.originalRot);
+            /**
+             * swords rotate around their Y, Axes rotate around their Z
+             */
+            GenericThrownItemEntity.playImpactSound((ServerWorld) Master.world, Master.getBlockPos(), Master.Maxed);
+            Quaternion q = Util.rotateItemForBlock(Master.itemToRender, Master.originalRot, blockHitResult);
             
 
+            //q.hamiltonProduct(Quaternion.fromEulerXyz((float)Util.getRandomDouble(2*3.14159 / 3, 11*3.14159/9), 0, 0));
             
-
+            //float anglebetween = (float) Util.angleBetween(Master.getVelocity().normalize().negate(), new Vec3d(0,1,0));
+           
+            //q.hamiltonProduct(Vec3f.POSITIVE_Y.getRadialQuaternion(anglebetween));
             Master.world.setBlockState(hitpos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
             
@@ -267,26 +274,22 @@ public class ThrownState extends GenericThrownItemEntityState{
     public void onEntityHit(EntityHitResult entityHitResult) {
         // TODO Auto-generated method stub
         Master.SuperOnEntityHit(entityHitResult);
-                //Pin the entity.
-                /**
-                 * if the entity is a mob, set persistence!
-                 *  ((MobEntity)entity).setPersistent();
-                 */
-                
-
-            try{
-                if (!Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
-
-                    Master.Attack(entityHitResult);
-                }
-                else{
-                    Master.Deflect(0.3f);
-                }
-            }
-            catch(Exception e){
-                Master.Attack(entityHitResult);
-            }
+        //Pin the entity.
+        /**
+         * if the entity is a mob, set persistence!
+         *  ((MobEntity)entity).setPersistent();
+         */
         
+
+    
+        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
+
+            Master.Attack(entityHitResult);
+        }
+        else{
+            Master.Deflect(0.3f);
+        }
+            
         
         
 
