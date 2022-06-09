@@ -83,6 +83,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.world.Heightmap;
 
 public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedItem {
 
@@ -156,15 +157,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         */
 
         
-        Quaternion r = originalRot.copy();
-        r.hamiltonProduct(Quaternion.fromEulerXyzDegrees(new Vec3f(rotoffset, 0,0)));
-
        
-        
-
-        Vec3f rot = r.toEulerXyz();
-
-        this.setPitch(ProjectileEntity.updateRotation(this.prevPitch, rot.getX()));
         //this.setYaw(ProjectileEntity.updateRotation(this.prevYaw, rot.get()));
         
     }
@@ -352,16 +345,18 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         }
 
         if (!world.isClient && this.isDespawned()){ // maybe also add if the server has ended?
+            BlockPos pos = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, getBlockPos());
+            
 
-             world.setBlockState(getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
+             world.setBlockState(pos,BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
 
         
-            GenericItemBlockEntity be = (GenericItemBlockEntity)world.getBlockEntity(getBlockPos());
+            GenericItemBlockEntity be = (GenericItemBlockEntity)world.getBlockEntity(pos);
             
 
             BNSCore.removeEntityFromStack((ServerWorld) world, Owner.name, StackID);
 
-            int id = BNSCore.pushBEOntoStack((ServerWorld) world, Owner.name, getBlockPos());
+            int id = BNSCore.pushBEOntoStack((ServerWorld) world, Owner.name, pos);
 
             be.Initalize(itemToRender, new Quaternion(0,0,0,1), (float)Util.getRandomDouble(100, 200),  id, Owner);
 
@@ -744,7 +739,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 Quaternion q;
                 if (!random){
-                    q = new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true);
+                   Vec3d forward = new Vec3d (0,0,1);
+                   Vec3d to = Vec3d.fromPolar(0, client.getYaw()).negate();
+                   q = Util.getDirectionalRotation(forward, to);
+                    //q = new Quaternion(Vec3f.POSITIVE_Y, 180 - client.getYaw(), true);
+                   //q = new Quaternion(Vec3f.POSITIVE_Y, client.getYaw(), true);
 				    e.setVelocity(client, client.getPitch(), client.getYaw(), 0, speed , 0f);
 				    e.setBonusAttack(timeHeld / 40f);
                     e.setQuat(q);

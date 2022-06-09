@@ -24,7 +24,7 @@ public class ContactFlameParticle extends SpriteBillboardParticle {
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
 
-        this.velocityMultiplier = 0.9F;
+        this.velocityMultiplier = 0.999F;
        
         this.scale = 1f;
         this.maxAge = 25;
@@ -52,7 +52,7 @@ public class ContactFlameParticle extends SpriteBillboardParticle {
         fadeOut();
         //sizeUpOverTime();
         
-        this.velocityY += 0.02;
+        this.velocityY += 0.005;
         this.angle += 0.0005f;
 
         if (this.age > 22){

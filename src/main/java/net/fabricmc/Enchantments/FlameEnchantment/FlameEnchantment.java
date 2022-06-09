@@ -5,6 +5,7 @@ import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.Util.Util;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
@@ -151,22 +152,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         if (world.isClient){
             return;
         }
-         for (int i = 0; i < 15; i++){
-             Vec3d dir = Util.getRandomDirectionUnitSphere().multiply(5);
-            
-             Vec3d newpos = pos.add(dir);
-             dir = dir.normalize();
-             dir = dir.multiply(1.8f);
-
-
-             /**
-              * ajust speed here?
-              */
-            
-              ((ServerWorld)world).spawnParticles(ParticleRegistery.CONTACT_FLAME_PARTICLE, 
-                                                      pos.x, pos.y, pos.z, 4,
-                                                             0, 0, 0, 3f);
-        }
+        NetworkHandlerServer.spawnFlameContact((ServerWorld) world, pos, max ? 2 : 4);
 
         
     }

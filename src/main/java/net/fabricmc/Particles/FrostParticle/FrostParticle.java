@@ -13,18 +13,21 @@ import net.minecraft.particle.DefaultParticleType;
 
 public class FrostParticle extends SpriteBillboardParticle {
 
+    SpriteProvider spriteSets;
+
     protected FrostParticle(ClientWorld level, double xCoord, double yCoord, double zCoord,
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
 
         this.velocityMultiplier = 0.9F;
        
-        this.scale = 0.4f;
+        this.scale = 0.3f;
         this.maxAge = 16;
         this.setSpriteForAge(spriteSet);
 
         this.gravityStrength = 0.03f;
 
+        this.spriteSets = spriteSet;
        
         this.alpha = 0.8f;
         this.red = 1f;
@@ -46,6 +49,7 @@ public class FrostParticle extends SpriteBillboardParticle {
         }
         
         super.tick();
+        this.setSpriteForAge(spriteSets);
         fadeOut();
        
 

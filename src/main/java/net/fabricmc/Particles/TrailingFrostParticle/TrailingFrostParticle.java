@@ -13,6 +13,8 @@ import net.minecraft.particle.DefaultParticleType;
 
 public class TrailingFrostParticle extends SpriteBillboardParticle {
 
+    SpriteProvider spriteSets;
+
     protected TrailingFrostParticle(ClientWorld level, double xCoord, double yCoord, double zCoord,
     SpriteProvider spriteSet, double xd, double yd, double zd) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
@@ -25,7 +27,8 @@ public class TrailingFrostParticle extends SpriteBillboardParticle {
 
         this.gravityStrength = 0.03f;
 
-       
+        this.spriteSets = spriteSet;
+
         this.alpha = 0.8f;
         this.red = 1f;
         this.green = 1f;
@@ -37,6 +40,7 @@ public class TrailingFrostParticle extends SpriteBillboardParticle {
         super.tick();
         fadeOut();
         this.velocityY -= 0.03;
+        this.setSpriteForAge(spriteSets);
         
     }
 
