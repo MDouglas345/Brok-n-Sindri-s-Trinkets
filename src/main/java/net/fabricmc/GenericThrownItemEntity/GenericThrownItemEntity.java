@@ -272,7 +272,10 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             ISavedItem eSaved = (ISavedItem) e;
 
            
-
+            if (!eSaved.getSavedItem().getItem().equals(Items.AIR)){
+                this.ThrowRandom(0.3f);
+                return;
+            }
            
             if (!world.isClient){
 

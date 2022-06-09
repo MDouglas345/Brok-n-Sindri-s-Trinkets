@@ -101,7 +101,6 @@ public class StuckItemsQuadrupedFeatureRenderer<T extends LivingEntity, M extend
         Random random = new Random(((Entity)livingEntity).getId());
         //Random random = Util.randgen;
 
-  
         
 
         ItemStack item = ((ISavedItem)livingEntity).getSavedItem();
