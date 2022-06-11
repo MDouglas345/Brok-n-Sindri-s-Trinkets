@@ -5,7 +5,7 @@ import net.minecraft.enchantment.EnchantmentTarget;
 public class FlameToolEnchantment extends FlameEnchantment {
 
     public FlameToolEnchantment() {
-        super(EnchantmentTarget.WEAPON);
+        super(EnchantmentTarget.DIGGER);
         //TODO Auto-generated constructor stub
     }
     

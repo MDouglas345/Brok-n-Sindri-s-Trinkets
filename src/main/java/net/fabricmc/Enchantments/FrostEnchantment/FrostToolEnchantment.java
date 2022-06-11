@@ -5,7 +5,7 @@ import net.minecraft.enchantment.EnchantmentTarget;
 public class FrostToolEnchantment extends FrostEnchantment {
 
     public FrostToolEnchantment() {
-        super(EnchantmentTarget.WEAPON);
+        super(EnchantmentTarget.DIGGER);
         //TODO Auto-generated constructor stub
     }
     
