@@ -34,6 +34,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.PlantBlock;
+import net.minecraft.block.SnowBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -199,11 +200,12 @@ public class ThrownState extends GenericThrownItemEntityState{
         
         //something better would be to check if the blockstate.isAir? or isSolidBlock? maybe better.
         
-        if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock)){
+        if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock) && !(block instanceof SnowBlock)){
             Master.ThrowRandom(0.3f);
 
             return;
         }
+
 
        
       /**
