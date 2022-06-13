@@ -206,7 +206,6 @@ public class ThrownState extends GenericThrownItemEntityState{
             return;
         }
 
-
        
       /**
        * This is where environmental effects will come into place. 
