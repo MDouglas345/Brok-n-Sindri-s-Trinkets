@@ -84,6 +84,7 @@ import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.PlayerBlockComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.Effects.ParalysisEffect;
 import net.fabricmc.Enchantments.FlameEnchantment.FlameToolEnchantment;
 import net.fabricmc.Enchantments.FlameEnchantment.FlameWeaponEnchantment;
@@ -93,6 +94,8 @@ import net.fabricmc.Enchantments.LightningEnchantment.LightningToolEnchantment;
 import net.fabricmc.Enchantments.LightningEnchantment.LightningWeaponEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedToolEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedWeaponEnchantment;
+import net.fabricmc.Enchantments.ThrowEnchantment.ThrowToolEnchantment;
+import net.fabricmc.Enchantments.ThrowEnchantment.ThrowWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
 import net.fabricmc.GenericItemBlock.*;
@@ -192,6 +195,15 @@ public class BNSCore implements ModInitializer {
 	public static Enchantment LightningTool = Registry.register(Registry.ENCHANTMENT,
 												new Identifier(BNSCore.ModID, "lightningtool"),
 												new LightningToolEnchantment());
+
+	public static Enchantment ThrowWeapon = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "throwweapon"),
+												new ThrowWeaponEnchantment());
+
+	public static Enchantment ThrowTool = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "throwtool"),
+												new ThrowToolEnchantment());
+									
 	
 
 
@@ -208,13 +220,15 @@ public class BNSCore implements ModInitializer {
 
 		BNSCore.LOGGER.info("In the main");
 
+		ConfigRegistery.initConfig();
+
 		Registry.register(Registry.BLOCK, new Identifier(ModID, "generic_item_block"), GENERIC_ITEM_BLOCK);
 
 		Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(ModID, "generic_item_block_entity"), GENERIC_ITEM_BLOCK_ENTITY);
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher, access, dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher,  access, dedicated) -> {
             
                 dispatcher.register(CommandManager.literal("BNS").then(CommandManager.literal("bar")
 				.executes(context -> {

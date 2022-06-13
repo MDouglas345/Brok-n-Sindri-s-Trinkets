@@ -1,7 +1,10 @@
 package net.fabricmc.Util.ActionKeyHandlerStates;
 
+import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Util.NetworkHandlerServer.handleActionKey;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
@@ -25,6 +28,10 @@ public class ThrowNewActionKeyHandlerState {
         ItemStack itemstackOrig = player.getMainHandStack();
 
         if (!(itemstackOrig.getItem() instanceof SwordItem) && !(itemstackOrig.getItem() instanceof MiningToolItem)){
+            return;
+        }
+
+        if (ConfigRegistery.configuration.getBoolean("ThrowEnchantment") && (EnchantmentHelper.getLevel(BNSCore.ThrowTool, itemstackOrig) == 0 && EnchantmentHelper.getLevel(BNSCore.ThrowWeapon, itemstackOrig) == 0)){
             return;
         }
 				
