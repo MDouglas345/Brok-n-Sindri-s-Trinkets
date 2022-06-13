@@ -6,6 +6,8 @@ import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Util.NetworkHandlerServer.handleActionKey;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
@@ -13,6 +15,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
+import net.minecraft.util.registry.Registry;
 
 public class ThrowNewActionKeyHandlerState {
     // This is state 1
@@ -34,6 +37,13 @@ public class ThrowNewActionKeyHandlerState {
         if (ConfigRegistery.configuration.getBoolean("ThrowEnchantment") && (EnchantmentHelper.getLevel(BNSCore.ThrowTool, itemstackOrig) == 0 && EnchantmentHelper.getLevel(BNSCore.ThrowWeapon, itemstackOrig) == 0)){
             return;
         }
+
+        if (ConfigRegistery.configuration.isInStringArray("NotAllowedThrow", itemstackOrig.getItem().getName().getString())){
+            return;
+        }
+
+        //BNSCore.LOGGER.info(itemstackOrig.getItem().getName().getString());
+        
 				
         /**
          * Remove the idea of a "held time" and instead if the held time is over 15, the item is now torqued for

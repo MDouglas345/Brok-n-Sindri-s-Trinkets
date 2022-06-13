@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Config.IDataEntry.BooleanEntry;
 import net.fabricmc.Config.IDataEntry.IDataEntry;
+import net.fabricmc.Config.IDataEntry.StringArrayEntry;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Config {
@@ -36,9 +37,10 @@ public class Config {
             while (filereader.hasNextLine()){
                 String line = filereader.nextLine();
                 String[] entryPairs = getPairs(line);
-
                 enterData(entryPairs[0], entryPairs[1]);
             }
+
+           writeFile();
         }
         catch(Exception e){
             BNSCore.LOGGER.info("Config file not found. Creating one.");
@@ -52,6 +54,20 @@ public class Config {
 
         if (v.equals("True") | v.equals("False")){
             entry = new BooleanEntry(v);
+        }
+        else if (v.contains(",")){
+            /**
+             * this is a list of something. 
+             */
+
+             String[] entries = v.split(",");
+
+             if (entries[0].equals("String")){
+                entry = new StringArrayEntry(entries);
+             }
+             else if (entries[0].equals("Int")){
+                // This is an int array
+             }
         }
 
         if (entry == null){
@@ -68,6 +84,7 @@ public class Config {
 
     public void generateDefaults(){
         enterData("ThrowEnchantment", "False");
+        enterData("NotAllowedThrow", "String,null");
     }
 
     public void writeFile(){
@@ -87,6 +104,7 @@ public class Config {
 
                 filewriter.write(entry.getKey() + ":" );
                 entry.getValue().writeEntry(filewriter);
+                filewriter.write("\n");
             }
 
             filewriter.close();
@@ -114,5 +132,21 @@ public class Config {
 
         data.put(key, new BooleanEntry(value));
 
+    }
+
+    public Boolean  isInStringArray(String key, String value) {
+        if (!data.containsKey(key)){
+            return null;
+        }
+
+        StringArrayEntry array = (StringArrayEntry) data.get(key);
+
+        for (String record : array.data){
+            if (record.equals(value)){
+                return true;
+            }
+        }
+
+        return false;
     }
 }
