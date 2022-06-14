@@ -281,13 +281,13 @@ public class ThrownState extends GenericThrownItemEntityState{
          *  ((MobEntity)entity).setPersistent();
          */
         
-
+        boolean isowner = Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity());
     
-        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
+        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !isowner){
 
             Master.Attack(entityHitResult);
         }
-        else{
+        else if (!isowner){
             Master.Deflect(0.3f);
         }
             

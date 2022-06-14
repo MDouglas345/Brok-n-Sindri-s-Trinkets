@@ -69,7 +69,7 @@ public class ReturnState extends GenericThrownItemEntityState {
 
 
             if (!Master.world.isClient){
-                if (target.distanceTo(Master) < 1){
+                if (target.distanceTo(Master) < 2){
                     if (!target.getInventory().insertStack(Master.itemToRender)){
                         Master.ChangeState(0);
                     }
@@ -107,30 +107,8 @@ public class ReturnState extends GenericThrownItemEntityState {
     public void onEntityHit(EntityHitResult entityHitResult) {
         // TODO Auto-generated method stub
        
-        try{
-            PlayerEntity entity = (PlayerEntity) entityHitResult.getEntity();
-
-            if (Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
-
-                if (!Master.world.isClient){
-                    if (!entity.getInventory().insertStack(Master.itemToRender)){
-                        Master.ChangeState(0);
-                        
-                    }
-                    else{
-
-                        Master.kill();
-                    }
-
-                }
-                
-            }
-            else{
-
-                Master.Attack(entityHitResult);
-            }
-        }
-        catch(Exception e){
+        
+        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
 
             Master.Attack(entityHitResult);
         }
