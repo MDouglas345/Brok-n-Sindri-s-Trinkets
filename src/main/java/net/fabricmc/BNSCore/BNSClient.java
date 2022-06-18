@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.lwjgl.glfw.GLFW;
 
 import it.unimi.dsi.fastutil.Stack;
+import net.fabricmc.Entity.EntityRegistry;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
@@ -71,6 +72,8 @@ public class BNSClient implements ClientModInitializer {
         EntityRendererRegistry.register(BNSCore.GenericThrownItemEntityType, (context) ->{
             return new GenericThrownItemEntityRenderer(context);
         });
+
+        EntityRegistry.registerClient();
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->{
 

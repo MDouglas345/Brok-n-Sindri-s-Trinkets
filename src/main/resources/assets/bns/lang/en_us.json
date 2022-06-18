@@ -13,5 +13,6 @@
     "enchantment.bns.throwtool" :   "Throwing",
     "effect.bns.paralysis"          :   "Paralysis",
     "key.bns.actionkey"        : "Throw Key",
-    "category.bns.keys"             : "Brok N Sindri"
+    "category.bns.keys"             : "Brok N Sindri",
+    "item.bns.brok_spawn_egg"   :   "Brok Spawn Egg"
 }

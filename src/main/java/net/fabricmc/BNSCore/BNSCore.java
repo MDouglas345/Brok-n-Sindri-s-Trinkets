@@ -98,6 +98,7 @@ import net.fabricmc.Enchantments.ThrowEnchantment.ThrowToolEnchantment;
 import net.fabricmc.Enchantments.ThrowEnchantment.ThrowWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
+import net.fabricmc.Entity.EntityRegistry;
 import net.fabricmc.GenericItemBlock.*;
 
 
@@ -247,6 +248,8 @@ public class BNSCore implements ModInitializer {
 		ParticleRegistery.registerParticles();
 
 		SoundRegistry.registerSounds();
+
+		EntityRegistry.registerAttributes();
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){
