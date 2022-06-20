@@ -290,7 +290,7 @@ public class ThrownState extends GenericThrownItemEntityState{
         else{
             boolean isowner = Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity());
 
-            if  (!isowner){
+            if  (isowner){
                 Master.Deflect(0.3f);
             }
             else{
