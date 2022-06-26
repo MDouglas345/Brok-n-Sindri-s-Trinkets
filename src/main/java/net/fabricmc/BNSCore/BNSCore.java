@@ -114,7 +114,7 @@ import net.fabricmc.GenericItemBlock.*;
 
 import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -249,7 +249,7 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher,  access, dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher,  dedicated) -> {
             
                 dispatcher.register(CommandManager.literal("bns").then(CommandManager.literal("resetthrownstacks")
 				.executes(context -> {
