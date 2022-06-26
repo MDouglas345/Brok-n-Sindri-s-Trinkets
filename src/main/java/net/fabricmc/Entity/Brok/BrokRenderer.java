@@ -13,12 +13,6 @@ public class BrokRenderer extends GeoEntityRenderer<BrokEntity>{
         
     }
 
-
-    @Override
-    public Identifier getTextureLocation(BrokEntity instance) {
-        return new Identifier(BNSCore.ModID, "textures/entity/brok/brok.png");
-    }
-
  
     
 }

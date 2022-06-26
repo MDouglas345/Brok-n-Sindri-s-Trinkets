@@ -7,22 +7,21 @@ import software.bernie.geckolib3.model.AnimatedGeoModel;
 public class BrokModel extends AnimatedGeoModel<BrokEntity>{
 
     @Override
-    public Identifier getAnimationFileLocation(BrokEntity animatable) {
+    public Identifier getAnimationResource(BrokEntity animatable) {
         // TODO Auto-generated method stub
         return new Identifier(BNSCore.ModID, "animations/brok.animation.json");
     }
 
     @Override
-    public Identifier getModelLocation(BrokEntity object) {
+    public Identifier getModelResource(BrokEntity object) {
         // TODO Auto-generated method stub
         return new Identifier(BNSCore.ModID, "geo/brok.geo.json");
     }
 
     @Override
-    public Identifier getTextureLocation(BrokEntity object) {
+    public Identifier getTextureResource(BrokEntity object) {
         // TODO Auto-generated method stub
         return new Identifier(BNSCore.ModID, "textures/entity/brok/brok.png");
     }
-
     
 }

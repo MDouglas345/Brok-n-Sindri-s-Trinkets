@@ -9,12 +9,13 @@ import java.util.Map.Entry;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Config.IDataEntry.BooleanEntry;
 import net.fabricmc.Config.IDataEntry.IDataEntry;
+import net.fabricmc.Config.IDataEntry.IntEntry;
 import net.fabricmc.Config.IDataEntry.StringArrayEntry;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Config {
 
-    HashMap<String, IDataEntry> data;
+   public HashMap<String, IDataEntry> data;
 
     static String filepath =  FabricLoader.getInstance()
                                             .getConfigDir()
@@ -25,6 +26,9 @@ public class Config {
         /**
          * Init data structure here. Then read to replace values.
          */
+    }
+
+    public void Init(){
         generateDefaults();
         readFile();
     }
@@ -50,15 +54,19 @@ public class Config {
     }
 
     public void enterData(String key, String v){
+        
+        ConfigReader.readBoolean(key, v);
+        ConfigReader.readInt(key, v);
+        ConfigReader.readStringArray(key, v);
+
+        /**
         IDataEntry entry = null;
 
         if (v.equals("True") | v.equals("False")){
             entry = new BooleanEntry(v);
         }
         else if (v.contains(",")){
-            /**
-             * this is a list of something. 
-             */
+            
 
              String[] entries = v.split(",");
 
@@ -76,6 +84,10 @@ public class Config {
 
         //not sure if this updates the record if it exists, or creates a new one even though it exists.
         data.put(key, entry);
+
+        */
+
+        
     }
 
     public String[] getPairs(String line){
@@ -85,6 +97,8 @@ public class Config {
     public void generateDefaults(){
         enterData("ThrowEnchantment", "False");
         enterData("NotAllowedThrow", "String,null");
+        enterData("DFDistance", "400");
+
     }
 
     public void writeFile(){
@@ -132,6 +146,17 @@ public class Config {
 
         data.put(key, new BooleanEntry(value));
 
+    }
+
+
+    public int getInt(String key){
+        try{
+            IntEntry d = (IntEntry) data.get(key);
+            return d.value;
+        }
+        catch(Exception e){
+            return -1;
+        }
     }
 
     public Boolean  isInStringArray(String key, String value) {

@@ -1,6 +1,7 @@
 package net.fabricmc.CardinalComponents;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import net.minecraft.nbt.NbtCompound;
@@ -95,6 +96,12 @@ public class PlayerBlockComponent implements IHashMapComponent<String, Boolean> 
     public void Reset() {
         // TODO Auto-generated method stub
         data = new HashMap<String,Boolean>();
+    }
+
+    @Override
+    public List<Boolean> getList() {
+        // TODO Auto-generated method stub
+        return null;
     }
     
 }

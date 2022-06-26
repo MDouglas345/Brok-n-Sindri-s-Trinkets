@@ -5,6 +5,7 @@ public class ConfigRegistery {
 
     public static void initConfig(){
         configuration = new Config();
+        configuration.Init();
     }
 
 }
