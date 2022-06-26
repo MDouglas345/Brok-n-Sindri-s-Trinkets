@@ -1,23 +1,28 @@
 package net.fabricmc.Entity.Brok;
 
+import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.world.World;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-public class BrokEntity extends VillagerEntity implements IAnimatable{
+public class BrokEntity extends PassiveDwarf implements IAnimatable{
 
-    private AnimationFactory factory = new AnimationFactory(this);
-
-    public BrokEntity(EntityType<? extends VillagerEntity> entityType, World world) {
+    public BrokEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
         //TODO Auto-generated constructor stub
     }
+
+    private AnimationFactory factory = new AnimationFactory(this);
+
+   
 
     /**
      * Fun with goals! Coming Soon TM

@@ -2,6 +2,8 @@ package net.fabricmc.Config.IDataEntry;
 
 import java.io.FileWriter;
 
+import net.fabricmc.Config.ConfigRegistery;
+
 public class BooleanEntry implements IDataEntry {
     public boolean value;
 
@@ -19,6 +21,19 @@ public class BooleanEntry implements IDataEntry {
         catch(Exception e){
             
         }
+        
+    }
+
+    @Override
+    public void readEntry(String key, String v) {
+        IDataEntry entry = null;
+
+        if (v.equals("True") | v.equals("False")){
+            entry = new BooleanEntry(v);
+            ConfigRegistery.configuration.data.put(key, entry);
+            
+        }
+        
         
     }
     
