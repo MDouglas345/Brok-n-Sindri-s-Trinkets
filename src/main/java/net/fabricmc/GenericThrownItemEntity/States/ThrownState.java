@@ -180,6 +180,7 @@ public class ThrownState extends GenericThrownItemEntityState{
         if (b.getBlock() instanceof GenericItemBlock){
             // if this entity hits a genericitemblock, bounce.
             Master.ThrowRandom(0.3f);
+            
 
             return;
         }
@@ -281,15 +282,23 @@ public class ThrownState extends GenericThrownItemEntityState{
          *  ((MobEntity)entity).setPersistent();
          */
         
-        boolean isowner = Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity());
+       
     
-        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !isowner){
+        if (!(entityHitResult.getEntity() instanceof PlayerEntity)){
 
             Master.Attack(entityHitResult);
         }
-        else if (!isowner){
-            Master.Deflect(0.3f);
+        else{
+            boolean isowner = Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity());
+
+            if  (isowner){
+                Master.Deflect(0.3f);
+            }
+            else{
+                Master.Attack(entityHitResult);
+            }
         }
+      
             
         
         

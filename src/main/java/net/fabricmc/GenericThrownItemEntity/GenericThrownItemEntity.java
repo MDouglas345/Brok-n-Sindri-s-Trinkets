@@ -124,16 +124,19 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public GenericThrownItemEntity(EntityType<? extends ThrownItemEntity> entityType, World world) {
 		super(entityType, world);
         setNoGravity(true);
+        //this.rand = Random.create(seed);
 	}
  
 	public GenericThrownItemEntity(World world, LivingEntity owner) {
 		super(BNSCore.GenericThrownItemEntityType, owner, world); // null will be changed later
         setNoGravity(true);
+        //this.rand = Random.create(seed);
 	}
  
 	public GenericThrownItemEntity(World world, double x, double y, double z) {
 		super(BNSCore.GenericThrownItemEntityType, x, y, z, world); // null will be changed later
         setNoGravity(true);
+        //this.rand = Random.create(seed);
 	}
 
     public Vec3f customRotationVec(){
@@ -580,6 +583,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public void SetStackID(int i ){
         this.StackID = i;
         this.rand = new Random(i);
+        
     }
 
     public void SetMaxed(boolean m){
@@ -631,6 +635,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				e.SetOwner(owner);
 				e.setItem(itemstack.copy());
                 e.SetMaxed(false);
+
+                e.SetStackID(e.getId());
                 
                 //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
                 e.setBonusAttack(1);
@@ -775,7 +781,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 int id = BNSCore.pushEntityOntoStack(world, client.getEntityName(), e.uuid);
 
-				
+			
 
 				e.SetStackID(id);
 
