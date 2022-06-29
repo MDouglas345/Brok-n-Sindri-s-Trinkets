@@ -249,7 +249,7 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher,  dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher,   dedicated) -> {
             
                 dispatcher.register(CommandManager.literal("bns").then(CommandManager.literal("resetthrownstacks")
 				.executes(context -> {
@@ -258,6 +258,8 @@ public class BNSCore implements ModInitializer {
 					BNSCore.resetStacks(server.getWorld(World.OVERWORLD));
 					BNSCore.resetStacks(server.getWorld(World.NETHER));
 					BNSCore.resetStacks(server.getWorld(World.END));
+					
+
 					BNSCore.LOGGER.info("Resetting Stacks!");
 					return 1;
 				
@@ -345,9 +347,17 @@ public class BNSCore implements ModInitializer {
 	public static void resetStacks(ServerWorld world){
 		BlockPosStackComponent bstack = BNSCore.getBlockStack(world);
 		UUIDStackComponent eStack = BNSCore.getEntitytack(world);
+		GlobalPosRecordComponent pos = BNSCore.getDwarvenForgeStack(world);
 
 		bstack.Reset();
 		eStack.Reset();
+		pos.Reset();
+	}
+
+	public static void resetDwarvenBlocks(ServerWorld world){
+		GlobalPosRecordComponent list = BNSCore.getDwarvenForgeStack(world);
+
+		list.Reset();
 	}
 
 	public static BlockPosStackComponent getBlockStack(ServerWorld world){

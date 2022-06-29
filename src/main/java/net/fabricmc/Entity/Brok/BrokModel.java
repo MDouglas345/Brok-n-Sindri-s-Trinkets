@@ -24,7 +24,4 @@ public class BrokModel extends AnimatedGeoModel<BrokEntity>{
         return new Identifier(BNSCore.ModID, "textures/entity/brok/brok.png");
     }
 
-
-
-    
 }
