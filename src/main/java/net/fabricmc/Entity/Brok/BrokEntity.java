@@ -1,5 +1,6 @@
 package net.fabricmc.Entity.Brok;
 
+import net.fabricmc.Entity.EntityRegistry;
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -15,8 +16,13 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class BrokEntity extends PassiveDwarf implements IAnimatable{
 
-    public BrokEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+    public BrokEntity(EntityType<? extends PassiveDwarf> entityType, World world) {
         super(entityType, world);
+        //TODO Auto-generated constructor stub
+    }
+
+    public BrokEntity(World world) {
+        super(EntityRegistry.BROK, world);
         //TODO Auto-generated constructor stub
     }
 

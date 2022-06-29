@@ -10,6 +10,8 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -58,6 +60,10 @@ public class DwarvenForgeBlock extends BlockWithEntity{
             DwarvenForgeBlockEntity ent =  (DwarvenForgeBlockEntity) world.getBlockEntity(pos);
             ent.StackID = BNSCore.pushDFOntoStack((ServerWorld) world, "forge", pos);
         }
+    }
+
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return checkType(type, BNSCore.DWARVEN_FORGE_BLOCK_ENTITY, (world1, pos, state1, be) -> DwarvenForgeBlockEntity.tick(world1, pos, state1, be));
     }
 
     @Override

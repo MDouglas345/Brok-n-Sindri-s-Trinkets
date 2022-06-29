@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.GlobalPosRecordComponent;
+import net.fabricmc.DwarvenForgeBlock.DwarvenForgeBlockEntity;
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -23,7 +25,7 @@ public class FindDwarvenForgeGoal extends Goal {
 
     int radius = 9;
 
-    FindDwarvenForgeGoal(PassiveDwarf entity){
+    public FindDwarvenForgeGoal(PassiveDwarf entity){
         owner = entity;
     }
 
@@ -32,6 +34,7 @@ public class FindDwarvenForgeGoal extends Goal {
         // TODO Auto-generated method stub
         return !owner.foundForge || owner.lastKnownForgeLocation == null;
     }
+
 
     @Override 
     public void tick(){
@@ -68,13 +71,23 @@ public class FindDwarvenForgeGoal extends Goal {
 
         BlockPos closest = null ;
         double minDist = Double.MAX_VALUE;
-
+        boolean shouldDespawn = true;
         for (BlockPos pos : list){
+
+            BlockEntity be = owner.world.getBlockEntity(pos);
+            if (be == null || !(be instanceof DwarvenForgeBlockEntity)){continue;}
             double d = pos.getSquaredDistance(origin);
+            if (d  < 50*50){
+                shouldDespawn = false;
+            }
             if ( d < minDist){
                 closest = pos;
                 minDist = d;
             }
+        }
+
+        if (shouldDespawn){
+            owner.despawn();
         }
         
         return closest;
