@@ -21,6 +21,9 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
     public static final ComponentKey<PlayerBlockComponent> PlayerBlocks =
         ComponentRegistry.getOrCreate(new Identifier("bns", "playerblocks"), PlayerBlockComponent.class);    
 
+    public static final ComponentKey<GlobalPosRecordComponent> DwarvenForges =
+        ComponentRegistry.getOrCreate(new Identifier("bns", "dwarvenforges"), GlobalPosRecordComponent.class);    
+
     @Override
     public void registerScoreboardComponentFactories(ScoreboardComponentFactoryRegistry registry) {
         registry.registerScoreboardComponent(BlockEntityPositions, BlockPosStackComponent::new);
@@ -39,6 +42,7 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
         registry.register(BlockEntityPositions, BlockPosStackComponent::new);
         registry.register(EntityUUIDs, UUIDStackComponent::new);
         registry.register(PlayerBlocks, PlayerBlockComponent::new);
+        registry.register(DwarvenForges, GlobalPosRecordComponent::new);
         
     }
 }

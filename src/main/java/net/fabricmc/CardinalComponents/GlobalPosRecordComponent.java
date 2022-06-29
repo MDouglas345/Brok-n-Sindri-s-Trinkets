@@ -21,27 +21,27 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProperties;
 
-public class BlockPosStackComponent implements IHashMapComponent<String, BlockPos> {
+public class GlobalPosRecordComponent implements IHashMapComponent<String, BlockPos> {
 
     /***
      * listen. You need to be using a stack for these. If you dont, how will you get the latest weapon thrown
      *  for a given player? Think, Mark, Think!
      */
 
-     public BlockPosStackComponent(Scoreboard sb, MinecraftServer ms){
+     public GlobalPosRecordComponent(Scoreboard sb, MinecraftServer ms){
          
      }
 
 
-     public BlockPosStackComponent(WorldProperties p){
+     public GlobalPosRecordComponent(WorldProperties p){
 
      }
 
-     public BlockPosStackComponent(World w){
+     public GlobalPosRecordComponent(World w){
          
      }
 
-    private HashMap<String,Stack<IDedBlockPos>> data = new HashMap<String, Stack<IDedBlockPos>>();
+    private List<BlockPos> data = new ArrayList<>();
 
     @Override
     public void readFromNbt(NbtCompound tag) {
@@ -51,31 +51,14 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
          * This function needs to verified that it is working as intended!
          */
 
-        NbtCompound PlayerStoredBP = (NbtCompound) tag.get("BEPos");
+        NbtCompound BlockPos = (NbtCompound) tag.get("globalPos");
 
-        for(String name : PlayerStoredBP.getKeys()){
-            
-             NbtList array = (NbtList) PlayerStoredBP.get(name);
-             Stack<IDedBlockPos> temp = new Stack<IDedBlockPos>();
-             List<IDedBlockPos> list = new ArrayList<>();
+        for (String name : BlockPos.getKeys()){
+            NbtList pos = (NbtList)BlockPos.get(name);
 
-             for (NbtElement elem : array){
-                 NbtList e = (NbtList)elem;
-
-                 int ID = ((NbtDouble)e.get(0)).intValue();
-                 int X = ((NbtDouble)e.get(1)).intValue();
-                 int Y = ((NbtDouble)e.get(2)).intValue();
-                 int Z = ((NbtDouble)e.get(3)).intValue();
-
-                 //temp.push(new IDedBlockPos(ID,new BlockPos(X, Y, Z)));
-                 list.add(new IDedBlockPos(ID,new BlockPos(X, Y, Z)));
-             }
-
-             temp.addAll(list); // this is needed so that the stack maintains the ordering.
-
-             data.put(name, temp);
-
+            data.add(new BlockPos(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2)));
         }
+
         
     }
 
@@ -109,107 +92,51 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
          *  ETC...
          */
 
-        NbtCompound PlayerStoredBP = new NbtCompound();
+        NbtCompound BlockPos = new NbtCompound();
         //PlayerStoredBP.put(key, element)
 
-       for(Entry<String, Stack<IDedBlockPos>> entry :data.entrySet() ){
-          NbtList array = new NbtList();
-          
-          Stack<IDedBlockPos> hash = entry.getValue();
+        for (BlockPos pos : data){
+            NbtList newEntry = new NbtList();
 
+            newEntry.add(NbtDouble.of(pos.getX()));
+            newEntry.add(NbtDouble.of(pos.getY()));
+            newEntry.add(NbtDouble.of(pos.getZ()));
 
-          for(IDedBlockPos position : hash){
-            
-              NbtList pos = new NbtList();
-              
-              pos.add(NbtDouble.of(position.ID));
-              pos.add(NbtDouble.of(position.blockpos.getX()));
-              pos.add(NbtDouble.of(position.blockpos.getY()));
-              pos.add(NbtDouble.of(position.blockpos.getZ()));
+            BlockPos.put(pos.toShortString(), newEntry);
+        }
 
-              array.add(pos);
-          }
+        tag.put("globalPos", BlockPos);
 
-          PlayerStoredBP.put(entry.getKey(), array);
-            
-       }
-        tag.put("BEPos", PlayerStoredBP);
+       
     }
 
     @Override
     public int Push(String key,  BlockPos value) {
-        if (!data.containsKey(key)){
-            Stack<IDedBlockPos> t = new Stack<IDedBlockPos>();
-            int id = Util.randgen.nextInt();
-            t.push(new IDedBlockPos(id, value));
-            data.put(key, t);
 
-            return id;
-        }
-        else{
-            Stack<IDedBlockPos> t = data.get(key);
-            int id = Util.randgen.nextInt();
-            t.push(new IDedBlockPos(id, value));
+        data.add(value);
+        return data.size()-1;
 
-            return id;
-        } 
     }
 
     
 
     @Override
     public void Remove(String key, int id) {
-        if (!data.containsKey(key)){
-            return;
-        }
 
-        Stack<IDedBlockPos> t = data.get(key);
-
-        int idremoval = -1;
+        data.remove(id);
         
-        for(IDedBlockPos p : t){
-            if (p.ID == id){
-                idremoval = t.indexOf(p);
-                break;
-            }
-        }
-
-        if (idremoval == -1){
-            return;
-        }
-
-        t.remove(idremoval);
         
     }
 
     @Override
     public BlockPos Pop(String key) {
-        if (!data.containsKey(key)){
-            return null;
-        }
-       Stack<IDedBlockPos> t = data.get(key);
 
-       try{
-            return t.pop().blockpos;
-        }
-        catch(Exception e){
-            return null;
-        }
+      return null;
     }
 
     @Override
     public BlockPos Peek(String key) {
-        if (!data.containsKey(key)){
-            return null;
-        }
-       Stack<IDedBlockPos> t = data.get(key);
-
-       try{
-            return t.peek().blockpos;
-        }
-        catch(Exception e){
-            return null;
-        }
+        return null;
     }
 
     @Override
@@ -222,14 +149,15 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
     @Override
     public void Reset() {
         // TODO Auto-generated method stub
-        data = new HashMap<String, Stack<IDedBlockPos>>();
+        data = new ArrayList<>();
     }
 
 
     @Override
     public List<BlockPos> getList() {
         // TODO Auto-generated method stub
-        return null;
+        return data;
+        
     }
 
     

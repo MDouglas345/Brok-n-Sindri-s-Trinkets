@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+      "all": "bns:block/dwarven_forge_block"
+    }
+  }

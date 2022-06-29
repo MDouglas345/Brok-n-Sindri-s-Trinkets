@@ -1,0 +1,5 @@
+{
+    "variants": {
+      "": { "model": "bns:block/dwarven_forge_block" }
+    }
+}
