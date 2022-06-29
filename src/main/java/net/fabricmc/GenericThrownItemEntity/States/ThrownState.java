@@ -180,6 +180,7 @@ public class ThrownState extends GenericThrownItemEntityState{
         if (b.getBlock() instanceof GenericItemBlock){
             // if this entity hits a genericitemblock, bounce.
             Master.ThrowRandom(0.3f);
+            
 
             return;
         }
