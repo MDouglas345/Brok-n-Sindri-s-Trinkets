@@ -84,6 +84,7 @@ package net.fabricmc.BNSCore;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Items.ItemRegistry;
+import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
@@ -108,6 +109,7 @@ import net.fabricmc.Enchantments.ThrowEnchantment.ThrowWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
 import net.fabricmc.Entity.EntityRegistry;
+import net.fabricmc.Entity.ScheduleRegistry.ScheduleRegistry;
 import net.fabricmc.Events.EventsRegistry;
 import net.fabricmc.GenericItemBlock.*;
 
@@ -276,7 +278,13 @@ public class BNSCore implements ModInitializer {
 
 		EventsRegistry.register();
 
+		ItemGroupRegistry.register();
+
 		ItemRegistry.register();
+
+		ScheduleRegistry.register();
+
+		
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){

@@ -33,11 +33,15 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
         super.writeNbt(nbt);
 
         nbt.putInt("stackID", StackID);
-    }
+        nbt.putBoolean("spawnbrok", this.spawnedBrok);
+        nbt.putBoolean("spawnsindri", this.spawnedSindri);
+    }   
 
     @Override
     public void readNbt(NbtCompound nbt){
         StackID = nbt.getInt("stackID");
+        spawnedBrok = nbt.getBoolean("spawnbrok");
+        spawnedSindri = nbt.getBoolean("spawnsindri");
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, DwarvenForgeBlockEntity be) {

@@ -10,7 +10,8 @@
     "ServerPlayerEntityMixin",
     "BlockItemMixin",
     "BlockMixin",
-    "EntityMixin"
+    "EntityMixin",
+    "ItemStackMixin"
   ],
   "client": [
     "QuadrupedEntityModelMixin"
