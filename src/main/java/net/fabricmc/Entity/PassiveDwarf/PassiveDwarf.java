@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Entity.PassiveDwarf.Goals.DwarfWander;
 import net.fabricmc.Entity.PassiveDwarf.Goals.EscapeWaterGoal;
 import net.fabricmc.Entity.PassiveDwarf.Goals.FindDwarvenForgeGoal;
 import net.fabricmc.Entity.PassiveDwarf.Goals.GoToDwarvenForgeGoal;
@@ -74,7 +75,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
         this.goalSelector.add(0, new EscapeWaterGoal(this, 1.7f));
         this.goalSelector.add(1, new PickupWantedGoal(this, 1.3f));
         this.goalSelector.add(2, new GoToDwarvenForgeGoal(this, 1.56f));
-        this.goalSelector.add(3, new WanderAroundGoal(this, 1f));
+        this.goalSelector.add(3, new DwarfWander(this, 1f));
         
     }
 
@@ -160,25 +161,26 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
     }
 
     public boolean inventoryContainsWeapon(){
-        for (int i = 0; i < 2; i++){
-            ItemStack stack = inventory.getStack(i);
+
+            ItemStack stack = inventory.getStack(0);
             ItemGroup group = stack.getItem().getGroup();
             if (group == null){return false;}
             if (group.equals(ItemGroup.COMBAT)){return true;}
             return false;
-        }
-        return false;
     }
 
     public boolean inventoryContainsRune(){
-        for (int i = 0; i < 2; i++){
-            ItemStack stack = inventory.getStack(i);
-            ItemGroup group = stack.getItem().getGroup();
-            if (group == null){return false;}
-            if (group.equals(ItemGroupRegistry.RUNE_STONE)){return true;}
-            return false;
-        }
+
+        ItemStack stack = inventory.getStack(1);
+        ItemGroup group = stack.getItem().getGroup();
+        if (group == null){return false;}
+        if (group.equals(ItemGroupRegistry.RUNE_STONE)){return true;}
         return false;
+       
+    }
+
+    public boolean isCloseToDF(){
+        return lastKnownForgeLocation.isWithinDistance(getBlockPos(), 1);
     }
 
     public boolean lootWanted(ItemEntity item){
@@ -196,9 +198,13 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
             return false;
         }
 
+        if (item.getThrower() == null ||stack.getItem().getGroup() == null){
+            return false;
+        }
+
         if (stack.getItem().getGroup().equals(ItemGroup.COMBAT)){
             inventory.setStack(0, stack);
-            ItemOwners[0] = world.getPlayerByUuid(item.getThrower()).getEntityName();
+            ItemOwners[0] =((ServerWorld)world).getServer().getUserCache().getByUuid(item.getThrower()).get().getName();
             this.sendPickup(item, 1);
             item.discard();
             return true;
@@ -206,7 +212,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
 
         if (stack.getItem().getGroup().equals(ItemGroupRegistry.RUNE_STONE)){
             inventory.setStack(1, stack);
-            ItemOwners[1] = world.getPlayerByUuid(item.getThrower()).getEntityName();
+            ItemOwners[1] = ((ServerWorld)world).getServer().getUserCache().getByUuid(item.getThrower()).get().getName();
             this.sendPickup(item, 1);
             item.discard();
             return true;
