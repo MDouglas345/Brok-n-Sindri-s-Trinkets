@@ -23,5 +23,7 @@ public class ItemRegistry {
         Registry.register(Registry.ITEM, new Identifier(BNSCore.ModID, "lightning_stone"), RuneStoneItemRegistry.LIGHTNING_STONE);
         Registry.register(Registry.ITEM, new Identifier(BNSCore.ModID, "flame_stone"), RuneStoneItemRegistry.FLAME_STONE);
         Registry.register(Registry.ITEM, new Identifier(BNSCore.ModID, "frost_stone"), RuneStoneItemRegistry.FROST_STONE);
+        Registry.register(Registry.ITEM, new Identifier(BNSCore.ModID, "worthy_stone"), RuneStoneItemRegistry.WORTHY_STONE);
+        Registry.register(Registry.ITEM, new Identifier(BNSCore.ModID, "pinned_stone"), RuneStoneItemRegistry.PINNED_STONE);
     }
 }

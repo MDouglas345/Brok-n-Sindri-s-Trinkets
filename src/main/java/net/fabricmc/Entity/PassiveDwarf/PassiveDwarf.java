@@ -11,6 +11,7 @@ import net.fabricmc.Entity.PassiveDwarf.Goals.EscapeWaterGoal;
 import net.fabricmc.Entity.PassiveDwarf.Goals.FindDwarvenForgeGoal;
 import net.fabricmc.Entity.PassiveDwarf.Goals.GoToDwarvenForgeGoal;
 import net.fabricmc.Entity.PassiveDwarf.Goals.PickupWantedGoal;
+import net.fabricmc.Entity.PassiveDwarf.Goals.ProcessMaterialsGoal;
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarfBrain.PassiveDwarfBrain;
 import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
 import net.fabricmc.Util.IHasOwner;
@@ -75,7 +76,8 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
         this.goalSelector.add(0, new EscapeWaterGoal(this, 1.7f));
         this.goalSelector.add(1, new PickupWantedGoal(this, 1.3f));
         this.goalSelector.add(2, new GoToDwarvenForgeGoal(this, 1.56f));
-        this.goalSelector.add(3, new DwarfWander(this, 1f));
+        this.goalSelector.add(3, new ProcessMaterialsGoal(this));
+        this.goalSelector.add(4, new DwarfWander(this, 1f));
         
     }
 
@@ -180,7 +182,10 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
     }
 
     public boolean isCloseToDF(){
-        return lastKnownForgeLocation.isWithinDistance(getBlockPos(), 1);
+        if (lastKnownForgeLocation == null){
+            return false;
+        }
+        return lastKnownForgeLocation.isWithinDistance(getBlockPos(), 2);
     }
 
     public boolean lootWanted(ItemEntity item){
@@ -219,6 +224,14 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
         }    
 
         return false;
+    }
+
+    public void resetInventory(){
+        inventory.setStack(0, new ItemStack(Items.AIR));
+        inventory.setStack(1, new ItemStack(Items.AIR));
+
+        ItemOwners = new String[]{"", ""};
+        
     }
 
     public ActionResult interactMob(PlayerEntity player, Hand hand) {

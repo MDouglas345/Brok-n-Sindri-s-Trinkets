@@ -1,13 +1,12 @@
-package net.fabricmc.Items.RuneStones.FlameStone;
+package net.fabricmc.Items.RuneStones.WorthyStone;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Items.RuneStones.RuneStoneItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 
-public class FlameStoneItem extends RuneStoneItem {
-
-    public FlameStoneItem() {
+public class WorthyStoneItem extends RuneStoneItem {
+    public WorthyStoneItem() {
         super();
         //TODO Auto-generated constructor stub
     }
@@ -17,13 +16,11 @@ public class FlameStoneItem extends RuneStoneItem {
         ItemGroup group = stack.getItem().getGroup();
 
         if (group.equals(ItemGroup.COMBAT)){
-            stack.addEnchantment(BNSCore.FlameWeapon, 1);
+            stack.addEnchantment(BNSCore.WorthyWeapon, 1);
         }
 
         if (group.equals(ItemGroup.TOOLS)){
-            stack.addEnchantment(BNSCore.FlameTool, 1);
+            stack.addEnchantment(BNSCore.WorthyTool, 1);
         }
     }
-    
-    
 }
