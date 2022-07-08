@@ -84,6 +84,7 @@ package net.fabricmc.BNSCore;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Items.ItemRegistry;
+import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
@@ -108,13 +109,14 @@ import net.fabricmc.Enchantments.ThrowEnchantment.ThrowWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
 import net.fabricmc.Entity.EntityRegistry;
+import net.fabricmc.Entity.ScheduleRegistry.ScheduleRegistry;
 import net.fabricmc.Events.EventsRegistry;
 import net.fabricmc.GenericItemBlock.*;
 
 
 import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -249,7 +251,7 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher,   dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher,  access, dedicated) -> {
             
                 dispatcher.register(CommandManager.literal("bns").then(CommandManager.literal("resetthrownstacks")
 				.executes(context -> {
@@ -276,7 +278,13 @@ public class BNSCore implements ModInitializer {
 
 		EventsRegistry.register();
 
+		ItemGroupRegistry.register();
+
 		ItemRegistry.register();
+
+		ScheduleRegistry.register();
+
+		
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){

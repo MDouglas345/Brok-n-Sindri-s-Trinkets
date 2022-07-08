@@ -13,6 +13,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.tag.PointOfInterestTypeTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.poi.PointOfInterestStorage;
 

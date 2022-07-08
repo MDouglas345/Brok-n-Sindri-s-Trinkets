@@ -20,12 +20,14 @@ public class GoToDwarvenForgeGoal extends Goal {
         if (!owner.foundForge){return false;}
         if (owner.lastKnownForgeLocation.isWithinDistance(owner.getBlockPos(), 1.5)){return false;}
 
-        return owner.getRandom().nextFloat() < 0.01;
-        //return owner.WeaponToEnchant != null && owner.RunicStone != null;
+       
+        return owner.isInventoryFull();
     }
 
     public boolean shouldContinue() {
-        if (owner.lastKnownForgeLocation.isWithinDistance(owner.getBlockPos(), 1.5)){return false;}
+        if (owner.lastKnownForgeLocation.isWithinDistance(owner.getBlockPos(), 1) && !owner.isInventoryFull()){
+            return false;
+        }
         return !this.owner.getNavigation().isIdle();
      }
 
