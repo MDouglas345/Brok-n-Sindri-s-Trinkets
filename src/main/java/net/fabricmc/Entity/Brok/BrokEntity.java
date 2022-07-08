@@ -16,9 +16,12 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class BrokEntity extends PassiveDwarf implements IAnimatable{
 
+    
+
     public BrokEntity(EntityType<? extends PassiveDwarf> entityType, World world) {
         super(entityType, world);
         //TODO Auto-generated constructor stub
+        improveLevel = 1;
     }
 
     public BrokEntity(World world) {

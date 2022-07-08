@@ -55,6 +55,8 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
     protected static final ImmutableList<SensorType<? extends Sensor<? super PassiveDwarf>>> SENSOR_TYPES;
     protected static final ImmutableList<MemoryModuleType<?>> MEMORY_MODULE_TYPES;
 
+    protected int improveLevel = 1;
+
 
     static{
         SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY);
@@ -137,6 +139,10 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
 
         NbtList boollist = (NbtList) nbt.get("ItemOwners");
 
+        if (boollist == null){
+            return;
+        }
+
         if (boollist.isEmpty()){
             return;
         }
@@ -167,7 +173,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
             ItemStack stack = inventory.getStack(0);
             ItemGroup group = stack.getItem().getGroup();
             if (group == null){return false;}
-            if (group.equals(ItemGroup.COMBAT)){return true;}
+            if (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)){return true;}
             return false;
     }
 
@@ -194,20 +200,21 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
         }
 
         ItemStack stack = item.getStack();
+        ItemGroup group = stack.getItem().getGroup();
 
-        if (inventoryContainsWeapon() && stack.getItem().getGroup().equals(ItemGroup.COMBAT)){
+        if (inventoryContainsWeapon() && (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)) ){
             return false;
         }
 
-        if (inventoryContainsRune() && stack.getItem().getGroup().equals(ItemGroupRegistry.RUNE_STONE)){
+        if (inventoryContainsRune() && group.equals(ItemGroupRegistry.RUNE_STONE)){
             return false;
         }
 
-        if (item.getThrower() == null ||stack.getItem().getGroup() == null){
+        if (item.getThrower() == null || group == null){
             return false;
         }
 
-        if (stack.getItem().getGroup().equals(ItemGroup.COMBAT)){
+        if (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)){
             inventory.setStack(0, stack);
             ItemOwners[0] =((ServerWorld)world).getServer().getUserCache().getByUuid(item.getThrower()).get().getName();
             this.sendPickup(item, 1);
