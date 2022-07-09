@@ -58,8 +58,15 @@ import net.minecraft.util.math.Vec3d;
                 return false;
              }
           }
- 
-          Vec3d vec3d = this.getWanderTarget();
+          Vec3d vec3d = null;
+          if ( mob.lastKnownForgeLocation != null && !mob.getBlockPos().isWithinDistance(mob.lastKnownForgeLocation, 10)){
+            vec3d = Vec3d.ofBottomCenter(mob.lastKnownForgeLocation);
+          }
+          else{
+            vec3d = this.getWanderTarget();
+          }
+
+           
           if (vec3d == null) {
              return false;
           } else {

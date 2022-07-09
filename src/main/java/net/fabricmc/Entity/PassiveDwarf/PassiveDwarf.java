@@ -41,6 +41,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
@@ -55,7 +56,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
     protected static final ImmutableList<SensorType<? extends Sensor<? super PassiveDwarf>>> SENSOR_TYPES;
     protected static final ImmutableList<MemoryModuleType<?>> MEMORY_MODULE_TYPES;
 
-    protected int improveLevel = 1;
+    public int improveLevel = 1;
 
 
     static{
@@ -109,13 +110,33 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
      }
 
      
+     public void EjectInventory(){
+        ItemStack weapon = inventory.getStack(0);
+        ItemStack rune = inventory.getStack(1);
 
+        if (!weapon.getItem().equals(Items.AIR)){
+            // drop the weapon
+            Vec3d pos = getPos();
+            ItemEntity entity = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), weapon);
+            world.spawnEntity(entity);
+        }
+
+        
+        if (!rune.getItem().equals(Items.AIR)){
+            Vec3d pos = getPos();
+            ItemEntity entity = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), rune);
+            world.spawnEntity(entity);
+        }
+
+        resetInventory();
+     }
 
     public void despawn(){
         /**
          * Drop any weapon or runic stone and then discard
          */
         
+        EjectInventory();
         this.discard();
         
     }
@@ -202,6 +223,10 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
         ItemStack stack = item.getStack();
         ItemGroup group = stack.getItem().getGroup();
 
+        if (item.getThrower() == null || group == null){
+            return false;
+        }
+
         if (inventoryContainsWeapon() && (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)) ){
             return false;
         }
@@ -210,9 +235,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
             return false;
         }
 
-        if (item.getThrower() == null || group == null){
-            return false;
-        }
+       
 
         if (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)){
             inventory.setStack(0, stack);

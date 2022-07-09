@@ -1,5 +1,6 @@
 package net.fabricmc.Items.RuneStones;
 
+import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
 import net.fabricmc.Items.ItemRegistry;
 import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
 import net.minecraft.item.Item;
@@ -13,8 +14,8 @@ public class RuneStoneItem extends Item {
     }
 
 
-    public void enchantItem(ItemStack stack){
-
+    public boolean enchantItem(ItemStack stack, PassiveDwarf dwarf){
+        return true;
     }
     
 }

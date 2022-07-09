@@ -1,6 +1,7 @@
 package net.fabricmc.Config;
 
 import net.fabricmc.Config.IDataEntry.BooleanEntry;
+import net.fabricmc.Config.IDataEntry.DoubleEntry;
 import net.fabricmc.Config.IDataEntry.IDataEntry;
 import net.fabricmc.Config.IDataEntry.IntEntry;
 import net.fabricmc.Config.IDataEntry.StringArrayEntry;
@@ -41,6 +42,20 @@ public class ConfigReader {
         }
         catch(Exception e){
             return;
+        }
+    }
+
+    public static void readDouble(String key, String value){
+        try{
+            if (!value.contains(".")){
+                return;
+            }
+            double i = Double.parseDouble(value);
+            IDataEntry entry = new DoubleEntry(i);
+            ConfigRegistery.configuration.data.put(key, entry);
+        }
+        catch(Exception e){
+            return; 
         }
     }
 }

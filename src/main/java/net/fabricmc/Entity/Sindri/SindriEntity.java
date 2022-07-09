@@ -1,4 +1,4 @@
-package net.fabricmc.Entity.Brok;
+package net.fabricmc.Entity.Sindri;
 
 import net.fabricmc.Entity.EntityRegistry;
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
@@ -14,29 +14,22 @@ import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-public class BrokEntity extends PassiveDwarf implements IAnimatable{
-
-    
-
-    public BrokEntity(EntityType<? extends PassiveDwarf> entityType, World world) {
-        super(entityType, world);
-        //TODO Auto-generated constructor stub
-        improveLevel = 1;
-    }
-
-    public BrokEntity(World world) {
-        super(EntityRegistry.BROK, world);
-        //TODO Auto-generated constructor stub
-        improveLevel = 1;
-    }
+public class SindriEntity extends PassiveDwarf implements IAnimatable {
 
     private AnimationFactory factory = new AnimationFactory(this);
 
-   
+    public SindriEntity(EntityType<? extends PassiveDwarf> entityType, World world) {
+        super(entityType, world);
+        //TODO Auto-generated constructor stub
+        improveLevel = 2;
+        
+    }
 
-    /**
-     * Fun with goals! Coming Soon TM
-     */
+    public SindriEntity(World world) {
+        super(EntityRegistry.SINDRI, world);
+        //TODO Auto-generated constructor stub
+        improveLevel = 2;
+    }
 
     @Override
     public void registerControllers(AnimationData data) {

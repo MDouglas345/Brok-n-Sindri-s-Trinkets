@@ -55,11 +55,11 @@ public class PickupWantedGoal extends Goal {
             goToTarget();
         }
        
-        if (currentTarget == null){
+        if (owner.world.getEntityById(currentTarget.getId()) == null){
             return;
         }
 
-        if (owner.getPos().isInRange(currentTarget.getPos(), 1.5f)){
+        if (owner.getBlockPos().isWithinDistance(currentTarget.getBlockPos(), 1.1)){
             owner.lootWanted(currentTarget);
             if (iterator.hasNext()){
                 currentTarget = iterator.next();

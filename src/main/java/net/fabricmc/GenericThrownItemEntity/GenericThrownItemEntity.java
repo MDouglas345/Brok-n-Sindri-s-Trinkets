@@ -19,6 +19,7 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericThrownItemEntity.States.BounceState;
@@ -238,13 +239,18 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             }
 
             Item item = itemToRender.getItem();
+
+            itemToRender.damage(ConfigRegistery.configuration.getInt("ItemDamage"), random, null);
+
             float attackDamage = item instanceof MiningToolItem ? ((MiningToolItem)item).getAttackDamage(): item instanceof SwordItem ? ((SwordItem)item).getAttackDamage() : 0;
-            
-            
-            entity.damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
+            // formula : baseattack * attackmult * maxattackmul
+            float attackmul = (float) ConfigRegistery.configuration.getDouble("AttackMultiplier");
+            float maxattackmul = (float) ConfigRegistery.configuration.getDouble("MaxAttackMultiplier");
+
+            entity.damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage * attackmul * maxattackmul);
 
         
-
+            
             PlayerEntity source = (PlayerEntity) getOwner();
 
             if (source != null){
@@ -737,11 +743,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 if (timeHeld > 15){
                     e.SetMaxed(true);
-                    speed = 1.2f;
+                    speed = (float) ConfigRegistery.configuration.getDouble("ThrowSpeedMax");
                 }
                 else{
                     e.SetMaxed(false);
-                    speed = 0.8f;
+                    speed = (float) ConfigRegistery.configuration.getDouble("ThrowSpeed");;
                 }
 
                 playThrowSound(world, e.getBlockPos(), e.Maxed);

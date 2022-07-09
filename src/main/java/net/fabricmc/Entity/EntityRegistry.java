@@ -4,6 +4,8 @@ import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Entity.Brok.BrokEntity;
 import net.fabricmc.Entity.Brok.BrokRenderer;
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
+import net.fabricmc.Entity.Sindri.SindriEntity;
+import net.fabricmc.Entity.Sindri.SindriRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -19,13 +21,22 @@ public class EntityRegistry {
                                                                 Registry.ENTITY_TYPE, 
                                                                 new Identifier(BNSCore.ModID, "brok"),                 
                                                                 FabricEntityTypeBuilder.<BrokEntity>create(SpawnGroup.CREATURE, BrokEntity::new)
-                                                                .dimensions(EntityDimensions.fixed(0.75f, 1.4f)).build()); 
+                                                                .dimensions(EntityDimensions.fixed(0.75f, 1.1f)).build()); 
+    
+    public static final EntityType<SindriEntity> SINDRI = Registry.register(
+                                                                    Registry.ENTITY_TYPE, 
+                                                                    new Identifier(BNSCore.ModID, "sindri"),                 
+                                                                    FabricEntityTypeBuilder.<SindriEntity>create(SpawnGroup.CREATURE, SindriEntity::new)
+                                                                    .dimensions(EntityDimensions.fixed(0.75f, 1.4f)).build()); 
+                                        
     
     public static void registerClient(){
         EntityRendererRegistry.register(BROK, BrokRenderer::new);   
+        EntityRendererRegistry.register(SINDRI, SindriRenderer::new);   
     }
 
     public static void registerAttributes(){
         FabricDefaultAttributeRegistry.register(BROK, BrokEntity.setDefaultAttributes());
+        FabricDefaultAttributeRegistry.register(SINDRI, SindriEntity.setDefaultAttributes());
     }
 }

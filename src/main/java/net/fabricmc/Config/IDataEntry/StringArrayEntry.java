@@ -2,7 +2,6 @@ package net.fabricmc.Config.IDataEntry;
 
 import java.io.FileWriter;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 import net.fabricmc.Config.ConfigRegistery;
 

@@ -4,8 +4,11 @@ import org.apache.logging.log4j.core.jmx.Server;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Entity.Brok.BrokEntity;
+import net.fabricmc.Entity.Sindri.SindriEntity;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -27,6 +30,35 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
        
     }
 
+    public boolean nearbyIncreasingBlocks(){
+        /**
+         * Check for atleast 3 nearby gold blocks
+         * thy must exist on the same plane, no height variance
+         */
+        int found = 0;
+
+        BlockPos origin = getPos();
+
+         for (int x = -3; x < 3; x++){
+            for (int z = -3; z < 3; z++){
+                
+                BlockPos pos = origin.add(x, 0, z);
+
+                BlockState state = world.getBlockState(pos);
+
+                if (state.isOf(Blocks.GOLD_BLOCK)){
+                    found++;
+                }
+
+                if (found == 3){
+                    return true;
+                }
+            }
+         }
+
+         return false;
+    }
+
 
     @Override
     public void writeNbt(NbtCompound nbt){
@@ -39,6 +71,7 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
 
     @Override
     public void readNbt(NbtCompound nbt){
+        super.readNbt(nbt);
         StackID = nbt.getInt("stackID");
         spawnedBrok = nbt.getBoolean("spawnbrok");
         spawnedSindri = nbt.getBoolean("spawnsindri");
@@ -53,10 +86,16 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
                     brok.setPosition(Vec3d.of(pos.up()));
                     be.spawnedBrok = true;
                     ((ServerWorld)world).spawnEntity(brok);
+                    be.markDirty();
+                    
                 }
 
-                if (!be.spawnedBrok){
-
+                if (!be.spawnedSindri && be.nearbyIncreasingBlocks()){
+                    SindriEntity sindri = new SindriEntity(world);
+                    sindri.setPosition(Vec3d.of(pos.up()));
+                    be.spawnedSindri = true;
+                    ((ServerWorld)world).spawnEntity(sindri);
+                    be.markDirty();
                 }
             }
         
