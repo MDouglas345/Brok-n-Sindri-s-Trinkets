@@ -38,12 +38,23 @@ public class ProcessMaterialsGoal extends Goal{
     @Override
     public void stop(){
         ticks = 0;
+
+        
         
         ItemStack weapon = owner.inventory.getStack(0);
 
-        RuneStoneItem rune = (RuneStoneItem) owner.inventory.getStack(1).getItem();
+        ItemStack runestack = owner.inventory.getStack(1);
 
-        rune.enchantItem(weapon);
+        if (weapon.getItem().equals(Items.AIR) || runestack.getItem().equals(Items.AIR)){
+            return;
+        }
+
+        RuneStoneItem rune = (RuneStoneItem) runestack.getItem();
+
+        if (!rune.enchantItem(weapon, owner)){
+            owner.EjectInventory();
+            return;
+        }
 
         Vec3d pos = owner.getPos();
         

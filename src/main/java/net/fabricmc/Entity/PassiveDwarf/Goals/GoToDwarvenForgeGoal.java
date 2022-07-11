@@ -25,7 +25,7 @@ public class GoToDwarvenForgeGoal extends Goal {
     }
 
     public boolean shouldContinue() {
-        if (owner.lastKnownForgeLocation.isWithinDistance(owner.getBlockPos(), 1) && !owner.isInventoryFull()){
+        if (owner.lastKnownForgeLocation.isWithinDistance(owner.getBlockPos(), 2) && !owner.isInventoryFull()){
             return false;
         }
         return !this.owner.getNavigation().isIdle();

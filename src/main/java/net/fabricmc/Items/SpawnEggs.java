@@ -12,5 +12,6 @@ import net.minecraft.util.registry.Registry;
 
 public class SpawnEggs {
     public static Item BROK_SPAWN_EGG = new SpawnEggItem(EntityRegistry.BROK, 0x0008b, 0xffd700, new Settings().maxCount(1).group(ItemGroup.MISC));
+    public static Item SINDRI_SPAWN_EGG = new SpawnEggItem(EntityRegistry.SINDRI, 0xd4af37b, 0xffd700, new Settings().maxCount(1).group(ItemGroup.MISC));
 
 }

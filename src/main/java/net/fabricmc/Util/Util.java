@@ -3,6 +3,7 @@ package net.fabricmc.Util;
 import java.util.Random;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentHelper.*;
@@ -27,7 +28,11 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+
 import net.minecraft.entity.player.PlayerEntity;
 
 
@@ -47,6 +52,36 @@ public class Util {
         float w = q.getW();
 
         return new Vec3d(2 * (x*z + w*y), 2 * (y*z - w*x), 1 - 2 * (x*x - y*y));
+    }
+
+    public static boolean ContainsSpecialThrownEnchantment(ItemStack stack){
+        EnchantmentData data = getSpecialThrownEnchantment(stack);
+
+        return data != null;
+    }
+
+    public static boolean isEnchantmentSpecialThrown(Enchantment enchantment){
+        return enchantment instanceof IWorldBehvaior;
+    }
+
+    public static ItemStack setEnchantment(ItemStack stack, Enchantment enchantment, int level){
+
+        Map<Enchantment, Integer> map = EnchantmentHelper.get(stack);
+        Integer orig = map.get(enchantment);
+
+        if (orig != null && orig >= level){
+            return stack;
+        }
+
+        if (isEnchantmentSpecialThrown(enchantment) && ContainsSpecialThrownEnchantment(stack)){
+            return stack;
+        }
+
+        map.put(enchantment, level);
+
+        EnchantmentHelper.set(map, stack);
+        
+        return stack;
     }
 
     public static Quaternion QuaternionFromDirection(Vec3d v){

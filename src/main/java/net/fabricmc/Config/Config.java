@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Config.IDataEntry.BooleanEntry;
+import net.fabricmc.Config.IDataEntry.DoubleEntry;
 import net.fabricmc.Config.IDataEntry.IDataEntry;
 import net.fabricmc.Config.IDataEntry.IntEntry;
 import net.fabricmc.Config.IDataEntry.StringArrayEntry;
@@ -58,6 +59,7 @@ public class Config {
         ConfigReader.readBoolean(key, v);
         ConfigReader.readInt(key, v);
         ConfigReader.readStringArray(key, v);
+        ConfigReader.readDouble(key, v);
 
         /**
         IDataEntry entry = null;
@@ -98,6 +100,12 @@ public class Config {
         enterData("ThrowEnchantment", "False");
         enterData("NotAllowedThrow", "String,null");
         enterData("DFDistance", "400");
+        enterData("ThrowSpeed","0.8");
+        enterData("ThrowSpeedMax", "1.2");
+        enterData("AttackMultiplier", "0.6");
+        enterData("MaxAttackMultiplier", "1.2");
+        enterData("ReturnSpeed", "0.8");
+        enterData("ItemDamage", "1");
 
     }
 
@@ -152,6 +160,16 @@ public class Config {
     public int getInt(String key){
         try{
             IntEntry d = (IntEntry) data.get(key);
+            return d.value;
+        }
+        catch(Exception e){
+            return -1;
+        }
+    }
+
+    public double getDouble(String key){
+        try{
+            DoubleEntry d = (DoubleEntry) data.get(key);
             return d.value;
         }
         catch(Exception e){
