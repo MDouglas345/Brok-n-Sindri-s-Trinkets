@@ -1,0 +1,66 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.brok.idle": {
+			"loop": true,
+			"animation_length": 1,
+			"bones": {
+				"UpperTorso": {
+					"position": {
+						"0.0": {
+							"vector": [0, -0.32, 0]
+						},
+						"0.25": {
+							"vector": [0, -0.325, 0]
+						},
+						"0.6667": {
+							"vector": [0, -0.045, 0]
+						},
+						"1.0": {
+							"vector": [0, -0.22, 0]
+						}
+					}
+				},
+				"LeftArm": {
+					"rotation": {
+						"vector": [0, 30, 0]
+					}
+				},
+				"Lupperarm": {
+					"rotation": {
+						"vector": [-65.53666, 2.64573, -18.31124]
+					}
+				},
+				"Llowerarm": {
+					"rotation": {
+						"vector": [-110.54701, 59.22851, -64.44007]
+					}
+				},
+				"RightArm": {
+					"rotation": {
+						"vector": [0, -35, 0]
+					}
+				},
+				"Rupperarm": {
+					"rotation": {
+						"vector": [-66.69304, -9.30727, 20.57639]
+					}
+				},
+				"Rlowerarm": {
+					"rotation": {
+						"vector": [-48.64293, -12.27659, -12.56853]
+					}
+				},
+				"brow": {
+					"position": {
+						"vector": [0, -0.525, 0]
+					}
+				}
+			}
+		},
+		"animation.brok.walk": {
+			"loop": true
+		}
+	},
+	"geckolib_format_version": 2
+}
