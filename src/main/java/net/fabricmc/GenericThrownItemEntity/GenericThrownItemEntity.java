@@ -11,6 +11,7 @@
 package net.fabricmc.GenericThrownItemEntity;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.MaxValuesforFieldExceededException;
@@ -81,7 +82,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.Heightmap;
@@ -494,7 +494,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         this.Maxed = nbt.getBoolean("maxed");
 
         this.StackID = nbt.getInt("stackid");
-        this.rand = Random.create(StackID);
+        this.rand = new Random(StackID);
 
         enchantmentData = Util.getSpecialThrownEnchantment(itemToRender);
     }
@@ -588,7 +588,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void SetStackID(int i ){
         this.StackID = i;
-        this.rand = Random.create(i);
+        this.rand = new Random(i); 
         
     }
 
