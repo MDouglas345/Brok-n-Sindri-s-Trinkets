@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+      "GGG",
+      " A ",
+      "DDD"
+    ],
+    "key": {
+      "A": {
+        "item": "minecraft:anvil"
+      },
+      "G": {
+        "item": "minecraft:gold_block"
+      },
+      "D": {
+        "item": "minecraft:diamond"
+      }
+    },
+    "result": {
+      "item": "bns:dwarven_forge_block",
+      "count": 1
+    }
+  }

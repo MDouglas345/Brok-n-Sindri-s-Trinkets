@@ -106,6 +106,8 @@ public class Config {
         enterData("MaxAttackMultiplier", "1.2");
         enterData("ReturnSpeed", "0.8");
         enterData("ItemDamage", "1");
+        enterData("AntiGrief", "False");
+        enterData("RuneDropChance", "0.01");
 
     }
 

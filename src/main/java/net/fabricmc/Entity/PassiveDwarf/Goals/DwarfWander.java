@@ -90,7 +90,7 @@ import net.minecraft.util.math.Vec3d;
             return group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS) || group.equals(ItemGroupRegistry.RUNE_STONE);
         });
 
-        return (mob.isInventoryFull() || wanted.isEmpty()) && !this.mob.getNavigation().isIdle() && !this.mob.hasPassengers();
+        return ((mob.inventoryContainsRune() && mob.inventoryContainsWeapon()) || wanted.isEmpty()) && !this.mob.getNavigation().isIdle() && !this.mob.hasPassengers();
     }
  
     public void start() {

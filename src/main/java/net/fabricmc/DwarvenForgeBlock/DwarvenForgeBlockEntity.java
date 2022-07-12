@@ -1,5 +1,7 @@
 package net.fabricmc.DwarvenForgeBlock;
 
+import java.util.UUID;
+
 import org.apache.logging.log4j.core.jmx.Server;
 
 import net.fabricmc.BNSCore.BNSCore;
@@ -23,6 +25,9 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
 
     public boolean spawnedBrok = false;
     public boolean spawnedSindri = false;
+
+    public int     brokUUID;
+    public int     sindriUUID;
 
     public DwarvenForgeBlockEntity(BlockPos pos, BlockState state) {
         super(BNSCore.DWARVEN_FORGE_BLOCK_ENTITY, pos, state);
@@ -67,6 +72,8 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
         nbt.putInt("stackID", StackID);
         nbt.putBoolean("spawnbrok", this.spawnedBrok);
         nbt.putBoolean("spawnsindri", this.spawnedSindri);
+        nbt.putInt("brokUUID", brokUUID);
+        nbt.putInt("sindriUUID", sindriUUID);
     }   
 
     @Override
@@ -75,6 +82,8 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
         StackID = nbt.getInt("stackID");
         spawnedBrok = nbt.getBoolean("spawnbrok");
         spawnedSindri = nbt.getBoolean("spawnsindri");
+        brokUUID = nbt.getInt("brokUUID");
+        sindriUUID = nbt.getInt("sindriUUID");
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, DwarvenForgeBlockEntity be) {
@@ -85,8 +94,10 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
                     BrokEntity brok = new BrokEntity(world);
                     brok.setPosition(Vec3d.of(pos.up()));
                     be.spawnedBrok = true;
+                    brok.setPersistent();
                     ((ServerWorld)world).spawnEntity(brok);
                     be.markDirty();
+                    be.brokUUID = brok.getId();
                     
                 }
 
@@ -94,8 +105,11 @@ public class DwarvenForgeBlockEntity extends BlockEntity{
                     SindriEntity sindri = new SindriEntity(world);
                     sindri.setPosition(Vec3d.of(pos.up()));
                     be.spawnedSindri = true;
+                    sindri.setPersistent();
                     ((ServerWorld)world).spawnEntity(sindri);
                     be.markDirty();
+                    be.sindriUUID = sindri.getId();
+
                 }
             }
         
