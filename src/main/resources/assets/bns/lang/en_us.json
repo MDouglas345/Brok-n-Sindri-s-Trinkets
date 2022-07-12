@@ -11,7 +11,7 @@
     "enchantment.bns.lightningweapon" :   "Lightning Imbued",
     "enchantment.bns.throwweapon" :   "Throwing",
     "enchantment.bns.throwtool" :   "Throwing",
-    "block.bns.dwarven_block"   :   "Dwarven Forge",
+    "block.bns.dwarven_forge_block"   :   "Dwarven Forge",
     "effect.bns.paralysis"          :   "Paralysis",
     "key.bns.actionkey"        : "Throw Key",
     "category.bns.keys"             : "Brok N Sindri",

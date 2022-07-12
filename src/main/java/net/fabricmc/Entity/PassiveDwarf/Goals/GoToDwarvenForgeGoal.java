@@ -21,7 +21,7 @@ public class GoToDwarvenForgeGoal extends Goal {
         if (owner.lastKnownForgeLocation.isWithinDistance(owner.getBlockPos(), 1.5)){return false;}
 
        
-        return owner.isInventoryFull();
+        return owner.inventoryContainsRune() && owner.inventoryContainsWeapon();
     }
 
     public boolean shouldContinue() {

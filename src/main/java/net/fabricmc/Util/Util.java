@@ -11,7 +11,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -62,6 +64,11 @@ public class Util {
 
     public static boolean isEnchantmentSpecialThrown(Enchantment enchantment){
         return enchantment instanceof IWorldBehvaior;
+    }
+
+    public static boolean isItemThrowValid(Item item){
+        if (!(item instanceof SwordItem) && !(item instanceof MiningToolItem)){return false;}
+        return true;
     }
 
     public static ItemStack setEnchantment(ItemStack stack, Enchantment enchantment, int level){

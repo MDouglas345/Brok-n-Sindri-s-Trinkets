@@ -11,12 +11,15 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.world.World;
 import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class SindriEntity extends PassiveDwarf implements IAnimatable {
 
     private AnimationFactory factory = new AnimationFactory(this);
+
+    
 
     public SindriEntity(EntityType<? extends PassiveDwarf> entityType, World world) {
         super(entityType, world);
@@ -33,7 +36,18 @@ public class SindriEntity extends PassiveDwarf implements IAnimatable {
 
     @Override
     public void registerControllers(AnimationData data) {
-        // TODO Auto-generated method stub
+        
+        ANIMATION_WALK_ID = "animation.sindri.walk";
+        ANIMATION_IDLE_ID = "animation.sindri.idle";
+        ANIMATION_MOOD_HAPPY_ID = "animation.sindri.greet_happy";
+        ANIMATION_MOOD_UNHAPPY_ID = "animation.sindri.greet_unhappy";
+
+        AnimationController<SindriEntity> walkcontroller = new AnimationController<SindriEntity>(this, "walkcontroller", 0, this::walkpredicate);
+        AnimationController<SindriEntity> moodcontroller = new AnimationController<SindriEntity>(this, "moodcontroller", 0, this::moodpredicate);
+
+		//controller.registerCustomInstructionListener(this::customListener);
+		data.addAnimationController(walkcontroller);
+        data.addAnimationController(moodcontroller);
         
     }
 

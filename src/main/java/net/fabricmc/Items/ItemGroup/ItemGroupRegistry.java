@@ -2,6 +2,7 @@ package net.fabricmc.Items.ItemGroup;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Items.ItemRegistry;
+import net.fabricmc.Items.RuneStones.RuneStoneItemRegistry;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.minecraft.item.ItemGroup;
@@ -16,7 +17,7 @@ public class ItemGroupRegistry {
 
     public static void register(){
         RUNE_STONE = FabricItemGroupBuilder.create(new Identifier(BNSCore.ModID, "rune_stones"))
-                                .icon(() -> new ItemStack(Items.DIAMOND_BLOCK)).build();
+                                .icon(() -> new ItemStack(RuneStoneItemRegistry.WORTHY_STONE)).build();
 
         DWARVEN_BLOCKS = FabricItemGroupBuilder.create(new Identifier(BNSCore.ModID, "dwarven_blocks"))
                                 .icon(() -> new ItemStack(BNSCore.DWARVEN_FORGE_BLOCK)).build();

@@ -7,12 +7,16 @@ import java.util.List;
 
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
 import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
+import net.fabricmc.Util.Util;
 import net.fabricmc.Util.AIHelper.SensorHelper;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Items;
+import net.minecraft.item.MiningToolItem;
+import net.minecraft.item.SwordItem;
 import net.minecraft.server.world.ServerWorld;
 
 public class PickupWantedGoal extends Goal {
@@ -34,8 +38,10 @@ public class PickupWantedGoal extends Goal {
     public boolean canStart() {
         // TODO Auto-generated method stub
         wanted = SensorHelper.getNearestEntityByClass((ServerWorld)owner.world, ItemEntity.class, owner,(entity) ->{
-                                                                                                                                        ItemGroup group = ((ItemEntity) entity).getStack().getItem().getGroup();
-                                                                                                                                        return group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS) || group.equals(ItemGroupRegistry.RUNE_STONE);
+                                                                                                                                        Item item = ((ItemEntity)entity).getStack().getItem();
+                                                                                                                                        ItemGroup group = item.getGroup();
+                                                                                                                                        
+                                                                                                                                        return Util.isItemThrowValid(item) || group.equals(ItemGroupRegistry.RUNE_STONE) || item.equals(Items.COOKED_BEEF);
                                                                                                                                     });
 
         if (owner.isInventoryFull()|| wanted.isEmpty()){return false;}

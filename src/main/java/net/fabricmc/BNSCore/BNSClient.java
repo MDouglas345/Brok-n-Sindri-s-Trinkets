@@ -142,6 +142,7 @@ public class BNSClient implements ClientModInitializer {
         NetworkHandlerClient.registerClientResponses();
 
         BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.GENERIC_ITEM_BLOCK, RenderLayer.getCutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.DWARVEN_FORGE_BLOCK, RenderLayer.getCutout());
 
         //ParticleFactoryRegistry.getInstance().register(ParticleRegistery.FROST_PARTICLE, FrostParticle.Factory::new);
        ParticleRegistery.registerClientSideParticles();

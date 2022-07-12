@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Config.ConfigRegistery;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.server.world.ServerWorld;
@@ -20,7 +21,7 @@ public class BlockItemMixin {
     public void place(ItemPlacementContext context, CallbackInfoReturnable info){
        // BNSCore.LOGGER.info(context.getPlayer().toString() + "Has placed a block!");
         World world = context.getWorld();
-        if (!world.isClient){
+        if (!world.isClient && ConfigRegistery.configuration.getBoolean("AntiGrief")){
             BNSCore.pushPlayerBlock((ServerWorld) context.getWorld(), context.getBlockPos().toString(), true);
         }
     }

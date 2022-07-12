@@ -11,6 +11,10 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.world.World;
 import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.AnimationBuilder;
+import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
@@ -38,9 +42,21 @@ public class BrokEntity extends PassiveDwarf implements IAnimatable{
      * Fun with goals! Coming Soon TM
      */
 
+    
+
+
     @Override
     public void registerControllers(AnimationData data) {
-        // TODO Auto-generated method stub
+        ANIMATION_WALK_ID = "animation.brok.walk";
+        ANIMATION_IDLE_ID = "animation.brok.idle";
+        ANIMATION_MOOD_HAPPY_ID = "animation.brok.greet_happy";
+        ANIMATION_MOOD_UNHAPPY_ID = "animation.brok.greet_unhappy";
+        AnimationController<BrokEntity> walkcontroller = new AnimationController<BrokEntity>(this, "walkcontroller", 0, this::walkpredicate);
+        AnimationController<BrokEntity> moodcontroller = new AnimationController<BrokEntity>(this, "moodcontroller", 0, this::moodpredicate);
+
+		//controller.registerCustomInstructionListener(this::customListener);
+		data.addAnimationController(walkcontroller);
+        data.addAnimationController(moodcontroller);
         
     }
 

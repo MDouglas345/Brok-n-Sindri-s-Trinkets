@@ -25,7 +25,7 @@ public class ProcessMaterialsGoal extends Goal{
     @Override
     public boolean canStart() {
         // TODO Auto-generated method stub
-        return owner.inventoryContainsRune() && owner.inventoryContainsWeapon() && owner.isCloseToDF();
+        return owner.inventoryContainsRune() && owner.inventoryContainsWeapon() && owner.isCloseToDF() && owner.getMood() != 1;
     }
 
 
