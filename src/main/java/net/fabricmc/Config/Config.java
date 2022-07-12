@@ -108,6 +108,7 @@ public class Config {
         enterData("ItemDamage", "1");
         enterData("AntiGrief", "False");
         enterData("RuneDropChance", "0.01");
+        enterData("TicksToDwarfHungry", "10000");
 
     }
 

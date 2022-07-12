@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.Entity.PassiveDwarf.Goals.DwarfWander;
 import net.fabricmc.Entity.PassiveDwarf.Goals.EscapeWaterGoal;
 import net.fabricmc.Entity.PassiveDwarf.Goals.FindDwarvenForgeGoal;
@@ -79,7 +80,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
 
     public int tickSinceAte = 0;
 
-    public static final int TICKS_TO_HUNGRY = 1000;
+    public static  int TICKS_TO_HUNGRY;
 
 
     static{
@@ -93,6 +94,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
     protected PassiveDwarf(EntityType<? extends PassiveEntity> entityType, World world) {
         super(entityType, world);
         //TODO Auto-generated constructor stub
+        TICKS_TO_HUNGRY = ConfigRegistery.configuration.getInt("TicksToDwarfHungry");
         
     }
     public int getMood(){
