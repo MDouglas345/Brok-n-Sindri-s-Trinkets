@@ -11,21 +11,10 @@ import net.minecraft.item.ItemStack;
 public class PinnedStoneItem extends RuneStoneItem {
     public PinnedStoneItem() {
         super();
+        enchantmentToUseWeapon = BNSCore.PinnedWeapon;
+        enchantmentToUseMiner = BNSCore.PinnedTool;
         //TODO Auto-generated constructor stub
     }
 
-    @Override
-    public boolean enchantItem(ItemStack stack, PassiveDwarf dwarf){
-        ItemGroup group = stack.getItem().getGroup();
-
-        if (group.equals(ItemGroup.COMBAT)){
-            stack = Util.setEnchantment(stack, BNSCore.PinnedWeapon, dwarf.improveLevel);
-        }
-
-        if (group.equals(ItemGroup.TOOLS)){
-            stack = Util.setEnchantment(stack, BNSCore.PinnedTool, dwarf.improveLevel);
-        }
-
-        return true;
-    }
+    
 }

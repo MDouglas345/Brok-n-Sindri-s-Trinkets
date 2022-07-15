@@ -80,6 +80,7 @@ public class DwarvenForgeBlock extends BlockWithEntity{
     }
 
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.onPlaced(world, pos, state, placer, itemStack);
         if (!world.isClient){
             int distancebetween = ConfigRegistery.configuration.getInt("DFDistance");
             List<BlockPos> list = BNSCore.getDwarvenForgeStack((ServerWorld) world).getList();

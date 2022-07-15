@@ -12,25 +12,10 @@ public class LightningStoneItem extends RuneStoneItem {
     public LightningStoneItem() {
         super();
         //TODO Auto-generated constructor stub
+        enchantmentToUseWeapon = BNSCore.LightningWeapon;
+        enchantmentToUseMiner = BNSCore.LightningTool;
     }
 
-    @Override
-    public boolean enchantItem(ItemStack stack, PassiveDwarf dwarf){
-        ItemGroup group = stack.getItem().getGroup();
-
-        if (Util.ContainsSpecialThrownEnchantment(stack)){
-            return false;
-        }
-        
-        if (group.equals(ItemGroup.COMBAT)){
-            stack = Util.setEnchantment(stack, BNSCore.LightningWeapon, dwarf.improveLevel);
-        }
-
-        if (group.equals(ItemGroup.TOOLS)){
-            stack = Util.setEnchantment(stack, BNSCore.LightningTool, dwarf.improveLevel);
-        }
-
-        return true;
-    }
+    
     
 }

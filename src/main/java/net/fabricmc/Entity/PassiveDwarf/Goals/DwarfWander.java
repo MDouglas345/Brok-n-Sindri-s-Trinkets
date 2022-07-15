@@ -6,12 +6,14 @@ import java.util.List;
 
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarf;
 import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
+import net.fabricmc.Util.Util;
 import net.fabricmc.Util.AIHelper.SensorHelper;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.NoPenaltyTargeting;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.Goal.Control;
  import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -86,8 +88,10 @@ import net.minecraft.util.math.Vec3d;
  
     public boolean shouldContinue() {
         List<ItemEntity> wanted = SensorHelper.getNearestEntityByClass((ServerWorld)mob.world, ItemEntity.class, mob,(entity) ->{
+            Item item = ((ItemEntity) entity).getStack().getItem();
             ItemGroup group = ((ItemEntity) entity).getStack().getItem().getGroup();
-            return group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS) || group.equals(ItemGroupRegistry.RUNE_STONE);
+            if (group == null){return false;}
+            return Util.isItemThrowValid(item)|| group.equals(ItemGroupRegistry.RUNE_STONE);
         });
 
         return ((mob.inventoryContainsRune() && mob.inventoryContainsWeapon()) || wanted.isEmpty()) && !this.mob.getNavigation().isIdle() && !this.mob.hasPassengers();
