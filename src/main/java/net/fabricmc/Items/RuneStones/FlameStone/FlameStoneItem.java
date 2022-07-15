@@ -12,28 +12,10 @@ public class FlameStoneItem extends RuneStoneItem {
     public FlameStoneItem() {
         super();
         //TODO Auto-generated constructor stub
+        enchantmentToUseWeapon = BNSCore.FlameWeapon;
+        enchantmentToUseMiner = BNSCore.FlameTool;
     }
 
-    @Override
-    public boolean enchantItem(ItemStack stack, PassiveDwarf dwarf){
-        ItemGroup group = stack.getItem().getGroup();
-
-        if (Util.ContainsSpecialThrownEnchantment(stack)){
-            return false;
-        }
-
-        if (group.equals(ItemGroup.COMBAT)){
-            stack = Util.setEnchantment(stack, BNSCore.FlameWeapon, dwarf.improveLevel);
-        }
-
-        if (group.equals(ItemGroup.TOOLS)){
-            stack = Util.setEnchantment(stack, BNSCore.FlameTool, dwarf.improveLevel);
-        }
-
-        return true;
-
-        
-    }
     
     
 }

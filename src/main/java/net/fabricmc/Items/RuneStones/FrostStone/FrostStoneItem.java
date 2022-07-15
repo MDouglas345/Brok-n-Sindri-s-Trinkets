@@ -10,25 +10,10 @@ import net.minecraft.item.ItemStack;
 public class FrostStoneItem extends RuneStoneItem{
     public FrostStoneItem(){
         super();
+        enchantmentToUseWeapon = BNSCore.FrostWeapon;
+        enchantmentToUseMiner = BNSCore.FrostTool;
     }
 
-    @Override
-    public boolean enchantItem(ItemStack stack, PassiveDwarf dwarf){
-        ItemGroup group = stack.getItem().getGroup();
-
-        if (Util.ContainsSpecialThrownEnchantment(stack)){
-            return false;
-        }
-
-        if (group.equals(ItemGroup.COMBAT)){
-            stack = Util.setEnchantment(stack, BNSCore.FrostWeapon, dwarf.improveLevel);
-        }
-
-        if (group.equals(ItemGroup.TOOLS)){
-            stack = Util.setEnchantment(stack, BNSCore.FrostTool, dwarf.improveLevel);
-        }
-
-        return true;
-    }
+   
     
 }

@@ -39,8 +39,8 @@ public class PickupWantedGoal extends Goal {
         // TODO Auto-generated method stub
         wanted = SensorHelper.getNearestEntityByClass((ServerWorld)owner.world, ItemEntity.class, owner,(entity) ->{
                                                                                                                                         Item item = ((ItemEntity)entity).getStack().getItem();
-                                                                                                                                        ItemGroup group = item.getGroup();
-                                                                                                                                        
+                                                                                                                                        ItemGroup  group = item.getGroup();
+                                                                                                                                        if (group == null || item == null){return false;}
                                                                                                                                         return Util.isItemThrowValid(item) || group.equals(ItemGroupRegistry.RUNE_STONE) || item.equals(Items.COOKED_BEEF);
                                                                                                                                     });
 

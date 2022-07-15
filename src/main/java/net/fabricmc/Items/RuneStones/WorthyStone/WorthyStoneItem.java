@@ -12,20 +12,9 @@ public class WorthyStoneItem extends RuneStoneItem {
     public WorthyStoneItem() {
         super();
         //TODO Auto-generated constructor stub
+        enchantmentToUseWeapon = BNSCore.WorthyWeapon;
+        enchantmentToUseMiner = BNSCore.WorthyTool;
     }
 
-    @Override
-    public boolean enchantItem(ItemStack stack, PassiveDwarf dwarf){
-        ItemGroup group = stack.getItem().getGroup();
-
-        if (group.equals(ItemGroup.COMBAT)){
-            stack = Util.setEnchantment(stack, BNSCore.WorthyWeapon, dwarf.improveLevel);
-        }
-
-        if (group.equals(ItemGroup.TOOLS)){
-            stack = Util.setEnchantment(stack, BNSCore.WorthyTool, dwarf.improveLevel);
-        }
-
-        return true;
-    }
+   
 }

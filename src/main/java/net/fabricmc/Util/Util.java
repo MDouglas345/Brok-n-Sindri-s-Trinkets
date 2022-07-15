@@ -67,8 +67,16 @@ public class Util {
     }
 
     public static boolean isItemThrowValid(Item item){
-        if (!(item instanceof SwordItem) && !(item instanceof MiningToolItem)){return false;}
+        if (!isItemValidWeapon(item) && ! isItemValidMiner(item)){return false;}
         return true;
+    }
+
+    public static boolean isItemValidWeapon(Item item){
+        return    item instanceof SwordItem;
+    }
+
+    public static boolean isItemValidMiner(Item item){
+        return item instanceof MiningToolItem;
     }
 
     public static ItemStack setEnchantment(ItemStack stack, Enchantment enchantment, int level){

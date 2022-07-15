@@ -16,6 +16,7 @@ import net.fabricmc.Entity.PassiveDwarf.Goals.ProcessMaterialsGoal;
 import net.fabricmc.Entity.PassiveDwarf.PassiveDwarfBrain.PassiveDwarfBrain;
 import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
 import net.fabricmc.Util.IHasOwner;
+import net.fabricmc.Util.Util;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.InventoryOwner;
 import net.minecraft.entity.ItemEntity;
@@ -308,7 +309,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
             ItemStack stack = inventory.getStack(0);
             ItemGroup group = stack.getItem().getGroup();
             if (group == null){return false;}
-            if (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)){return true;}
+            if (Util.isItemThrowValid(stack.getItem())){return true;}
             return false;
     }
 
@@ -350,7 +351,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
             return false;
         }
 
-        if (inventoryContainsWeapon() && (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)) ){
+        if (inventoryContainsWeapon() && Util.isItemThrowValid(itEm)){
             return false;
         }
 
@@ -363,7 +364,7 @@ public  class PassiveDwarf extends PassiveEntity implements InventoryOwner{
         }
        
 
-        if (group.equals(ItemGroup.COMBAT) || group.equals(ItemGroup.TOOLS)){
+        if (Util.isItemThrowValid(itEm)){
             inventory.setStack(0, stack);
             ItemOwners[0] =((ServerWorld)world).getServer().getUserCache().getByUuid(item.getThrower()).get().getName();
             this.sendPickup(item, 1);
