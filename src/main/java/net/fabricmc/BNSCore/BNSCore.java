@@ -170,7 +170,7 @@ public class BNSCore implements ModInitializer {
 	public static BlockEntityType<GenericItemBlockEntity> GENERIC_ITEM_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(GenericItemBlockEntity::new, GENERIC_ITEM_BLOCK).build();
 
 
-	public static final Block DWARVEN_FORGE_BLOCK= new DwarvenForgeBlock(FabricBlockSettings.of(Material.METAL).requiresTool().strength(3.0f, 3.0f).nonOpaque());
+	public static final Block DWARVEN_FORGE_BLOCK= new DwarvenForgeBlock(FabricBlockSettings.of(Material.METAL).strength(1).requiresTool().nonOpaque());
 
 	public static BlockEntityType<DwarvenForgeBlockEntity> DWARVEN_FORGE_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(DwarvenForgeBlockEntity::new, DWARVEN_FORGE_BLOCK).build();
 
