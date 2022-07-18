@@ -46,13 +46,13 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
-public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
+public class UniversalStuckItemsFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
 
     private final EntityRenderDispatcher dispatcher;
     private final ItemRenderer           itemRenderer;
     //private Random random;
     
-    public StuckItemsPlayerFeatureRenderer(EntityRendererFactory.Context context, LivingEntityRenderer<?, ?> entityRenderer) {
+    public UniversalStuckItemsFeatureRenderer(EntityRendererFactory.Context context, LivingEntityRenderer<?, ?> entityRenderer) {
         super((FeatureRendererContext<T, M>) entityRenderer);
         //TODO Auto-generated constructor stub
         this.dispatcher = context.getRenderDispatcher();
