@@ -21,6 +21,8 @@ repositories {
         name = 'Ladysnake Mods'
         url = 'https://ladysnake.jfrog.io/artifactory/mods'
     }
+
+	 maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
 }
 
 dependencies {
@@ -43,6 +45,9 @@ dependencies {
 
 
 	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-world:4.1.4"
+
+	modImplementation 'software.bernie.geckolib:geckolib-fabric-1.18:3.0.47'
+
     // Includes Cardinal Components API as a Jar-in-Jar dependency (optional)
     include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:4.1.4"
     include "dev.onyxstudios.cardinal-components-api:cardinal-components-level:4.1.4"

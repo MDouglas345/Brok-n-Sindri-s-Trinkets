@@ -9,7 +9,20 @@
     "enchantment.bns.flametool"     :   "Flame Imbued",
     "enchantment.bns.lightningtool" :   "Lightning Imbued",
     "enchantment.bns.lightningweapon" :   "Lightning Imbued",
+    "enchantment.bns.throwweapon" :   "Throwing",
+    "enchantment.bns.throwtool" :   "Throwing",
+    "block.bns.dwarven_forge_block"   :   "Dwarven Forge",
     "effect.bns.paralysis"          :   "Paralysis",
     "key.bns.actionkey"        : "Throw Key",
-    "category.bns.keys"             : "Brok N Sindri"
+    "category.bns.keys"             : "Brok N Sindri",
+    "itemGroup.bns.rune_stones" :   "Rune Stones",
+    "itemGroup.bns.dwarven_blocks": "Dwarven Blocks",
+    "item.bns.brok_spawn_egg"   :   "Brok Spawn Egg",
+    "item.bns.sindri_spawn_egg" :   "Sindri Spawn Egg",
+    "item.bns.dwarven_forge_block" : "Dwarven Forge",
+    "item.bns.flame_stone"      :   "Flame Rune",
+    "item.bns.frost_stone"      :   "Frost Rune",
+    "item.bns.lightning_stone"  :   "Lightning Rune",
+    "item.bns.pinned_stone"     :   "Pinned Rune",
+    "item.bns.worthy_stone"     :   "Worthy Stone"     
 }

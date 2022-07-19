@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.fabricmc.BNSCore.BNSClient;
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Config.ConfigRegistery;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,7 +22,7 @@ public class BlockMixin {
     
     @Inject(at = @At("HEAD"), method =  "onBreak(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/entity/player/PlayerEntity;)V")
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo info) {
-        if (!world.isClient){
+        if (!world.isClient && ConfigRegistery.configuration.getBoolean("AntiGrief")){
            BNSCore.removePlayerBlock((ServerWorld) world, pos.toString());
         }
     }

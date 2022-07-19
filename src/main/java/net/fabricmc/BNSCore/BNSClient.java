@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.lwjgl.glfw.GLFW;
 
 import it.unimi.dsi.fastutil.Stack;
+import net.fabricmc.Entity.EntityRegistry;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntityRenderer;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntityRenderer;
@@ -15,6 +16,7 @@ import net.fabricmc.Particles.FrostParticle.FrostParticle;
 import net.fabricmc.Renderers.StuckItemsPlayerFeatureRenderer;
 import net.fabricmc.Renderers.StuckItemsQuadrupedFeatureRenderer;
 import net.fabricmc.Renderers.StuckItemsSinglePartFeatureRenderer;
+import net.fabricmc.Renderers.UniversalStuckItemsFeatureRenderer;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.NetworkHandlerClient;
 import net.fabricmc.Util.PacketUtil;
@@ -47,6 +49,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.tag.EntityTypeTags;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 
@@ -71,6 +74,8 @@ public class BNSClient implements ClientModInitializer {
         EntityRendererRegistry.register(BNSCore.GenericThrownItemEntityType, (context) ->{
             return new GenericThrownItemEntityRenderer(context);
         });
+
+        EntityRegistry.registerClient();
 
         ClientTickEvents.END_CLIENT_TICK.register(client ->{
 
@@ -139,9 +144,12 @@ public class BNSClient implements ClientModInitializer {
         NetworkHandlerClient.registerClientResponses();
 
         BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.GENERIC_ITEM_BLOCK, RenderLayer.getCutout());
+        BlockRenderLayerMap.INSTANCE.putBlock(BNSCore.DWARVEN_FORGE_BLOCK, RenderLayer.getCutout());
 
         //ParticleFactoryRegistry.getInstance().register(ParticleRegistery.FROST_PARTICLE, FrostParticle.Factory::new);
        ParticleRegistery.registerClientSideParticles();
+
+       
 
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
 			// minecraft:player SHOULD be printed twice
@@ -153,11 +161,18 @@ public class BNSClient implements ClientModInitializer {
 			}
             */
             
+            
             /**
              * Lots of things have unique traits, theres gonna be alot of renderers for each mob... This
              * will definitely take the longest to complete. Working so far : bipeds, quadrupeds
              */
-            
+            if (entityType == EntityType.CREEPER){
+                int i = 4;
+            }
+
+            registrationHelper.register(new UniversalStuckItemsFeatureRenderer<LivingEntity, EntityModel<LivingEntity>>(context,  entityRenderer));
+             
+            /* 
             if (entityRenderer instanceof BipedEntityRenderer || entityRenderer instanceof PlayerEntityRenderer){
                 registrationHelper.register(new StuckItemsPlayerFeatureRenderer<LivingEntity, BipedEntityModel<LivingEntity>>(context,  entityRenderer));
             }
@@ -174,6 +189,7 @@ public class BNSClient implements ClientModInitializer {
             else if (entityType == EntityType.CREEPER){
                 registrationHelper.register(new StuckItemsSinglePartFeatureRenderer<LivingEntity, SinglePartEntityModel<LivingEntity>>(context,  entityRenderer, "head"));
             }
+            */
 
 		});
     }

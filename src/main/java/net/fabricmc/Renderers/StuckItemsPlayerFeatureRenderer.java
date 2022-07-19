@@ -46,7 +46,7 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
-public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends BipedEntityModel<T>> extends FeatureRenderer<T, M> {
+public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
 
     private final EntityRenderDispatcher dispatcher;
     private final ItemRenderer           itemRenderer;

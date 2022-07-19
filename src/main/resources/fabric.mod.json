@@ -7,7 +7,8 @@
       "cardinal-components": [
           "bns:blockentitypositions",
           "bns:entityuuids",
-          "bns:playerblocks"
+          "bns:playerblocks",
+          "bns:dwarvenforges"
       ]
   },
 

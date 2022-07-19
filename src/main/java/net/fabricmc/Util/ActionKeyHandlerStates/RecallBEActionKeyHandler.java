@@ -36,7 +36,7 @@ public class RecallBEActionKeyHandler {
         int dist = (server.getPlayerManager().getViewDistance()) * 8;
 		BlockPos Destination = player.getBlockPos();
 
-        stack.Pop(player.getEntityName());
+        
 
         if (BEPosition.isWithinDistance(Destination, 4)){
             /**
@@ -46,13 +46,13 @@ public class RecallBEActionKeyHandler {
                 return;
             }
 
-            
+            stack.Pop(player.getEntityName());
             
             world.removeBlock(BEPosition, false);
             return;
         }
 
-       
+        stack.Pop(player.getEntityName());
 
         if (!BEPosition.isWithinDistance(Destination, dist -4)){
             // if the BE is too far!

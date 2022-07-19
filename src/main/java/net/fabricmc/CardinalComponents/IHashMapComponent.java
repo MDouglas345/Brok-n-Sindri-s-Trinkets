@@ -1,5 +1,7 @@
 package net.fabricmc.CardinalComponents;
 
+import java.util.List;
+
 import dev.onyxstudios.cca.api.v3.component.Component;
 
 public interface IHashMapComponent<K,V> extends Component{
@@ -15,5 +17,7 @@ public interface IHashMapComponent<K,V> extends Component{
     public V Peek(K key, int id);
 
     public void Reset();
+
+    public List<V> getList();
     
 }
