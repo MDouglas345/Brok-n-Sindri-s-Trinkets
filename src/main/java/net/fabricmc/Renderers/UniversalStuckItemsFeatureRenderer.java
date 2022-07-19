@@ -18,6 +18,9 @@ import java.util.Random;
 
 import org.lwjgl.system.windows.WINDOWPLACEMENT;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Util.ISavedItem;
@@ -31,6 +34,7 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.feature.StuckObjectsFeatureRenderer;
+import net.minecraft.client.render.entity.model.AnimalModel;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
@@ -38,21 +42,25 @@ import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation.Mode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
-public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
+public class UniversalStuckItemsFeatureRenderer<T extends LivingEntity, M extends AnimalModel<T>> extends FeatureRenderer<T, M> {
 
     private final EntityRenderDispatcher dispatcher;
     private final ItemRenderer           itemRenderer;
     //private Random random;
     
-    public StuckItemsPlayerFeatureRenderer(EntityRendererFactory.Context context, LivingEntityRenderer<?, ?> entityRenderer) {
+    public UniversalStuckItemsFeatureRenderer(EntityRendererFactory.Context context, LivingEntityRenderer<?, ?> entityRenderer) {
         super((FeatureRendererContext<T, M>) entityRenderer);
         //TODO Auto-generated constructor stub
         this.dispatcher = context.getRenderDispatcher();
@@ -100,6 +108,15 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends E
         }
 
         Random random = new Random(((Entity)livingEntity).getId());
+
+        EntityDimensions d = livingEntity.getDimensions(EntityPose.STANDING);
+        MatrixStack newMat = RenderSystem.getModelViewStack();
+
+        
+        
+
+       Vec3d eye = livingEntity.getEyePos();
+        
         //Random random = Util.randgen;
 
         
@@ -107,9 +124,16 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends E
 
         ItemStack item = ((ISavedItem)livingEntity).getSavedItem();
 
-        GenericThrownItemEntity thrown = new GenericThrownItemEntity(livingEntity.world, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
+        //GenericThrownItemEntity thrown = new GenericThrownItemEntity(livingEntity.world, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
+        GenericThrownItemEntity thrown = new GenericThrownItemEntity(livingEntity.world, eye.getX(), eye.getY(), eye.getZ());
         thrown.setItem(item);
         thrown.setQuat(Quaternion.fromEulerXyz(new Vec3f(0, 0, 0)));
+
+        //Vec3d toEye = eye.subtract(thrown.getPos());
+        Vec3d toEye = thrown.getPos().subtract(eye);
+
+
+
 
         /*
         
@@ -124,11 +148,27 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends E
         P = new Vec3d(P.x, P.y, -S.z);
         
         */
+       
+
+
+        
+        double side = Util.randgen.nextDouble();
+
+        double width = d.width / 2;
+        double offset = -0.96;
+        double height = livingEntity.getEyeHeight(EntityPose.STANDING) + offset;
+        
+        Vec3d P = new Vec3d(Util.getRandomDouble(-width, width), Util.getRandomDouble(-height, - offset), side > 0.5 ? width : -width);
+        Vec3d S = new Vec3d(Util.getRandomDouble(-width, width), Util.getRandomDouble(-height, - offset), side > 0.5 ? -width : width);
+        //BNSCore.LOGGER.info(P.toString() + " " + S.toString());
+        
+
+        /* 
         double side = random.nextDouble() >0.5 ? -0.5 : 0.5;
         
         Vec3d P = new Vec3d(Util.getRandomDouble(random, -0.1, 0.1), Util.getRandomDouble(random,0.3, 0.4), side);
         Vec3d S = new Vec3d(Util.getRandomDouble(random, -0.3, 0.3), Util.getRandomDouble(random,-0.1, 0.3), -side);
-        //BNSCore.LOGGER.info(P.toString() + " " + S.toString());
+        */
 
         Vec3d D = P.subtract(S).normalize();
         Vec3d itemFacing = Vec3d.fromPolar(thrown.getPitch(), thrown.getYaw());
@@ -142,8 +182,11 @@ public class StuckItemsPlayerFeatureRenderer<T extends LivingEntity, M extends E
         //quat.hamiltonProduct(toPenetration);
 
         //matrixStack.multiply(quat);
+
         matrixStack.translate(S.x, S.y, S.z);
+        //matrixStack.translate(toEye.x, toEye.y, toEye.z);
         matrixStack.multiply(toPenetration);
+        
 
         
 
