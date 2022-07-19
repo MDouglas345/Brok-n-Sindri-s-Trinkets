@@ -1,6 +1,8 @@
 package net.fabricmc.GenericThrownItemEntity.States;
 
 
+import net.fabricmc.Config.ConfigReader;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Util.Util;
@@ -25,11 +27,12 @@ public class ReturnState extends GenericThrownItemEntityState {
 
     public double originaldist = 0;
     PlayerEntity target;
+    float returnspeed;
 
     public ReturnState(GenericThrownItemEntity m) {
         super(m);
         //TODO Auto-generated constructor stub
-
+        returnspeed = (float) ConfigRegistery.configuration.getDouble("ReturnSpeed");
     }
 
     @Override
@@ -48,7 +51,7 @@ public class ReturnState extends GenericThrownItemEntityState {
             }
         }
 
-           Vec3d Destination = target.getPos().add(new Vec3d(0,1,0));
+           Vec3d Destination = target.getPos().add(new Vec3d(0,1.5f,0));
 
             Vec3d DesiredDir = Master.getPos().subtract(Destination).normalize().negate();
 
@@ -59,7 +62,7 @@ public class ReturnState extends GenericThrownItemEntityState {
             double newdist = Destination.squaredDistanceTo(Master.getPos());
             newdist = newdist / originaldist;
 
-            DesiredDir = DesiredDir.multiply(Math.max(0.8, newdist * 2));
+            DesiredDir = DesiredDir.multiply(Math.max(returnspeed, newdist * 2));
 
             DesiredDir = Master.getVelocity().lerp(DesiredDir, 0.2f);
 
@@ -69,7 +72,7 @@ public class ReturnState extends GenericThrownItemEntityState {
 
 
             if (!Master.world.isClient){
-                if (target.distanceTo(Master) < 1){
+                if (target.distanceTo(Master) < 2){
                     if (!target.getInventory().insertStack(Master.itemToRender)){
                         Master.ChangeState(0);
                     }
@@ -107,30 +110,8 @@ public class ReturnState extends GenericThrownItemEntityState {
     public void onEntityHit(EntityHitResult entityHitResult) {
         // TODO Auto-generated method stub
        
-        try{
-            PlayerEntity entity = (PlayerEntity) entityHitResult.getEntity();
-
-            if (Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
-
-                if (!Master.world.isClient){
-                    if (!entity.getInventory().insertStack(Master.itemToRender)){
-                        Master.ChangeState(0);
-                        
-                    }
-                    else{
-
-                        Master.kill();
-                    }
-
-                }
-                
-            }
-            else{
-
-                Master.Attack(entityHitResult);
-            }
-        }
-        catch(Exception e){
+        
+        if (!(entityHitResult.getEntity() instanceof PlayerEntity) || !Master.Owner.isOwner((PlayerEntity)entityHitResult.getEntity())){
 
             Master.Attack(entityHitResult);
         }
@@ -139,7 +120,7 @@ public class ReturnState extends GenericThrownItemEntityState {
     @Override
     public void OnEnter(){
         target = Master.world.getPlayerByUuid(Master.Owner.ID);
-        Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos().add(new Vec3d(0,1,0));
+        Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos().add(new Vec3d(0,1.5f,0));
 
         Vec3d dir = Master.getPos().subtract(Destination).normalize();
 

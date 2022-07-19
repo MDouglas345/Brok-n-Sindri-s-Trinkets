@@ -11,7 +11,6 @@
 package net.fabricmc.GenericThrownItemEntity;
 
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.MaxValuesforFieldExceededException;
@@ -20,6 +19,7 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericThrownItemEntity.States.BounceState;
@@ -81,6 +81,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.Heightmap;
@@ -124,16 +125,19 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public GenericThrownItemEntity(EntityType<? extends ThrownItemEntity> entityType, World world) {
 		super(entityType, world);
         setNoGravity(true);
+        //this.rand = Random.create(seed);
 	}
  
 	public GenericThrownItemEntity(World world, LivingEntity owner) {
 		super(BNSCore.GenericThrownItemEntityType, owner, world); // null will be changed later
         setNoGravity(true);
+        //this.rand = Random.create(seed);
 	}
  
 	public GenericThrownItemEntity(World world, double x, double y, double z) {
 		super(BNSCore.GenericThrownItemEntityType, x, y, z, world); // null will be changed later
         setNoGravity(true);
+        //this.rand = Random.create(seed);
 	}
 
     public Vec3f customRotationVec(){
@@ -235,13 +239,18 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             }
 
             Item item = itemToRender.getItem();
+
+            itemToRender.damage(ConfigRegistery.configuration.getInt("ItemDamage"), random, null);
+
             float attackDamage = item instanceof MiningToolItem ? ((MiningToolItem)item).getAttackDamage(): item instanceof SwordItem ? ((SwordItem)item).getAttackDamage() : 0;
-            
-            
-            entity.damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage + 0.5f * attackDamage * bonusAttack);
+            // formula : baseattack * attackmult * maxattackmul
+            float attackmul = (float) ConfigRegistery.configuration.getDouble("AttackMultiplier");
+            float maxattackmul = (float) ConfigRegistery.configuration.getDouble("MaxAttackMultiplier");
+
+            entity.damage(DamageSource.player((PlayerEntity) getOwner()), attackDamage * attackmul * maxattackmul);
 
         
-
+            
             PlayerEntity source = (PlayerEntity) getOwner();
 
             if (source != null){
@@ -485,7 +494,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         this.Maxed = nbt.getBoolean("maxed");
 
         this.StackID = nbt.getInt("stackid");
-        this.rand = new Random(StackID);
+        this.rand = Random.create(StackID);
 
         enchantmentData = Util.getSpecialThrownEnchantment(itemToRender);
     }
@@ -579,7 +588,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void SetStackID(int i ){
         this.StackID = i;
-        this.rand = new Random(i);
+        this.rand = Random.create(i);
+        
     }
 
     public void SetMaxed(boolean m){
@@ -631,6 +641,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				e.SetOwner(owner);
 				e.setItem(itemstack.copy());
                 e.SetMaxed(false);
+
+                e.SetStackID(e.getId());
                 
                 //e.setVelocity(client, client.getPitch(), client.getYaw(), 0, timeHeld / 40f , 0f);
                 e.setBonusAttack(1);
@@ -731,11 +743,11 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 if (timeHeld > 15){
                     e.SetMaxed(true);
-                    speed = 1.2f;
+                    speed = (float) ConfigRegistery.configuration.getDouble("ThrowSpeedMax");
                 }
                 else{
                     e.SetMaxed(false);
-                    speed = 0.8f;
+                    speed = (float) ConfigRegistery.configuration.getDouble("ThrowSpeed");;
                 }
 
                 playThrowSound(world, e.getBlockPos(), e.Maxed);
@@ -775,7 +787,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 int id = BNSCore.pushEntityOntoStack(world, client.getEntityName(), e.uuid);
 
-				
+			
 
 				e.SetStackID(id);
 

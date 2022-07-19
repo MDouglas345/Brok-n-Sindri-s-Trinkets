@@ -72,18 +72,30 @@
  * 
  * 
  * Reminder : When changing mc versions within VSCode F1 -> Java : Clean Workplace -> restart and delete
+ * 
+ * 
+ * ServerChunkEvents -> this is called when a chunk is loaded! Need to find something that triggers when a chunk is unloaded!
+ * 
+ * CHUNK_UNLOAD.regsiter((chunk, world) -> {}); is the callback!
  */
 
 
 package net.fabricmc.BNSCore;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
+import net.fabricmc.Items.ItemRegistry;
+import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
+import net.fabricmc.LootTables.LootTableRegistry;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
+import net.fabricmc.CardinalComponents.GlobalPosRecordComponent;
 import net.fabricmc.CardinalComponents.PlayerBlockComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
+import net.fabricmc.Config.ConfigRegistery;
+import net.fabricmc.DwarvenForgeBlock.DwarvenForgeBlock;
+import net.fabricmc.DwarvenForgeBlock.DwarvenForgeBlockEntity;
 import net.fabricmc.Effects.ParalysisEffect;
 import net.fabricmc.Enchantments.FlameEnchantment.FlameToolEnchantment;
 import net.fabricmc.Enchantments.FlameEnchantment.FlameWeaponEnchantment;
@@ -93,8 +105,13 @@ import net.fabricmc.Enchantments.LightningEnchantment.LightningToolEnchantment;
 import net.fabricmc.Enchantments.LightningEnchantment.LightningWeaponEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedToolEnchantment;
 import net.fabricmc.Enchantments.PinnedEnchantment.PinnedWeaponEnchantment;
+import net.fabricmc.Enchantments.ThrowEnchantment.ThrowToolEnchantment;
+import net.fabricmc.Enchantments.ThrowEnchantment.ThrowWeaponEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyToolEnchantment;
 import net.fabricmc.Enchantments.WorthyEnchantment.WorthyWeaponEnchantment;
+import net.fabricmc.Entity.EntityRegistry;
+import net.fabricmc.Entity.ScheduleRegistry.ScheduleRegistry;
+import net.fabricmc.Events.EventsRegistry;
 import net.fabricmc.GenericItemBlock.*;
 
 
@@ -153,6 +170,11 @@ public class BNSCore implements ModInitializer {
 	public static BlockEntityType<GenericItemBlockEntity> GENERIC_ITEM_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(GenericItemBlockEntity::new, GENERIC_ITEM_BLOCK).build();
 
 
+	public static final Block DWARVEN_FORGE_BLOCK= new DwarvenForgeBlock(FabricBlockSettings.of(Material.METAL).strength(1).requiresTool().nonOpaque());
+
+	public static BlockEntityType<DwarvenForgeBlockEntity> DWARVEN_FORGE_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(DwarvenForgeBlockEntity::new, DWARVEN_FORGE_BLOCK).build();
+
+
 	public static Enchantment WorthyWeapon = Registry.register(Registry.ENCHANTMENT, 
 												new Identifier(BNSCore.ModID, "worthyweapon"),
 												new WorthyWeaponEnchantment());
@@ -192,6 +214,15 @@ public class BNSCore implements ModInitializer {
 	public static Enchantment LightningTool = Registry.register(Registry.ENCHANTMENT,
 												new Identifier(BNSCore.ModID, "lightningtool"),
 												new LightningToolEnchantment());
+
+	public static Enchantment ThrowWeapon = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "throwweapon"),
+												new ThrowWeaponEnchantment());
+
+	public static Enchantment ThrowTool = Registry.register(Registry.ENCHANTMENT,
+												new Identifier(BNSCore.ModID, "throwtool"),
+												new ThrowToolEnchantment());
+									
 	
 
 
@@ -208,20 +239,30 @@ public class BNSCore implements ModInitializer {
 
 		BNSCore.LOGGER.info("In the main");
 
+		ConfigRegistery.initConfig();
+
 		Registry.register(Registry.BLOCK, new Identifier(ModID, "generic_item_block"), GENERIC_ITEM_BLOCK);
 
 		Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(ModID, "generic_item_block_entity"), GENERIC_ITEM_BLOCK_ENTITY);
 
+		Registry.register(Registry.BLOCK, new Identifier(ModID, "dwarven_forge_block"), DWARVEN_FORGE_BLOCK);
+
+		Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(ModID, "dwarven_forge_block_entity"), DWARVEN_FORGE_BLOCK_ENTITY);
+
+
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher, access, dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher,  accessor, dedicated) -> {
             
-                dispatcher.register(CommandManager.literal("BNS").then(CommandManager.literal("bar")
+                dispatcher.register(CommandManager.literal("bns").then(CommandManager.literal("resetthrownstacks")
 				.executes(context -> {
+					
 					MinecraftServer server = context.getSource().getServer();
 					BNSCore.resetStacks(server.getWorld(World.OVERWORLD));
 					BNSCore.resetStacks(server.getWorld(World.NETHER));
 					BNSCore.resetStacks(server.getWorld(World.END));
+					
+
 					BNSCore.LOGGER.info("Resetting Stacks!");
 					return 1;
 				
@@ -233,6 +274,20 @@ public class BNSCore implements ModInitializer {
 		ParticleRegistery.registerParticles();
 
 		SoundRegistry.registerSounds();
+
+		EntityRegistry.registerAttributes();
+
+		EventsRegistry.register();
+
+		ItemGroupRegistry.register();
+
+		ItemRegistry.register();
+
+		ScheduleRegistry.register();
+
+		LootTableRegistry.register();
+
+		
 	}
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){
@@ -256,9 +311,26 @@ public class BNSCore implements ModInitializer {
         stack.Remove(name, id);
 	}
 
+	public static void removeDWFromStack(ServerWorld world, String name, int id){
+		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+		GlobalPosRecordComponent stack = mycomponents.DwarvenForges.get(world);
+
+        stack.Remove(name, id);
+	}
+
 	public static int pushBEOntoStack(ServerWorld world, String name, BlockPos hitpos){
 		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
 		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
+
+            int id = stack.Push(name, hitpos);
+
+			return id;
+	}
+
+
+	public static int pushDFOntoStack(ServerWorld world, String name, BlockPos hitpos){
+		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
+		GlobalPosRecordComponent stack = mycomponents.DwarvenForges.get(world);
 
             int id = stack.Push(name, hitpos);
 
@@ -286,9 +358,17 @@ public class BNSCore implements ModInitializer {
 	public static void resetStacks(ServerWorld world){
 		BlockPosStackComponent bstack = BNSCore.getBlockStack(world);
 		UUIDStackComponent eStack = BNSCore.getEntitytack(world);
+		GlobalPosRecordComponent pos = BNSCore.getDwarvenForgeStack(world);
 
 		bstack.Reset();
 		eStack.Reset();
+		pos.Reset();
+	}
+
+	public static void resetDwarvenBlocks(ServerWorld world){
+		GlobalPosRecordComponent list = BNSCore.getDwarvenForgeStack(world);
+
+		list.Reset();
 	}
 
 	public static BlockPosStackComponent getBlockStack(ServerWorld world){
@@ -298,6 +378,11 @@ public class BNSCore implements ModInitializer {
 	public static UUIDStackComponent getEntitytack(ServerWorld world){
 		return  mycomponents.EntityUUIDs.get(world);
 	}
+
+	public static GlobalPosRecordComponent getDwarvenForgeStack(ServerWorld world){
+		return  mycomponents.DwarvenForges.get(world);
+	}
+
 
 	public static PlayerBlockComponent getPlayerBlockStack(ServerWorld world){
 		return mycomponents.PlayerBlocks.get(world);

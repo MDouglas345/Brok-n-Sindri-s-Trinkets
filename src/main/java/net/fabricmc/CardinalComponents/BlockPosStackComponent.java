@@ -225,6 +225,13 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
         data = new HashMap<String, Stack<IDedBlockPos>>();
     }
 
+
+    @Override
+    public List<BlockPos> getList() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     
     
 }

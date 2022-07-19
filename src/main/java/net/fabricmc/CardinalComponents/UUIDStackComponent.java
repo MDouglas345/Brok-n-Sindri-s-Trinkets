@@ -192,6 +192,12 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
         data = new HashMap<String, Stack<IDedUUID>>();
     }
 
+    @Override
+    public List<UUID> getList() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     
     
 }
