@@ -152,14 +152,14 @@ public class UniversalStuckItemsFeatureRenderer<T extends LivingEntity, M extend
 
 
         
-        double side = Util.randgen.nextDouble();
+        double side = random.nextDouble();
 
         double width = d.width / 2;
         double offset = -0.96;
         double height = livingEntity.getEyeHeight(EntityPose.STANDING) + offset;
         
-        Vec3d P = new Vec3d(Util.getRandomDouble(-width, width), Util.getRandomDouble(-height, - offset), side > 0.5 ? width : -width);
-        Vec3d S = new Vec3d(Util.getRandomDouble(-width, width), Util.getRandomDouble(-height, - offset), side > 0.5 ? -width : width);
+        Vec3d P = new Vec3d(Util.getRandomDouble(random,-width, width), Util.getRandomDouble(random,-height, - offset), side > 0.5 ? width : -width);
+        Vec3d S = new Vec3d(Util.getRandomDouble(random,-width, width), Util.getRandomDouble(random,-height, - offset), side > 0.5 ? -width : width);
         //BNSCore.LOGGER.info(P.toString() + " " + S.toString());
         
 
