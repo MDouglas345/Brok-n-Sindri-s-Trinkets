@@ -47,8 +47,8 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
     public void registerWorldComponentFactories(WorldComponentFactoryRegistry registry) {
         //registry.register(BlockEntityPositions, BlockPosStackComponent::new);
         //registry.register(EntityUUIDs, UUIDStackComponent::new);
-        //registry.register(PlayerBlocks, PlayerBlockComponent::new);
-        //registry.register(DwarvenForges, GlobalPosRecordComponent::new);
+        registry.register(PlayerBlocks, PlayerBlockComponent::new);
+        registry.register(DwarvenForges, GlobalPosRecordComponent::new);
         registry.register(PinnedEntities, PinnedEntityComponent::new);
         registry.register(WeaponStacks, WeaponStackComponent::new);
         
