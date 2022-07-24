@@ -19,5 +19,7 @@ public interface IHashMapComponent<K,V> extends Component{
     public void Reset();
 
     public List<V> getList();
+
+    public void Update(K key, int id, V value);
     
 }

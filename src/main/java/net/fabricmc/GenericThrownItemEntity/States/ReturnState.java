@@ -120,7 +120,13 @@ public class ReturnState extends GenericThrownItemEntityState {
     @Override
     public void OnEnter(){
         target = Master.world.getPlayerByUuid(Master.Owner.ID);
-        Vec3d Destination = Master.world.getPlayerByUuid(Master.Owner.ID).getPos().add(new Vec3d(0,1.5f,0));
+        
+        if (target == null){
+            Master.ChangeState(0);
+            return;
+        }
+
+        Vec3d Destination = target.getPos().add(new Vec3d(0,1.5f,0));
 
         Vec3d dir = Master.getPos().subtract(Destination).normalize();
 

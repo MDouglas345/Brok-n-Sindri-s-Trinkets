@@ -39,6 +39,7 @@ import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.render.entity.model.AnimalModel;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
@@ -170,7 +171,7 @@ public class BNSClient implements ClientModInitializer {
                 int i = 4;
             }
 
-            registrationHelper.register(new UniversalStuckItemsFeatureRenderer<LivingEntity, EntityModel<LivingEntity>>(context,  entityRenderer));
+            registrationHelper.register(new UniversalStuckItemsFeatureRenderer<LivingEntity, AnimalModel<LivingEntity>>(context,  entityRenderer));
              
             /* 
             if (entityRenderer instanceof BipedEntityRenderer || entityRenderer instanceof PlayerEntityRenderer){

@@ -4,7 +4,10 @@ import java.util.UUID;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
+import net.fabricmc.CardinalComponents.WeaponStackComponent;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
+import net.fabricmc.Util.EntityContainer;
+import net.fabricmc.Util.IDedUUID;
 import net.fabricmc.Util.ISavedItem;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -13,55 +16,69 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.chunk.WorldChunk;
 
 public class RecallEntityActionKeyHandler {
 
-    static public void handle(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, float ticksHeld, UUIDStackComponent stack, UUID entityuuid) {
-        Entity e = world.getEntity(entityuuid);
+    static public void handle(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, float ticksHeld, WeaponStackComponent stack, IDedUUID ideduuid) {
 
-        if (e == null){
-            stack.Pop(player.getEntityName());
-            return;
-        }
-
-        stack.Pop(player.getEntityName());
-
-        ISavedItem itemEnt = (ISavedItem)e;
-        ItemStack savedItem = itemEnt.getSavedItem();
-
-        if (itemEnt.getSavedItem().getItem().equals(Items.AIR)){
-            stack.Pop(player.getEntityName());
-            return;
-        }
-
-        if (EnchantmentHelper.getLevel(BNSCore.WorthyTool,savedItem) == 0 && EnchantmentHelper.getLevel(BNSCore.WorthyWeapon, savedItem) == 0 ){
-            return;
+        if (!HandlePinnedEntity(server, player, world, ideduuid, stack)){
+            HandleEntity(server, player, world, ideduuid, stack);    
         }
         
-        if (e instanceof GenericThrownItemEntity){
-            // this entity is a thrown entity and is easier to recall.
-
-           HandleEntity(server, player, world, (GenericThrownItemEntity) e, savedItem);
-
-            return;
-        }
-
-        // This is a pinned item inside a living entity.
-
-        HandlePinnedEntity(server, player, world, e, savedItem);
 
     }
 
+    public static boolean isValidRecall(ServerPlayerEntity player, ItemStack stack, String Owner){
+        if (!player.getEntityName().equals(Owner)){
+            return false;
+        }
 
-    public static void HandleEntity(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, GenericThrownItemEntity thrownEntity, ItemStack savedItem) {
+        if (EnchantmentHelper.getLevel(BNSCore.WorthyTool,stack) == 0 && EnchantmentHelper.getLevel(BNSCore.WorthyWeapon, stack) == 0 ){
+            return false;
+        }
+        
 
-						
+        return true;
+    }
+
+
+    public static boolean HandleEntity(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, IDedUUID ideduuid, WeaponStackComponent stack) {
+
+        Entity e = world.getEntity(ideduuid.uuid);
+        
+
+        if (e == null){
+            
+            BNSCore.LOGGER.info("Did not find entity");
+            stack.Pop(player.getEntityName());
+            return false;
+            
+           
+        }
+
+        if (!(e instanceof GenericThrownItemEntity)){
+            stack.Pop(player.getEntityName());
+            return false;
+        }
+
+		GenericThrownItemEntity thrownEntity = (GenericThrownItemEntity)e;		
+
         if (thrownEntity == null){
-            return;
+            stack.Pop(player.getEntityName());
+            return false;
+        }
+
+        if (!isValidRecall(player, thrownEntity.itemToRender, thrownEntity.Owner.name)){
+            stack.Pop(player.getEntityName());
+            return true;
         }
 
         BlockPos Destination = player.getBlockPos();
@@ -69,34 +86,52 @@ public class RecallEntityActionKeyHandler {
             /**
              * if block is within 2 block lengths of the player, just chuck the item into the player inventory
              */
-            if (!player.getInventory().insertStack(savedItem)){
-                return;
+            if (!player.getInventory().insertStack(thrownEntity.itemToRender)){
+                return true;
             }
             
             
             thrownEntity.kill();
+            stack.Pop(player.getEntityName());
+            return true;
             
         }
 
         thrownEntity.ChangeState(4);
+        stack.Pop(player.getEntityName());
+        return true;
     }
 
-    public static void HandlePinnedEntity(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, Entity e, ItemStack savedItem) {
+
+
+
+
+
+    public static boolean HandlePinnedEntity(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, IDedUUID ideduuid, WeaponStackComponent stack) {
         BlockPos Destination = player.getBlockPos();
 
-        ISavedItem inter = (ISavedItem)e;
+       EntityContainer container = BNSCore.getPinnedEntity(world, ideduuid.uuid);
 
-       
 
-        double distance = e.getBlockPos().getSquaredDistance(player.getBlockPos());
+       if (container == null){
+        return false;
+       }
+
+       LivingEntity e = (LivingEntity) world.getEntity(ideduuid.uuid);
+
+       if (!isValidRecall(player, container.Stack, container.Owner.name)){
+        return true;
+       }
+
+        double distance = container.pos.getSquaredDistance(player.getBlockPos());
         distance = MathHelper.sqrt((float) distance);
         
         if (distance < 4){
             /**
              * if block is within 2 block lengths of the player, just chuck the item into the player inventory
              */
-            if (!player.getInventory().insertStack(savedItem)){
-                return;
+            if (!player.getInventory().insertStack(container.Stack)){
+                return true;
             }
             
            
@@ -104,14 +139,27 @@ public class RecallEntityActionKeyHandler {
 
             // remove the paralysis effect from e
             // remove stuck item details from e
+            container.Stack = new ItemStack(Items.AIR);
+            container.Owner.name = "";
+
+
+            BNSCore.updatePinnedEntity(world, ideduuid.uuid, container);
+
+            /*
             LivingEntity living = (LivingEntity)e;
             
             living.removeStatusEffect(BNSCore.Paralysis);
             inter.setSavedItem(new ItemStack(Items.AIR,1));
             inter.setSavedItemOwner("");
+            */
             
-            
-            return;
+            stack.Pop(player.getEntityName());
+
+            if (e != null){
+                ISavedItem inter = (ISavedItem)e;
+                inter.forceupdate();
+            }
+            return true;
             
             
         }
@@ -120,21 +168,21 @@ public class RecallEntityActionKeyHandler {
 
         if (distance > serverViewDistance){
             // Too far to create a thrown item entity, need to make adjustmets first :
-            Vec3d Direction = player.getPos().subtract(e.getPos());
+            Vec3d Direction = player.getPos().subtract(Vec3d.of(container.pos));
             Direction = Direction.normalize();
     
             int dist = (server.getPlayerManager().getViewDistance()) * 8;
             Direction = Direction.multiply(dist-6);
     
             Vec3d position = Vec3d.of(Destination).subtract(Direction);
-            GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, player,position, inter.getSavedItem());
+            GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, player,position, container.Stack);
             world.spawnEntity(thrown);
             thrown.ChangeState(4);
         }
         else{
             // Entity is within range to create a thrown item entity.
 
-            GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, player, e.getPos(), inter.getSavedItem());
+            GenericThrownItemEntity thrown = GenericThrownItemEntity.CreateNew(world, player, Vec3d.of(container.pos), container.Stack);
             world.spawnEntity(thrown);
             thrown.ChangeState(4);
         }
@@ -143,10 +191,17 @@ public class RecallEntityActionKeyHandler {
 
         // remove the paralysis effect from e
         // remove stuck item details from e
-        LivingEntity living = (LivingEntity)e;
-        living.removeStatusEffect(BNSCore.Paralysis);
-        inter.setSavedItem(new ItemStack(Items.AIR,1));
-        inter.setSavedItemOwner("");
-        return;
+
+
+        container.Stack = new ItemStack(Items.AIR);
+        container.Owner.name = "";
+
+        BNSCore.updatePinnedEntity(world, ideduuid.uuid, container);
+        stack.Pop(player.getEntityName());
+        if (e != null){
+            ISavedItem inter = (ISavedItem)e;
+            inter.forceupdate();
+        }
+        return true;
     }
 }

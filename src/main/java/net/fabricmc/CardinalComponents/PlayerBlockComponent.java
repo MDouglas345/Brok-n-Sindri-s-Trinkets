@@ -103,5 +103,11 @@ public class PlayerBlockComponent implements IHashMapComponent<String, Boolean> 
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public void Update(String key, int id, Boolean value) {
+        // TODO Auto-generated method stub
+        
+    }
     
 }

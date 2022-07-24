@@ -7,6 +7,7 @@ import java.util.Stack;
 import java.util.UUID;
 import java.util.Map.Entry;
 
+import net.fabricmc.Util.EntityContainer;
 import net.fabricmc.Util.IDedUUID;
 import net.fabricmc.Util.Util;
 import net.minecraft.nbt.NbtCompound;
@@ -14,10 +15,11 @@ import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProperties;
 
-public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
+public class UUIDStackComponent implements  IHashMapComponent<String, IDedUUID>{
     
     private HashMap<String,Stack<IDedUUID>> data = new HashMap<String, Stack<IDedUUID>>();
 
@@ -47,8 +49,8 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
 
                 int id = ((NbtDouble)t.get("id")).intValue();
                 UUID uuid = NbtHelper.toUuid(t.get("uuid"));
-
-                list.add(new IDedUUID(id, uuid));
+                BlockPos pos = NbtHelper.toBlockPos((NbtCompound) t.get("blockpos"));
+                list.add(new IDedUUID(id, uuid, pos));
             }
 
             temp.addAll(list);
@@ -94,6 +96,7 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
                 NbtCompound t = new NbtCompound();
                 t.put("id",NbtDouble.of(container.id));
                 t.put("uuid",NbtHelper.fromUuid(container.uuid));
+                t.put("blockpos", NbtHelper.fromBlockPos(container.pos));
                 array.add(t);
             }
 
@@ -103,11 +106,12 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
     }
 
     @Override
-    public int Push(String key, UUID value) {
+    public int Push(String key, IDedUUID value) {
         if (!data.containsKey(key)){
             Stack<IDedUUID> t = new Stack<IDedUUID>();
             int id = Util.randgen.nextInt();
-            t.push(new IDedUUID(id, value));
+            value.id = id;
+            t.push(value);
             data.put(key, t);
 
             return id;
@@ -115,7 +119,8 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
         else{
             Stack<IDedUUID> t = data.get(key);
             int id = Util.randgen.nextInt();
-            t.push(new IDedUUID(id, value));
+            value.id = id;
+            t.push(value);
 
             return id;
         } 
@@ -123,14 +128,14 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
 
 
     @Override
-    public UUID Pop(String key) {
+    public IDedUUID Pop(String key) {
         if (!data.containsKey(key)){
             return null;
         }
         Stack<IDedUUID> t = data.get(key);
 
         try{
-            return t.pop().uuid;
+            return t.pop();
         }
         catch(Exception e){
             return null;
@@ -165,7 +170,7 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
     }
 
     @Override
-    public UUID Peek(String key) {
+    public IDedUUID Peek(String key) {
         // TODO Auto-generated method stub
         if (!data.containsKey(key)){
             return null;
@@ -173,7 +178,7 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
         Stack<IDedUUID> t = data.get(key);
 
         try{
-            return t.peek().uuid;
+            return t.peek();
         }
         catch(Exception e){
             return null;
@@ -181,7 +186,7 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
     }
 
     @Override
-    public UUID Peek(String key, int id) {
+    public IDedUUID Peek(String key, int id) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -193,9 +198,15 @@ public class UUIDStackComponent implements  IHashMapComponent<String, UUID>{
     }
 
     @Override
-    public List<UUID> getList() {
+    public List<IDedUUID> getList() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void Update(String key, int id, IDedUUID value) {
+        // TODO Auto-generated method stub
+        
     }
 
     
