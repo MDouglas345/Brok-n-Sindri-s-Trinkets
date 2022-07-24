@@ -31,6 +31,7 @@ import net.fabricmc.GenericThrownItemEntity.States.ThrownState;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.Util.EnchantmentData;
+import net.fabricmc.Util.IDedUUID;
 import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkConstants;
 import net.fabricmc.Util.PacketUtil;
@@ -295,11 +296,14 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
                 // cant be sure if this will be an issue if done only on server
                
-
-                int id = BNSCore.pushEntityOntoStack((ServerWorld)world, Owner.name, e.getUuid());
+                 
+                int id = BNSCore.pushEntityOntoStack((ServerWorld)world, Owner.name, new IDedUUID(0, e.getUuid(), e.getBlockPos()));
                 eSaved.setIndexIntoStack(id);
 
                 BNSCore.removeEntityFromStack((ServerWorld)world, Owner.name, StackID);
+                
+
+                BNSCore.pushPinnedEntity((ServerWorld) world, e);
             }
             
             if (e instanceof MobEntity){
@@ -787,7 +791,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 				//UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
                 //int id = stack.Push(client.getEntityName(), e.getUuid());
 
-                int id = BNSCore.pushEntityOntoStack(world, client.getEntityName(), e.uuid);
+                int id = BNSCore.pushEntityOntoStack(world, client.getEntityName(), new IDedUUID(0, e.uuid, e.getBlockPos()));
 
 			
 
@@ -860,6 +864,12 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
     public void reset() {
         this.setSavedItem(new ItemStack(Items.AIR,1));
         this.setSavedItemOwner("");
+        
+    }
+
+    @Override
+    public void forceupdate() {
+        // TODO Auto-generated method stub
         
     }
 

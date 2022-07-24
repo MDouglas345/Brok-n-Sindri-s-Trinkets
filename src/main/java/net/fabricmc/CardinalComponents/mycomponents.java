@@ -24,6 +24,12 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
     public static final ComponentKey<GlobalPosRecordComponent> DwarvenForges =
         ComponentRegistry.getOrCreate(new Identifier("bns", "dwarvenforges"), GlobalPosRecordComponent.class);    
 
+    public static final ComponentKey<PinnedEntityComponent> PinnedEntities =
+        ComponentRegistry.getOrCreate(new Identifier("bns", "pinnedentities"), PinnedEntityComponent.class);    
+
+    public static final ComponentKey<WeaponStackComponent> WeaponStacks =
+        ComponentRegistry.getOrCreate(new Identifier("bns", "weaponstacks"), WeaponStackComponent.class);    
+
     @Override
     public void registerScoreboardComponentFactories(ScoreboardComponentFactoryRegistry registry) {
         registry.registerScoreboardComponent(BlockEntityPositions, BlockPosStackComponent::new);
@@ -39,10 +45,12 @@ public class mycomponents implements ScoreboardComponentInitializer, LevelCompon
 
     @Override
     public void registerWorldComponentFactories(WorldComponentFactoryRegistry registry) {
-        registry.register(BlockEntityPositions, BlockPosStackComponent::new);
-        registry.register(EntityUUIDs, UUIDStackComponent::new);
-        registry.register(PlayerBlocks, PlayerBlockComponent::new);
-        registry.register(DwarvenForges, GlobalPosRecordComponent::new);
+        //registry.register(BlockEntityPositions, BlockPosStackComponent::new);
+        //registry.register(EntityUUIDs, UUIDStackComponent::new);
+        //registry.register(PlayerBlocks, PlayerBlockComponent::new);
+        //registry.register(DwarvenForges, GlobalPosRecordComponent::new);
+        registry.register(PinnedEntities, PinnedEntityComponent::new);
+        registry.register(WeaponStacks, WeaponStackComponent::new);
         
     }
 }

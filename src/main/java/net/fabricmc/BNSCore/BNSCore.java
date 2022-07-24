@@ -90,8 +90,10 @@ import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Sounds.SoundRegistry;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.GlobalPosRecordComponent;
+import net.fabricmc.CardinalComponents.PinnedEntityComponent;
 import net.fabricmc.CardinalComponents.PlayerBlockComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
+import net.fabricmc.CardinalComponents.WeaponStackComponent;
 import net.fabricmc.CardinalComponents.mycomponents;
 import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.DwarvenForgeBlock.DwarvenForgeBlock;
@@ -113,8 +115,9 @@ import net.fabricmc.Entity.EntityRegistry;
 import net.fabricmc.Entity.ScheduleRegistry.ScheduleRegistry;
 import net.fabricmc.Events.EventsRegistry;
 import net.fabricmc.GenericItemBlock.*;
-
-
+import net.fabricmc.Util.EntityContainer;
+import net.fabricmc.Util.IDedUUID;
+import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -129,6 +132,7 @@ import net.minecraft.enchantment.Enchantment;
 
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.effect.StatusEffect;
 
@@ -292,21 +296,24 @@ public class BNSCore implements ModInitializer {
 
 	public static void removeEntityFromStack(ServerWorld world, String name, int id){
 			//UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
-			UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world);
+			//UUIDStackComponent uuidstack = mycomponents.EntityUUIDs.get(world);
+			WeaponStackComponent uuidstack = mycomponents.WeaponStacks.get(world);
 
             uuidstack.Remove(name, id);
 	}
 
-	public static int pushEntityOntoStack(ServerWorld world, String name, UUID uuid){
+	public static int pushEntityOntoStack(ServerWorld world, String name, IDedUUID uuid){
 				//UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world.getLevelProperties());
-				UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world);
+				//UUIDStackComponent stack = mycomponents.EntityUUIDs.get(world);
+				WeaponStackComponent stack = mycomponents.WeaponStacks.get(world);
 				int id = stack.Push(name, uuid);
 				return id;
 	}
 
 	public static void removeBEFromStack(ServerWorld world, String name, int id){
 		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
-		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
+		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
+		WeaponStackComponent stack = mycomponents.WeaponStacks.get(world);
 
         stack.Remove(name, id);
 	}
@@ -320,11 +327,13 @@ public class BNSCore implements ModInitializer {
 
 	public static int pushBEOntoStack(ServerWorld world, String name, BlockPos hitpos){
 		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world.getLevelProperties());
-		BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
+		//BlockPosStackComponent stack = mycomponents.BlockEntityPositions.get(world);
+		WeaponStackComponent stack = mycomponents.WeaponStacks.get(world);
 
-            int id = stack.Push(name, hitpos);
+		IDedUUID idDedUUID = new IDedUUID(0, hitpos);
+        int id = stack.Push(name, idDedUUID);
 
-			return id;
+		return id;
 	}
 
 
@@ -355,14 +364,51 @@ public class BNSCore implements ModInitializer {
 		return res == null ? false : res;
 	}
 
+	public static void pushPinnedEntity(ServerWorld world, LivingEntity entity){
+		PinnedEntityComponent stack = getPinnedEntityComponent(world);
+
+		ISavedItem e = (ISavedItem)entity;
+
+		EntityContainer container = new EntityContainer(entity.getUuid(), entity.getBlockPos(), e.getSavedItem(), e.getSavedItemOwner());
+
+		stack.Push(container.uuid, container);
+	}
+
+	public static void removePinnedEntity(ServerWorld world, LivingEntity entity){
+		removePinnedEntity(world, entity.getUuid());
+	}
+
+	public static void removePinnedEntity(ServerWorld world, UUID uuid){
+		PinnedEntityComponent stack = getPinnedEntityComponent(world);
+
+		stack.Remove(uuid, 0);
+	}
+
+	public static EntityContainer getPinnedEntity(ServerWorld world, UUID key){
+		PinnedEntityComponent stack = getPinnedEntityComponent(world);
+
+		return stack.Peek(key);
+	}
+
+
+	public static void updatePinnedEntity(ServerWorld world, UUID key, EntityContainer value){
+		PinnedEntityComponent stack = getPinnedEntityComponent(world);
+
+		stack.Push(key, value);
+	}
+
+
 	public static void resetStacks(ServerWorld world){
 		BlockPosStackComponent bstack = BNSCore.getBlockStack(world);
 		UUIDStackComponent eStack = BNSCore.getEntitytack(world);
 		GlobalPosRecordComponent pos = BNSCore.getDwarvenForgeStack(world);
+		PinnedEntityComponent pinned = getPinnedEntityComponent(world);
 
 		bstack.Reset();
 		eStack.Reset();
 		pos.Reset();
+		pinned.Reset();
+
 	}
 
 	public static void resetDwarvenBlocks(ServerWorld world){
@@ -383,6 +429,9 @@ public class BNSCore implements ModInitializer {
 		return  mycomponents.DwarvenForges.get(world);
 	}
 
+	public static PinnedEntityComponent getPinnedEntityComponent(ServerWorld world){
+		return mycomponents.PinnedEntities.get(world);
+	}
 
 	public static PlayerBlockComponent getPlayerBlockStack(ServerWorld world){
 		return mycomponents.PlayerBlocks.get(world);

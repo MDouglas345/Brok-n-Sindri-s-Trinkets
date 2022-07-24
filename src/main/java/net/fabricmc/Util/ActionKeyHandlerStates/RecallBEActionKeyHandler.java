@@ -3,6 +3,7 @@ package net.fabricmc.Util.ActionKeyHandlerStates;
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.UUIDStackComponent;
+import net.fabricmc.CardinalComponents.WeaponStackComponent;
 import net.fabricmc.GenericItemBlock.GenericItemBlockEntity;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -13,7 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class RecallBEActionKeyHandler {
-    static public void handle(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, float ticksHeld, BlockPosStackComponent stack, BlockPos BEPosition) {
+    static public void handle(MinecraftServer server, ServerPlayerEntity player, ServerWorld world, float ticksHeld, WeaponStackComponent stack, BlockPos BEPosition) {
         if (BEPosition == null){
             return;
         }
