@@ -232,6 +232,13 @@ public class BlockPosStackComponent implements IHashMapComponent<String, BlockPo
         return null;
     }
 
+
+    @Override
+    public void Update(String key, int id, BlockPos value) {
+        // TODO Auto-generated method stub
+        
+    }
+
     
     
 }

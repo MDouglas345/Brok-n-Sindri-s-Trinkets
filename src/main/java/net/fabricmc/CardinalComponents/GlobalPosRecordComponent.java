@@ -160,6 +160,13 @@ public class GlobalPosRecordComponent implements IHashMapComponent<String, Block
         
     }
 
+
+    @Override
+    public void Update(String key, int id, BlockPos value) {
+        // TODO Auto-generated method stub
+        
+    }
+
     
     
 }

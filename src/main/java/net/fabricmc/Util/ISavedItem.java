@@ -16,4 +16,6 @@ public interface ISavedItem {
     public int  getIndexIntoStack();
 
     public void reset();
+
+    public void forceupdate();
 }

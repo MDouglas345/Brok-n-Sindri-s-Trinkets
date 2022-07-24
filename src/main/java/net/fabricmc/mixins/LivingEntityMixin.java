@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
+import net.fabricmc.Util.EntityContainer;
 import net.fabricmc.Util.IMovementStopper;
 import net.fabricmc.Util.ISavedItem;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder.Living;
@@ -23,11 +24,13 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin implements ISavedItem {
@@ -69,6 +72,8 @@ public class LivingEntityMixin implements ISavedItem {
             e.world.spawnEntity(GenericThrownItemEntity.CreateNew((ServerWorld)e.world, ISI.getSavedItemOwner(), playeruuid, e.getPos(), item));
 
             BNSCore.removeEntityFromStack(world, name, ISI.getIndexIntoStack());
+
+            BNSCore.removePinnedEntity(world, e);
         }
 
        
@@ -90,6 +95,32 @@ public class LivingEntityMixin implements ISavedItem {
     public void readCustomDataToNbtHEAD(NbtCompound nbt, CallbackInfo info){
         this.setSavedItem(ItemStack.fromNbt((NbtCompound)nbt.get("SavedItem")));
         this.setSavedItemOwner(nbt.getString("ItemOwner"));
+
+       
+    }
+
+    @Inject (at = @At("TAIL"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
+    public void readCustomDataToNbtTAIL(NbtCompound nbt, CallbackInfo info){
+        LivingEntity e = (LivingEntity)(Object)this;
+        World world = e.world;
+       
+        if (!world.isClient){
+            EntityContainer container = BNSCore.getPinnedEntity((ServerWorld) world, e.getUuid());
+            if (container == null){
+                return;
+            }
+            this.setSavedItem(container.Stack);
+            this.setSavedItemOwner(container.Owner.name);
+
+            if (this.getSavedItem().getItem().equals(Items.AIR)){
+                if (!e.removeStatusEffect(BNSCore.Paralysis)){
+                    BNSCore.LOGGER.info("Failed to un paralyze");
+                }
+            }
+            else{
+                e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), null);
+            }
+        }
     }
 
     @Override
@@ -135,6 +166,27 @@ public class LivingEntityMixin implements ISavedItem {
         
         this.setSavedItem(new ItemStack(Items.AIR,1));
         this.setSavedItemOwner("");
+        
+    }
+
+    @Override
+    public void forceupdate() {
+        LivingEntity e = (LivingEntity)(Object)this;
+        World world = e.world;
+
+        if (!world.isClient){
+           
+            EntityContainer container = BNSCore.getPinnedEntity((ServerWorld) world, e.getUuid());
+            this.setSavedItem(container.Stack);
+            this.setSavedItemOwner(container.Owner.name);
+
+            if (this.getSavedItem().getItem().equals(Items.AIR)){
+                e.removeStatusEffect(BNSCore.Paralysis);
+            }
+            else{
+                e.addStatusEffect(new StatusEffectInstance(BNSCore.Paralysis, 999999999), null);
+            }
+        }
         
     }
   
