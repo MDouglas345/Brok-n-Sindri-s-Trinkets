@@ -9,5 +9,12 @@
         "sounds":[
             "bns:impactsound"
         ]
+    },
+
+    "woosh" :{
+        "sounds":[
+            "bns:wooshsound",
+            "bns:wooshsound2"
+        ]
     }
 }

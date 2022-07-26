@@ -8,5 +8,9 @@ public class NetworkConstants {
     public static Identifier SpawnBranchLightning = new Identifier(("bns:spawnbranchlightning"));
     public static Identifier SpawnFrostContact = new Identifier(("bns:spawnfrostcontact"));
     public static Identifier SpawnFlameContact = new Identifier(("bns:spawnflamecontact"));
+
+    public static Identifier SpawnFlameAffectEntities = new Identifier("bns:spawnflameaffectentities");
+    public static Identifier SpawnFrostAffectEntities = new Identifier("bns:spawnfrostaffectentities");
+    public static Identifier SpawnLightningAffectEntities = new Identifier("bns:spawnlightningaffectentities");
     
 }

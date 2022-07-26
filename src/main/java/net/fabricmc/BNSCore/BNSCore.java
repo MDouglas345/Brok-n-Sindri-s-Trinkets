@@ -88,6 +88,9 @@ import net.fabricmc.Items.ItemGroup.ItemGroupRegistry;
 import net.fabricmc.LootTables.LootTableRegistry;
 import net.fabricmc.Particles.ParticleRegistery;
 import net.fabricmc.Sounds.SoundRegistry;
+import net.fabricmc.StaticFireBlock.AdvStaticFireBlock;
+import net.fabricmc.StaticFireBlock.BaseStaticFireBlock;
+import net.fabricmc.StaticFireBlock.StaticFireBlock;
 import net.fabricmc.CardinalComponents.BlockPosStackComponent;
 import net.fabricmc.CardinalComponents.GlobalPosRecordComponent;
 import net.fabricmc.CardinalComponents.PinnedEntityComponent;
@@ -126,6 +129,7 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.Block;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.Enchantment;
@@ -177,6 +181,11 @@ public class BNSCore implements ModInitializer {
 	public static final Block DWARVEN_FORGE_BLOCK= new DwarvenForgeBlock(FabricBlockSettings.of(Material.METAL).strength(1).requiresTool().nonOpaque());
 
 	public static BlockEntityType<DwarvenForgeBlockEntity> DWARVEN_FORGE_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(DwarvenForgeBlockEntity::new, DWARVEN_FORGE_BLOCK).build();
+
+
+	public static final Block BASE_STATIC_FIRE_BLOCK = new BaseStaticFireBlock(FabricBlockSettings.of(Material.FIRE, MapColor.BRIGHT_RED).breakInstantly().luminance(15).nonOpaque().noCollision());
+
+	public static final Block ADV_STATIC_FIRE_BLOCK = new AdvStaticFireBlock(FabricBlockSettings.of(Material.FIRE, MapColor.BRIGHT_RED).breakInstantly().luminance(15).nonOpaque().noCollision());
 
 
 	public static Enchantment WorthyWeapon = Registry.register(Registry.ENCHANTMENT, 
@@ -252,6 +261,10 @@ public class BNSCore implements ModInitializer {
 		Registry.register(Registry.BLOCK, new Identifier(ModID, "dwarven_forge_block"), DWARVEN_FORGE_BLOCK);
 
 		Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(ModID, "dwarven_forge_block_entity"), DWARVEN_FORGE_BLOCK_ENTITY);
+
+		Registry.register(Registry.BLOCK, new Identifier(ModID, "base_static_fire_block"), BASE_STATIC_FIRE_BLOCK);
+
+		Registry.register(Registry.BLOCK, new Identifier(ModID, "adv_static_fire_block"), ADV_STATIC_FIRE_BLOCK);
 
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);

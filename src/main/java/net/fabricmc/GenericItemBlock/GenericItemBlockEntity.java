@@ -37,6 +37,7 @@ public class GenericItemBlockEntity extends BlockEntity{
 
     public GenericItemBlockEntity(BlockPos pos, BlockState state){
         super(BNSCore.GENERIC_ITEM_BLOCK_ENTITY, pos, state);
+        
     }
 
     public void Initalize(ItemStack stack, Quaternion rot, float offset, int index, ClientIdentification owner){
