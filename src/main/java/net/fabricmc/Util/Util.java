@@ -281,6 +281,8 @@ public class Util {
                 }
                 createVisualLightningStrike(entity2.getBlockPos(), world);
                 entity2.onStruckByLightning((ServerWorld)world, lightningEntity);
+                Vec3d direction = entity2.getPos().subtract(Vec3d.of(target)).normalize().multiply(0.4f);
+                entity2.addVelocity(direction.getX(), direction.getY(), direction.getZ());
             }
 
            

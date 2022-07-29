@@ -1,10 +1,16 @@
 package net.fabricmc.Enchantments.FlameEnchantment;
 
+import java.util.List;
+
+import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
+
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.fabricmc.Particles.ParticleRegistery;
+import net.fabricmc.StaticFireBlock.AdvStaticFireBlock;
+import net.fabricmc.StaticFireBlock.StaticFireBlock;
 import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.Util.Util;
 import net.minecraft.block.AbstractFireBlock;
@@ -17,8 +23,11 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.ParticleType;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -42,7 +51,15 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         return 1;
     }
 
-   
+   @Override
+   public void onTargetDamaged(LivingEntity user, Entity target, int level) {
+        if (user.world.isClient){return;}
+        
+
+        if (target instanceof LivingEntity){
+            ((LivingEntity)target).setOnFireFor(2*level);
+        }
+    }
 
     @Override
     public void OnBlockThrownHit(World world, Entity source, BlockPos pos, int level, boolean max) {
@@ -55,6 +72,8 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         if (world.isClient || !max){
             return;
         }
+
+        AffectNearbyEntities((ServerWorld) world, source, pos, level);
 
          BlockPos boxMin = new BlockPos(-1,-1,-1);
          BlockPos boxMax = new BlockPos(1,1,1);
@@ -98,8 +117,15 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
 
                         float chanceToTurn =  (1 - (currentDistToOrig/RelativeDistance)) + Util.getRandomFloat(0, 0.2f);
 
-                        if (chanceToTurn > 0.8 && AbstractFireBlock.canPlaceAt(world, current, Direction.UP)){
-                            BlockState blockState2 = AbstractFireBlock.getState(world, current);
+                        if (chanceToTurn > 0.95 && AbstractFireBlock.canPlaceAt(world, current, Direction.UP)){
+                            BlockState blockState2;
+                            if (level < 2){
+                                blockState2 = ((StaticFireBlock)BNSCore.BASE_STATIC_FIRE_BLOCK).getStateForPosition(world, pos);
+                            }
+                            else{
+                                blockState2 = ((AdvStaticFireBlock)BNSCore.ADV_STATIC_FIRE_BLOCK).getStateForPosition(world, pos);
+                            }
+                            
                         
                             ((ServerWorld)world).setBlockState(current, blockState2, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
                         }
@@ -115,9 +141,19 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
     public void OnEntityThrownHit(World world, Entity source, EntityHitResult result, int level, boolean max) {
         // TODO Auto-generated method stub
         if (world.isClient){return;}
+        
         Entity e = result.getEntity();
+        BlockPos pos = e.getBlockPos();
+    
 
-        if (e instanceof LivingEntity){
+        if (!(e instanceof LivingEntity)){
+            return;
+        }
+
+        if (max){
+            AffectNearbyEntities((ServerWorld) world, source, pos, level);
+        }
+        else{
             ((LivingEntity)e).setOnFireFor(2*level);
         }
         
@@ -136,11 +172,13 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         /**
          * either keep using getRotationVector, or find a direction vector using the quaternion and a forward vector
          */
+        DefaultParticleType type = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
+
         for (int i = 0; i < p_amount; i++){
             Vec3d spot = direction.multiply(i*step);
             spot = spot.add(pos);
 
-            world.addParticle(ParticleRegistery.TRAILING_FLAME_PARTICLE,
+            world.addParticle(type,
             spot.getX(), spot.getY(), spot.getZ(),
                           0, 0, 0);
         }
@@ -163,7 +201,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         if (Util.randgen.nextFloat() > 0.2f){
             return;
         }
-
+        DefaultParticleType type = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
          // TODO Auto-generated method stub
          Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
         
@@ -174,7 +212,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
             dir = dir.multiply(Util.randgen.nextFloat() * 0.5);
             dir = spot.add(dir);
              
-             world.addParticle(ParticleRegistery.FLAME_PARTICLE,
+             world.addParticle(type,
              dir.getX(), dir.getY(), dir.getZ(),
                            0, 0, 0);
          }
@@ -184,6 +222,24 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
     @Override
     public void OnTick(GenericThrownItemEntity ntity, World world) {
         // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void AffectNearbyEntities(ServerWorld world, Entity source, BlockPos pos, int level) {
+        int radius = 3 * level;
+
+        NetworkHandlerServer.spawnFlameAffectingEntities(world, Vec3d.of(pos), radius / 2, level);
+        
+        List<LivingEntity> list = world.getEntitiesByClass(LivingEntity.class, new Box(new Vec3d(pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius ), new Vec3d(pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius )), (entity)->{
+            return !source.getUuid().equals(entity.getUuid());
+        });
+
+        list.forEach((living) ->{
+            living.setOnFireFor(level * 3);
+            Vec3d direction = living.getPos().subtract(Vec3d.of(pos)).normalize().multiply(level * 0.4);
+            living.addVelocity(direction.getX(), direction.getY(), direction.getZ());
+        });
         
     }
     

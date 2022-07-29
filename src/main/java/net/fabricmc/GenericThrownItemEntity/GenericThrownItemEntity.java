@@ -43,6 +43,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.sound.Sound;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -113,6 +114,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public static final TrackedData<Byte> STATE = DataTracker.registerData(GenericThrownItemEntity.class, TrackedDataHandlerRegistry.BYTE);
     
+    public long TickSinceLastInAirSound = 0;
 
     public GenericThrownItemEntityState[]  States = 
     {   new ThrownState(this),
@@ -122,6 +124,8 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         new ReturnState(this)};
 
     public GenericThrownItemEntityState    ActiveState = States[0];
+
+    
 
     public GenericThrownItemEntity(EntityType<? extends ThrownItemEntity> entityType, World world) {
 		super(entityType, world);
@@ -723,6 +727,13 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public static void playImpactSound(ServerWorld world, BlockPos pos, boolean max){
         world.playSound(null, pos, SoundEvents.ITEM_TRIDENT_HIT, SoundCategory.BLOCKS, 1f, max ? 1f : 0.8f);
+    }
+
+    static public void playInAirSound(ServerWorld world, BlockPos pos, boolean max, long currenttick, GenericThrownItemEntity entity){
+        long dif = currenttick - entity.TickSinceLastInAirSound;
+        if (dif < 4){return;}
+        entity.TickSinceLastInAirSound = currenttick;
+        world.playSound(null, pos, SoundRegistry.WOOSH_SOUND, SoundCategory.AMBIENT, 1f, max ? 1.3f : 1.1f);
     }
 
     public static void playReturnSound(ServerWorld world, BlockPos pos, boolean max){

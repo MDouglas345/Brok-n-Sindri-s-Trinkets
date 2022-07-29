@@ -72,6 +72,10 @@ public class ReturnState extends GenericThrownItemEntityState {
 
 
             if (!Master.world.isClient){
+
+                
+                GenericThrownItemEntity.playInAirSound((ServerWorld) Master.world, Master.getBlockPos(), Master.Maxed, Master.world.getTickOrder(), Master);
+                
                 if (target.distanceTo(Master) < 2){
                     if (!target.getInventory().insertStack(Master.itemToRender)){
                         Master.ChangeState(0);

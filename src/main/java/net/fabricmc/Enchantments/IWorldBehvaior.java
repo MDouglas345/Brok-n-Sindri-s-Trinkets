@@ -2,6 +2,7 @@ package net.fabricmc.Enchantments;
 
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -19,5 +20,7 @@ public interface IWorldBehvaior {
     public void SpawnPulsingParticles(BlockPos pos, World world, int level);
     
     public void OnTick(GenericThrownItemEntity entity, World world);
+    
+    public void AffectNearbyEntities(ServerWorld world, Entity source, BlockPos pos, int level);
     
 }

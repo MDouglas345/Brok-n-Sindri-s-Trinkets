@@ -1,5 +1,7 @@
 package net.fabricmc.Enchantments.LightningEnchantment;
 
+import java.util.List;
+
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
@@ -15,6 +17,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.world.ServerWorld;
@@ -56,7 +59,15 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
     
     @Override
     public void onTargetDamaged(LivingEntity user, Entity target, int level) {
-       
+        if (user.world.isClient){return;}
+
+        ServerWorld world = (ServerWorld) user.world;
+        float chance = Util.randgen.nextFloat();
+
+        if (chance < 0.1 * level){
+            
+           AffectNearbyEntities(world, user, target.getBlockPos(), level);
+        }
     }
 
     @Override
@@ -179,6 +190,22 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
 
             
         }
+    }
+
+    @Override
+    public void AffectNearbyEntities(ServerWorld world, Entity source, BlockPos pos, int level) {
+        // TODO Auto-generated method stub
+        List<LivingEntity> list = world.getEntitiesByClass(LivingEntity.class, source.getBoundingBox().expand(5 * level), (entity)->{
+            return !source.getUuid().equals(entity.getUuid());
+        });
+        Vec3d Pos = Vec3d.of(pos.up());
+        list.forEach((living) -> {
+            BlockPos currentblock = living.getBlockPos();
+            NetworkHandlerServer.spawnBranchLightning((ServerWorld) world, Pos, new Vec3d(currentblock.getX(), currentblock.getY(), currentblock.getZ()));   
+            living.damage(DamageSource.LIGHTNING_BOLT, 1); 
+            world.playSound(null, living.getBlockPos(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 0.8f, 1f);
+        });
+        
     }
 }
 

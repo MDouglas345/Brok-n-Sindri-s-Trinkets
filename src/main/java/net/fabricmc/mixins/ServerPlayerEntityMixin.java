@@ -47,9 +47,11 @@ public class ServerPlayerEntityMixin {
             world.setBlockState(e.getBlockPos(),BNSCore.GENERIC_ITEM_BLOCK.getDefaultState());
             GenericItemBlockEntity be = (GenericItemBlockEntity)world.getBlockEntity(e.getBlockPos());
             int id = BNSCore.pushBEOntoStack(world, name, e.getBlockPos());
+
             be.Initalize(item, new Quaternion(new Vec3f(0,0,0), 0, false), (float)Util.getRandomDouble(100, 200),  id, new ClientIdentification(name, playeruuid));
             
             BNSCore.removeEntityFromStack(world, name, ISI.getIndexIntoStack());
+            BNSCore.removePinnedEntity(world, e.getUuid());
 
             ISI.reset();
         }

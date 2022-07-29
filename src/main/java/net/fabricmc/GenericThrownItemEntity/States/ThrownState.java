@@ -84,6 +84,10 @@ public class ThrownState extends GenericThrownItemEntityState{
         Master.rotoffset = MathHelper.lerp(0.8f, Master.rotoffset, Master.rotoffset -Master.rotSpeed);
         Master.SuperTick();
         
+        if (!Master.world.isClient){
+            BNSCore.LOGGER.info(String.valueOf(Master.world.getTickOrder()));
+            GenericThrownItemEntity.playInAirSound((ServerWorld) Master.world, Master.getBlockPos(), Master.Maxed, Master.world.getTickOrder(), Master);
+        }
        
         
         /*

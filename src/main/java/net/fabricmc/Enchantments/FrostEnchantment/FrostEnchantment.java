@@ -1,5 +1,7 @@
 package net.fabricmc.Enchantments.FrostEnchantment;
 
+import java.util.List;
+
 import net.fabricmc.BNSCore.BNSCore;
 import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
@@ -12,13 +14,16 @@ import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.SnowGolemEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -54,8 +59,9 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
     @Override
     public void onTargetDamaged(LivingEntity user, Entity target, int level) {
         if (target instanceof LivingEntity){
-            ((LivingEntity)target).addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 5 * level));
+            ((LivingEntity)target).addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 50 * level));
         }
+        
     }
 
     @Override
@@ -70,7 +76,10 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
         if (world.isClient || !max){
             return;
         }
-
+        
+       
+        AffectNearbyEntities((ServerWorld) world, source, pos, level);
+        
          BlockPos boxMin = new BlockPos(-1,-1,-1);
          BlockPos boxMax = new BlockPos(1,1,1);
 
@@ -126,9 +135,46 @@ public class FrostEnchantment extends Enchantment implements IWorldBehvaior{
     }
 
     @Override
+    public void AffectNearbyEntities(ServerWorld world, Entity source, BlockPos pos, int level){
+        int radius = 3 * level;
+
+        List<LivingEntity> list = world.getEntitiesByClass(LivingEntity.class, new Box(new Vec3d(pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius ), new Vec3d(pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius )), (entity)->{
+            return !source.getUuid().equals(entity.getUuid());
+        });
+
+        list.forEach((living) ->{
+            onTargetDamaged((LivingEntity) source, living, level);
+            Vec3d direction = living.getPos().subtract(Vec3d.of(pos)).normalize().multiply(level * 0.1);
+            living.addVelocity(direction.getX(), direction.getY(), direction.getZ());
+        });
+    }
+
+    @Override
     public void OnEntityThrownHit(World world, Entity source, EntityHitResult result, int level, boolean max) {
         // TODO Auto-generated method stub
-        
+        if (world.isClient){
+            return;
+        }
+
+        Entity target = result.getEntity();
+        BlockPos pos = target.getBlockPos();
+
+        if (max){
+            AffectNearbyEntities((ServerWorld) world, source, pos, level);
+        }
+        else{
+            onTargetDamaged((LivingEntity) source, target, level);
+        }
+
+        if (max && level >= 2 && Util.randgen.nextFloat() < 0.01){
+           
+            
+            target.discard();
+
+            SnowGolemEntity golem = EntityType.SNOW_GOLEM.create(world);
+            golem.setPosition(Vec3d.of(pos));
+            world.spawnEntity(golem);
+        }
     }
 
     @Override

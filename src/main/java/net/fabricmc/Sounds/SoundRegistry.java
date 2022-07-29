@@ -11,8 +11,12 @@ public class SoundRegistry {
     public static final Identifier IMPACTSOUNDID = new Identifier("bns:impact");
     public static SoundEvent IMPACT_SOUND = new SoundEvent(IMPACTSOUNDID);
 
+    public static final Identifier WOOSHSOUNDID = new Identifier("bns:woosh");
+    public static SoundEvent WOOSH_SOUND = new SoundEvent(WOOSHSOUNDID);
+
     public static void registerSounds(){
         Registry.register(Registry.SOUND_EVENT, THROWSOUNDID,THROW_SOUND);
         Registry.register(Registry.SOUND_EVENT, IMPACTSOUNDID,IMPACT_SOUND);
+        Registry.register(Registry.SOUND_EVENT, WOOSHSOUNDID, WOOSH_SOUND);
     }
 }
