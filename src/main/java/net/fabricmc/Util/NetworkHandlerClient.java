@@ -109,7 +109,7 @@ public class NetworkHandlerClient {
                     boolean shouldGreen = buf.readBoolean();
 
                 client.submit(() ->{
-                    DefaultParticleType type = !shouldGreen ? ParticleTypes.FLAME : ParticleRegistery.GREEN_SECONDARY_FLAME_PARTICLE;
+                    DefaultParticleType type = !shouldGreen || level  < 2 ? ParticleTypes.FLAME : ParticleRegistery.GREEN_SECONDARY_FLAME_PARTICLE;
                     for (int i = 0; i <30 * power; i++){
                         Vec3d dir = Util.getRandomDirectionUnitSphere().multiply(power * 0.2);
                         client.world.addParticle(type,

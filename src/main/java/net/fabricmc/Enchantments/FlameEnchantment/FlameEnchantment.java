@@ -18,6 +18,7 @@ import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.server.world.ServerWorld;
@@ -190,6 +191,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         
         
         // = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
+        TrailingParticle = shouldGreen && level >=2 ? ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE : ParticleRegistery.TRAILING_FLAME_PARTICLE;
 
         for (int i = 0; i < p_amount; i++){
             Vec3d spot = direction.multiply(i*step);
@@ -220,6 +222,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         }
        // DefaultParticleType type = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
          // TODO Auto-generated method stub
+         TrailingParticle = shouldGreen && level >=2 ? ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE : ParticleRegistery.TRAILING_FLAME_PARTICLE;
          Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
         
          int p_amount = 3;
