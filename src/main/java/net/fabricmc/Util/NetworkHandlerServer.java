@@ -73,7 +73,7 @@ public class NetworkHandlerServer {
         }
     }
 
-    public static void spawnFlameAffectingEntities(ServerWorld world, Vec3d pos, double power, int level){
+    public static void spawnFlameAffectingEntities(ServerWorld world, Vec3d pos, double power, int level, boolean shouldgreen){
         PacketByteBuf createPacket = PacketByteBufs.create();
 
         createPacket.writeDouble(pos.x);
@@ -82,6 +82,7 @@ public class NetworkHandlerServer {
 
         createPacket.writeDouble(level < 2 ? 1.8 : 3);
         createPacket.writeInt(level);
+        createPacket.writeBoolean(shouldgreen);
         
 
         List<ServerPlayerEntity> players = world.getPlayers(player -> (player.getPos().distanceTo(pos) <= 50));

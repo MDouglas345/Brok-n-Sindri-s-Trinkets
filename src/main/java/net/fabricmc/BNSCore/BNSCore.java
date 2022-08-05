@@ -121,6 +121,7 @@ import net.fabricmc.GenericItemBlock.*;
 import net.fabricmc.Util.EntityContainer;
 import net.fabricmc.Util.IDedUUID;
 import net.fabricmc.Util.ISavedItem;
+import net.fabricmc.Util.MiscRegistery;
 import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -266,10 +267,13 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.BLOCK, new Identifier(ModID, "adv_static_fire_block"), ADV_STATIC_FIRE_BLOCK);
 
+		((StaticFireBlock)ADV_STATIC_FIRE_BLOCK).registerFireColor();
+		((StaticFireBlock)BASE_STATIC_FIRE_BLOCK).registerFireColor();
+		
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher,  accessor, dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher,  asseccor, dedicated) -> {
             
                 dispatcher.register(CommandManager.literal("bns").then(CommandManager.literal("resetthrownstacks")
 				.executes(context -> {
@@ -303,6 +307,8 @@ public class BNSCore implements ModInitializer {
 		ScheduleRegistry.register();
 
 		LootTableRegistry.register();
+
+		MiscRegistery.register();
 
 		
 	}

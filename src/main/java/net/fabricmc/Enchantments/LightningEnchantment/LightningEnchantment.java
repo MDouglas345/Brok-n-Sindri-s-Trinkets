@@ -34,10 +34,21 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
     /**
      * Need to find out how to make one enchantment require another0
      */
+
+     public float LightningStrike;
+     public float LightningStrikeMax;
+   
     
     public LightningEnchantment(EnchantmentTarget t) {
      
             super(Enchantment.Rarity.COMMON, t , new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+    }
+
+
+    public void registerLightningChances(float strikenorm, float strikemax){
+        LightningStrike = strikenorm;
+        LightningStrikeMax = strikemax;
+    
     }
 
     @Override
@@ -63,8 +74,8 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
 
         ServerWorld world = (ServerWorld) user.world;
         float chance = Util.randgen.nextFloat();
-
-        if (chance < 0.1 * level){
+        float criteria = level >=2 ? LightningStrikeMax : LightningStrike;
+        if (chance < criteria ){
             
            AffectNearbyEntities(world, user, target.getBlockPos(), level);
         }
@@ -74,7 +85,9 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
     public void OnBlockThrownHit(World world, Entity source,  BlockPos pos, int level, boolean max) {
         if (world.isClient || !max){return;}
         float bonus = world.isThundering() || world.isRaining() ? 0.2f : 0.0f;
-        if ((Util.randgen.nextFloat() - level * 0.08 - bonus) > 0.1){return;}  
+        float lightningchance = level >= 2 ? LightningStrikeMax : LightningStrike;
+
+        if ((Util.randgen.nextFloat() - level * 0.08 - bonus) < lightningchance){return;}  
         Util.createLightningStrike(pos, (ServerWorld) world, source, 2 * level);
 
         
@@ -84,8 +97,10 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
     public void OnEntityThrownHit(World world, Entity source, EntityHitResult result, int level, boolean max) {
         // TODO Auto-generated method stub
         if (world.isClient || !max){return;}
-        float bonus = world.isThundering() || world.isRaining() ? 0.2f : 0.0f;
-        if ((Util.randgen.nextFloat() - level * 0.08 - bonus) > 0.1){return;}  
+        float bonus = world.isThundering() || world.isRaining() ? 0.1f : 0.0f;
+        float lightningchance = level >= 2 ? LightningStrikeMax : LightningStrike;
+
+        if ((Util.randgen.nextFloat() - level * 0.01 - bonus) < lightningchance){return;}  
         Util.createLightningStrike(result.getEntity().getBlockPos(), (ServerWorld) world, source, 2 * level);
         
     }
