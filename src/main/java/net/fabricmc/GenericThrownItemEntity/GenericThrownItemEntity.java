@@ -11,6 +11,7 @@
 package net.fabricmc.GenericThrownItemEntity;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.MaxValuesforFieldExceededException;
@@ -39,9 +40,15 @@ import net.fabricmc.Util.Util;
 import net.fabricmc.Util.ClientIdentification.ClientIdentification;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.LeavesBlock;
+import net.minecraft.block.Material;
+import net.minecraft.block.PlantBlock;
+import net.minecraft.block.VineBlock;
+import net.minecraft.block.AbstractBlock.Settings;
 import net.minecraft.client.sound.Sound;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -83,7 +90,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.Heightmap;
@@ -393,11 +399,9 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         if (hitResult.getType() != HitResult.Type.MISS){
             BlockPos hitpos = hitResult.getBlockPos();
             BlockState state = world.getBlockState(hitpos);
-            Block b = state.getBlock();
-            float h = state.getHardness(world, hitpos);
-            
-            if (!state.isToolRequired() && h < 0.25 && h != -1.0){
-                world.breakBlock(hitpos,true);
+
+            if (shouldBlockBreak(world, state, hitpos)){
+                world.breakBlock(hitpos, true);
             }
             
             
@@ -411,6 +415,30 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             behvaior.OnTick(this, world);
         }
         
+    }
+
+    public boolean shouldBlockBreak(World world, BlockState state, BlockPos pos){
+        if (state.isToolRequired()){return false;}
+        
+        Material blockmat = state.getMaterial();
+        float hardness = state.getHardness(world, pos);
+        Block block = state.getBlock();
+        
+        if (hardness <= -1.0f){
+            return false;
+        }
+
+        if (block instanceof AbstractSignBlock){
+                return true;
+        }
+
+        if (block.equals(Blocks.SNOW) || block instanceof PlantBlock || block instanceof VineBlock || block instanceof LeavesBlock){
+            return true;
+        }
+
+        return false;
+
+    
     }
 
     public int getState(){
@@ -504,7 +532,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
         this.Maxed = nbt.getBoolean("maxed");
 
         this.StackID = nbt.getInt("stackid");
-        this.rand = Random.create(StackID);
+        this.rand = new Random(StackID);
 
         enchantmentData = Util.getSpecialThrownEnchantment(itemToRender);
     }
@@ -598,7 +626,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
 
     public void SetStackID(int i ){
         this.StackID = i;
-        this.rand = Random.create(i);
+        this.rand = new Random(i);
         
     }
 
