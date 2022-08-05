@@ -24,5 +24,7 @@ public class BaseStaticFireBlock extends StaticFireBlock {
         // TODO Auto-generated method stub
         return BNSCore.BASE_STATIC_FIRE_BLOCK.getDefaultState();
     }
+
+   
     
 }

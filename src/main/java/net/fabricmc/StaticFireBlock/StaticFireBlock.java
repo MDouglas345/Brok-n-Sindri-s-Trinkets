@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
 
+import net.fabricmc.Config.ConfigRegistery;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -39,6 +40,7 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
    public static final BooleanProperty UP;
+   public static final BooleanProperty GREEN;
    private static final Map<Direction, BooleanProperty> DIRECTION_PROPERTIES;
    private static final VoxelShape UP_SHAPE;
    private static final VoxelShape WEST_SHAPE;
@@ -54,6 +56,7 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
       SOUTH = ConnectingBlock.SOUTH;
       WEST = ConnectingBlock.WEST;
       UP = ConnectingBlock.UP;
+      GREEN = BooleanProperty.of("green");
       DIRECTION_PROPERTIES = (Map)ConnectingBlock.FACING_PROPERTIES.entrySet().stream().filter((entry) -> {
          return entry.getKey() != Direction.DOWN;
       }).collect(Util.toMap());
@@ -68,7 +71,7 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    public StaticFireBlock(Settings settings, float damage, int tickstoburn) {
       super(settings, damage);
       //TODO Auto-generated constructor stub
-      this.setDefaultState(this.stateManager.getDefaultState().with(AGE, 0).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(UP, false));
+      this.setDefaultState(this.stateManager.getDefaultState().with(AGE, 0).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(UP, false).with(GREEN, false));
       this.shapesByState = ImmutableMap.copyOf((Map)this.stateManager.getStates().stream().filter((state) -> {
          return (Integer)state.get(AGE) == 0;
       }).collect(Collectors.toMap(Function.identity(), StaticFireBlock::getShapeForState)));
@@ -76,8 +79,10 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
       TicksToLive = tickstoburn;
    }
 
+
+
    protected void appendProperties(Builder<Block, BlockState> builder) {
-      builder.add(new Property[]{AGE, NORTH, EAST, SOUTH, WEST, UP});
+      builder.add(new Property[]{AGE, NORTH, EAST, SOUTH, WEST, UP, GREEN});
    }
 
    @Override
@@ -169,6 +174,10 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    protected BlockState getStateWithAge(WorldAccess world, BlockPos pos, int age) {
       BlockState blockState = getState(world, pos);
       return blockState.isOf(Blocks.FIRE) ? (BlockState)blockState.with(AGE, age) : blockState;
+   }
+
+   public void registerFireColor(){
+      this.setDefaultState(this.stateManager.getDefaultState().with(GREEN, ConfigRegistery.configuration.getBoolean("GreenFire")));
    }
 
    protected abstract BlockState getStateN(BlockView world, BlockPos pos);

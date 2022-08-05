@@ -266,6 +266,9 @@ public class BNSCore implements ModInitializer {
 
 		Registry.register(Registry.BLOCK, new Identifier(ModID, "adv_static_fire_block"), ADV_STATIC_FIRE_BLOCK);
 
+		((StaticFireBlock)ADV_STATIC_FIRE_BLOCK).registerFireColor();
+		((StaticFireBlock)BASE_STATIC_FIRE_BLOCK).registerFireColor();
+		
 
 		Registry.register(Registry.STATUS_EFFECT, new Identifier("bns", "paralysis"), Paralysis);
 

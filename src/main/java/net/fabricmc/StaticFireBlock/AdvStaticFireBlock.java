@@ -23,5 +23,7 @@ public class AdvStaticFireBlock extends StaticFireBlock{
         // TODO Auto-generated method stub
         return BNSCore.ADV_STATIC_FIRE_BLOCK.getDefaultState();
     }
+
+    
     
 }

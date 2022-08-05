@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
 
 import net.fabricmc.BNSCore.BNSCore;
+import net.fabricmc.Config.ConfigRegistery;
 import net.fabricmc.Enchantments.IWorldBehvaior;
 import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.fabricmc.GenericThrownItemEntity.GenericThrownItemEntity;
@@ -35,9 +36,23 @@ import net.minecraft.world.World;
 
 public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
 
+    public boolean shouldGreen;
+    DefaultParticleType TrailingParticle;
+
     protected FlameEnchantment(EnchantmentTarget type) {
         super(Rarity.COMMON, type, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
         //TODO Auto-generated constructor stub
+    }
+
+    public void setGreen(boolean bool){
+        shouldGreen = bool;
+
+        if (shouldGreen){
+            TrailingParticle =  ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
+        }
+        else{
+            TrailingParticle = ParticleRegistery.TRAILING_FLAME_PARTICLE;
+        }
     }
 
     @Override
@@ -172,13 +187,15 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         /**
          * either keep using getRotationVector, or find a direction vector using the quaternion and a forward vector
          */
-        DefaultParticleType type = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
+        
+        
+        // = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
 
         for (int i = 0; i < p_amount; i++){
             Vec3d spot = direction.multiply(i*step);
             spot = spot.add(pos);
 
-            world.addParticle(type,
+            world.addParticle(TrailingParticle,
             spot.getX(), spot.getY(), spot.getZ(),
                           0, 0, 0);
         }
@@ -201,7 +218,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
         if (Util.randgen.nextFloat() > 0.2f){
             return;
         }
-        DefaultParticleType type = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
+       // DefaultParticleType type = level < 2 ? ParticleRegistery.TRAILING_FLAME_PARTICLE : ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
          // TODO Auto-generated method stub
          Vec3d spot = new Vec3d(Pos.getX() + 0.5, Pos.getY() + 0.5, Pos.getZ() + 0.5); // adjustment here!
         
@@ -212,7 +229,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
             dir = dir.multiply(Util.randgen.nextFloat() * 0.5);
             dir = spot.add(dir);
              
-             world.addParticle(type,
+             world.addParticle(TrailingParticle,
              dir.getX(), dir.getY(), dir.getZ(),
                            0, 0, 0);
          }
@@ -229,7 +246,8 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
     public void AffectNearbyEntities(ServerWorld world, Entity source, BlockPos pos, int level) {
         int radius = 3 * level;
 
-        NetworkHandlerServer.spawnFlameAffectingEntities(world, Vec3d.of(pos), radius / 2, level);
+        
+        NetworkHandlerServer.spawnFlameAffectingEntities(world, Vec3d.of(pos), radius / 2, level, shouldGreen);
         
         List<LivingEntity> list = world.getEntitiesByClass(LivingEntity.class, new Box(new Vec3d(pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius ), new Vec3d(pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius )), (entity)->{
             return !source.getUuid().equals(entity.getUuid());
