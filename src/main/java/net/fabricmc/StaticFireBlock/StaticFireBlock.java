@@ -2,7 +2,6 @@ package net.fabricmc.StaticFireBlock;
 
 
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,6 +24,7 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -93,6 +93,12 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
       super.onBlockAdded(state, world, pos, oldState, notify);
       world.createAndScheduleBlockTick(pos, this, getFireTickDelay(world.random));
+      StaticFireBlock block = (StaticFireBlock) state.getBlock();
+      block.Age = 0;
+
+      /**
+       * set boolean properties based on what blocks are around? for more natural looking fire?
+       */
 
       
    }
@@ -102,7 +108,7 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
 
       Age++;
 
-      if (Age > 100){
+      if (Age > TicksToLive){
          world.removeBlock(pos, false);
       }
    }
