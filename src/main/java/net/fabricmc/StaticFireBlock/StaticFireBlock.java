@@ -93,6 +93,12 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
       super.onBlockAdded(state, world, pos, oldState, notify);
       world.createAndScheduleBlockTick(pos, this, getFireTickDelay(world.random));
+      StaticFireBlock block = (StaticFireBlock) state.getBlock();
+      block.Age = 0;
+
+      /**
+       * set boolean properties based on what blocks are around? for more natural looking fire?
+       */
 
       
    }
