@@ -109,7 +109,7 @@ public class Config {
         enterData("AntiGrief", "False");
         enterData("RuneDropChance", "0.01");
         enterData("TicksToDwarfHungry", "10000");
-        enterData("GreenFire", "True");
+        enterData("GreenFire", "False");
         enterData("LightningStrikeChanceLVL1", "0.1");
         enterData("LightningStrikeChanceLVL2", "0.2");
 
