@@ -121,6 +121,7 @@ import net.fabricmc.GenericItemBlock.*;
 import net.fabricmc.Util.EntityContainer;
 import net.fabricmc.Util.IDedUUID;
 import net.fabricmc.Util.ISavedItem;
+import net.fabricmc.Util.MiscRegistery;
 import net.fabricmc.Util.NetworkHandlerServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
@@ -306,6 +307,8 @@ public class BNSCore implements ModInitializer {
 		ScheduleRegistry.register();
 
 		LootTableRegistry.register();
+
+		MiscRegistery.register();
 
 		
 	}

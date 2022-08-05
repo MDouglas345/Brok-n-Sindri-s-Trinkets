@@ -286,7 +286,8 @@
       "when": {
         "OR": [
           {
-            "south": "true"
+            "south": "true",
+            "green" : "false"
           },
           {
             "east": "false",

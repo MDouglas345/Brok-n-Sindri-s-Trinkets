@@ -29,6 +29,7 @@ import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -205,11 +206,12 @@ public class ThrownState extends GenericThrownItemEntityState{
         
         //something better would be to check if the blockstate.isAir? or isSolidBlock? maybe better.
         
-        if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock) && !(block instanceof SnowBlock)){
+        if (  !(block instanceof AirBlock) && !(block instanceof FluidBlock) && !(block instanceof PlantBlock) && !(block instanceof SnowBlock) && !(block instanceof AbstractSignBlock)){
             Master.ThrowRandom(0.3f);
 
             return;
         }
+        
 
        
       /**
