@@ -112,6 +112,8 @@ public class Config {
         enterData("GreenFire", "False");
         enterData("LightningStrikeChanceLVL1", "0.1");
         enterData("LightningStrikeChanceLVL2", "0.2");
+        enterData("BaseFireTicksToBurn", "10");
+        enterData("AdvFireTicksToBurn", "50");
 
     }
 

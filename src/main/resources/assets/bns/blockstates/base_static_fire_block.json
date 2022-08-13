@@ -1,172 +1,172 @@
 {
-    "multipart": [
-      {
-        "apply": [
-          {
-            "model": "bns:block/basefire/fire_floor0"
-          },
-          {
-            "model": "bns:block/basefire/fire_floor1"
-          }
-        ],
-        "when": {
-          "east": "false",
-          "north": "false",
-          "south": "false",
-          "up": "false",
-          "west": "false"
+  "multipart": [
+    {
+      "apply": [
+        {
+          "model": "bns:block/basefire/fire_floor0"
+        },
+        {
+          "model": "bns:block/basefire/fire_floor1"
         }
-      },
-      {
-        "apply": [
-          {
-            "model": "bns:block/basefire/fire_side0"
-          },
-          {
-            "model": "bns:block/basefire/fire_side1"
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt0"
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt1"
-          }
-        ],
-        "when": {
-          "OR": [
-            {
-              "north": "true"
-            },
-            {
-              "east": "false",
-              "north": "false",
-              "south": "false",
-              "up": "false",
-              "west": "false"
-            }
-          ]
-        }
-      },
-      {
-        "apply": [
-          {
-            "model": "bns:block/basefire/fire_side0",
-            "y": 90
-          },
-          {
-            "model": "bns:block/basefire/fire_side1",
-            "y": 90
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt0",
-            "y": 90
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt1",
-            "y": 90
-          }
-        ],
-        "when": {
-          "OR": [
-            {
-              "east": "true"
-            },
-            {
-              "east": "false",
-              "north": "false",
-              "south": "false",
-              "up": "false",
-              "west": "false"
-            }
-          ]
-        }
-      },
-      {
-        "apply": [
-          {
-            "model": "bns:block/basefire/fire_side0",
-            "y": 180
-          },
-          {
-            "model": "bns:block/basefire/fire_side1",
-            "y": 180
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt0",
-            "y": 180
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt1",
-            "y": 180
-          }
-        ],
-        "when": {
-          "OR": [
-            {
-              "south": "true"
-            },
-            {
-              "east": "false",
-              "north": "false",
-              "south": "false",
-              "up": "false",
-              "west": "false"
-            }
-          ]
-        }
-      },
-      {
-        "apply": [
-          {
-            "model": "bns:block/basefire/fire_side0",
-            "y": 270
-          },
-          {
-            "model": "bns:block/basefire/fire_side1",
-            "y": 270
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt0",
-            "y": 270
-          },
-          {
-            "model": "bns:block/basefire/fire_side_alt1",
-            "y": 270
-          }
-        ],
-        "when": {
-          "OR": [
-            {
-              "west": "true"
-            },
-            {
-              "east": "false",
-              "north": "false",
-              "south": "false",
-              "up": "false",
-              "west": "false"
-            }
-          ]
-        }
-      },
-      {
-        "apply": [
-          {
-            "model": "bns:block/basefire/fire_up0"
-          },
-          {
-            "model": "bns:block/basefire/fire_up1"
-          },
-          {
-            "model": "bns:block/basefire/fire_up_alt0"
-          },
-          {
-            "model": "bns:block/basefire/fire_up_alt1"
-          }
-        ],
-        "when": {
-          "up": "true"
-        }
+      ],
+      "when": {
+        "east": "false",
+        "north": "false",
+        "south": "false",
+        "up": "false",
+        "west": "false"
       }
-    ]
-  }
+    },
+    {
+      "apply": [
+        {
+          "model": "bns:block/basefire/fire_side0"
+        },
+        {
+          "model": "bns:block/basefire/fire_side1"
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt0"
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt1"
+        }
+      ],
+      "when": {
+        "OR": [
+          {
+            "north": "true"
+          },
+          {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "bns:block/basefire/fire_side0",
+          "y": 90
+        },
+        {
+          "model": "bns:block/basefire/fire_side1",
+          "y": 90
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt0",
+          "y": 90
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt1",
+          "y": 90
+        }
+      ],
+      "when": {
+        "OR": [
+          {
+            "east": "true"
+          },
+          {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "bns:block/basefire/fire_side0",
+          "y": 180
+        },
+        {
+          "model": "bns:block/basefire/fire_side1",
+          "y": 180
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt0",
+          "y": 180
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt1",
+          "y": 180
+        }
+      ],
+      "when": {
+        "OR": [
+          {
+            "south": "true"
+          },
+          {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "bns:block/basefire/fire_side0",
+          "y": 270
+        },
+        {
+          "model": "bns:block/basefire/fire_side1",
+          "y": 270
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt0",
+          "y": 270
+        },
+        {
+          "model": "bns:block/basefire/fire_side_alt1",
+          "y": 270
+        }
+      ],
+      "when": {
+        "OR": [
+          {
+            "west": "true"
+          },
+          {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": [
+        {
+          "model": "bns:block/basefire/fire_up0"
+        },
+        {
+          "model": "bns:block/basefire/fire_up1"
+        },
+        {
+          "model": "bns:block/basefire/fire_up_alt0"
+        },
+        {
+          "model": "bns:block/basefire/fire_up_alt1"
+        }
+      ],
+      "when": {
+        "up": "true"
+      }
+    }
+  ]
+}

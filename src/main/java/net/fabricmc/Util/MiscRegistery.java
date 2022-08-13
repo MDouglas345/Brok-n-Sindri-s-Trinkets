@@ -12,12 +12,17 @@ public class MiscRegistery {
     public static void register(){
         ((StaticFireBlock)BNSCore.ADV_STATIC_FIRE_BLOCK).registerFireColor();
 		((StaticFireBlock)BNSCore.BASE_STATIC_FIRE_BLOCK).registerFireColor();
+
+        ((StaticFireBlock)BNSCore.ADV_STATIC_FIRE_BLOCK).registerTicksToBurn(ConfigRegistery.configuration.getInt("AdvFireTicksToBurn"));
+		((StaticFireBlock)BNSCore.BASE_STATIC_FIRE_BLOCK).registerTicksToBurn(ConfigRegistery.configuration.getInt("BaseFireTicksToBurn"));
         
         ((FlameEnchantment) BNSCore.FlameTool).setGreen(ConfigRegistery.configuration.getBoolean("GreenFire"));
         ((FlameEnchantment) BNSCore.FlameWeapon).setGreen(ConfigRegistery.configuration.getBoolean("GreenFire"));
 
         ((LightningEnchantment) BNSCore.LightningTool).registerLightningChances((float)ConfigRegistery.configuration.getDouble("LightningStrikeChanceLVL1"), (float)ConfigRegistery.configuration.getDouble("LightningStrikeChanceLVL2"));
         ((LightningEnchantment) BNSCore.LightningWeapon).registerLightningChances((float)ConfigRegistery.configuration.getDouble("LightningStrikeChanceLVL1"), (float)ConfigRegistery.configuration.getDouble("LightningStrikeChanceLVL2"));
+
+
     }
     
 }

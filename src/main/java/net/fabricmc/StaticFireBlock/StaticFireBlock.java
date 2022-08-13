@@ -1,13 +1,30 @@
+/**
+ * More appropriate fire block placements (no floating fire pls)
+ * 
+ * Override getPlacementforPos function to return a blockstate for the StaticFireBlock
+ * Check blocks in all adjacent directions from a position and if that block is flammable, turn on that boolean property
+ * 
+ * a block is flammable if it is not the genericitemblock? (more criteria here)
+ * 
+ * The result : a fire block that has boolean properties for all sides
+ * 
+ * Modify the blockstate file for both the base and advance staticfireblock
+ * Might be the most complex and easy to mess up part of this approach 
+ *
+ */
+
 package net.fabricmc.StaticFireBlock;
 
 
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
 
 import net.fabricmc.Config.ConfigRegistery;
+import net.fabricmc.GenericItemBlock.GenericItemBlock;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -24,12 +41,15 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.math.BlockPos.Mutable;
+import net.minecraft.util.math.Direction.Axis;
+import net.minecraft.util.math.Direction.Type;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.dimension.AreaHelper;
 
 public abstract class StaticFireBlock extends AbstractFireBlock{
    int Age = 0;
@@ -40,6 +60,7 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
    public static final BooleanProperty UP;
+   public static final BooleanProperty DOWN;
    public static final BooleanProperty GREEN;
    private static final Map<Direction, BooleanProperty> DIRECTION_PROPERTIES;
    private static final VoxelShape UP_SHAPE;
@@ -56,9 +77,10 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
       SOUTH = ConnectingBlock.SOUTH;
       WEST = ConnectingBlock.WEST;
       UP = ConnectingBlock.UP;
+      DOWN = ConnectingBlock.DOWN;
       GREEN = BooleanProperty.of("green");
       DIRECTION_PROPERTIES = (Map)ConnectingBlock.FACING_PROPERTIES.entrySet().stream().filter((entry) -> {
-         return entry.getKey() != Direction.DOWN;
+         return true;
       }).collect(Util.toMap());
       UP_SHAPE = Block.createCuboidShape(0.0D, 15.0D, 0.0D, 16.0D, 16.0D, 16.0D);
       WEST_SHAPE = Block.createCuboidShape(0.0D, 0.0D, 0.0D, 1.0D, 16.0D, 16.0D);
@@ -71,7 +93,7 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    public StaticFireBlock(Settings settings, float damage, int tickstoburn) {
       super(settings, damage);
       //TODO Auto-generated constructor stub
-      this.setDefaultState(this.stateManager.getDefaultState().with(AGE, 0).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(UP, false).with(GREEN, false));
+      
       this.shapesByState = ImmutableMap.copyOf((Map)this.stateManager.getStates().stream().filter((state) -> {
          return (Integer)state.get(AGE) == 0;
       }).collect(Collectors.toMap(Function.identity(), StaticFireBlock::getShapeForState)));
@@ -82,13 +104,20 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
 
 
    protected void appendProperties(Builder<Block, BlockState> builder) {
-      builder.add(new Property[]{AGE, NORTH, EAST, SOUTH, WEST, UP, GREEN});
+      builder.add(new Property[]{AGE, NORTH, EAST, SOUTH, WEST, UP, DOWN, GREEN});
+      
    }
 
    @Override
    protected boolean isFlammable(BlockState state) {
-      return !state.isAir();
+      return !state.isAir() && !(state.getBlock() instanceof GenericItemBlock);
    }
+
+   public void registerTicksToBurn(int ticks){
+      TicksToLive = ticks;
+      
+   }
+
 
    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
       super.onBlockAdded(state, world, pos, oldState, notify);
@@ -156,37 +185,89 @@ public abstract class StaticFireBlock extends AbstractFireBlock{
    }
 
    public BlockState getStateForPosition(BlockView world, BlockPos pos) {
-      BlockPos blockPos = pos.down();
-      BlockState blockState = world.getBlockState(blockPos);
-      if (!this.isFlammable(blockState) && !blockState.isSideSolidFullSquare(world, blockPos, Direction.UP)) {
-         BlockState blockState2 = this.getDefaultState();
-         Direction[] var6 = Direction.values();
-         int var7 = var6.length;
+      
+      BlockState blockState2 = this.getStateN(world, pos);
+      Direction[] directions = Direction.values();
+      int directionsLength = directions.length;
 
-         for(int var8 = 0; var8 < var7; ++var8) {
-            Direction direction = var6[var8];
-            BooleanProperty booleanProperty = (BooleanProperty)DIRECTION_PROPERTIES.get(direction);
-            if (booleanProperty != null) {
-               blockState2 = (BlockState)blockState2.with(booleanProperty, this.isFlammable(world.getBlockState(pos.offset(direction))));
-            }
+      for(int i = 0; i < directionsLength; ++i) {
+         Direction direction = directions[i];
+         BooleanProperty booleanProperty = (BooleanProperty)DIRECTION_PROPERTIES.get(direction);
+         if (booleanProperty != null) {
+            blockState2 = (BlockState)blockState2.with(booleanProperty, isSolidBlock((World) world, pos, direction));
          }
-
-         return blockState2;
-      } else {
-         return this.getDefaultState();
       }
+
+      return blockState2;
+     
    }
 
    protected BlockState getStateWithAge(WorldAccess world, BlockPos pos, int age) {
-      BlockState blockState = getState(world, pos);
-      return blockState.isOf(Blocks.FIRE) ? (BlockState)blockState.with(AGE, age) : blockState;
+      BlockState blockState = getStateN(world, pos);
+      return blockState;
+   }
+
+   public static boolean canPlaceAt(World world, BlockPos pos, Direction direction){
+      BlockState state = world.getBlockState(pos);
+      Block block = state.getBlock();
+      return !(block instanceof GenericItemBlock) && isAroundSolidBlock(world, pos) && (state.isAir() || shouldLightPortalAt(world, pos, direction));
+   }
+
+   public static boolean isAroundSolidBlock(World world, BlockPos pos){
+      Direction[] directions = Direction.values();
+
+      for (Direction direction : directions){
+         if (isSolidBlock(world, pos, direction)){
+            return true;
+         }
+      }
+      return false;
+   }
+
+   public static boolean isSolidBlock(World world, BlockPos pos, Direction direction){
+      BlockState state = world.getBlockState(pos.offset(direction));
+      Block block = state.getBlock();
+      return !state.isAir() && !(block instanceof GenericItemBlock) && !(block instanceof AbstractFireBlock);
    }
 
    public void registerFireColor(){
-      this.setDefaultState(this.stateManager.getDefaultState().with(GREEN, ConfigRegistery.configuration.getBoolean("GreenFire")));
+      this.setDefaultState(getDefaultState().with(AGE, 0).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(UP, false).with(GREEN, false).with(DOWN, false));
+      this.setDefaultState(getDefaultState().with(GREEN, ConfigRegistery.configuration.getBoolean("GreenFire")));
+      
    }
 
    protected abstract BlockState getStateN(BlockView world, BlockPos pos);
+
+
+   private static boolean shouldLightPortalAt(World world, BlockPos pos, Direction direction) {
+      if (!isOverworldOrNether(world)) {
+         return false;
+      } else {
+         Mutable mutable = pos.mutableCopy();
+         boolean bl = false;
+         Direction[] var5 = Direction.values();
+         int var6 = var5.length;
+
+         for(int var7 = 0; var7 < var6; ++var7) {
+            Direction direction2 = var5[var7];
+            if (world.getBlockState(mutable.set(pos).move(direction2)).isOf(Blocks.OBSIDIAN)) {
+               bl = true;
+               break;
+            }
+         }
+
+         if (!bl) {
+            return false;
+         } else {
+            Axis axis = direction.getAxis().isHorizontal() ? direction.rotateYCounterclockwise().getAxis() : Type.HORIZONTAL.randomAxis(world.random);
+            return AreaHelper.getNewPortal(world, pos, axis).isPresent();
+         }
+      }
+   }
+
+   private static boolean isOverworldOrNether(World world) {
+      return world.getRegistryKey() == World.OVERWORLD || world.getRegistryKey() == World.NETHER;
+   }
 
 
 }
