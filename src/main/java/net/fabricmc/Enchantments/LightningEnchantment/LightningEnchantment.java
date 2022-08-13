@@ -87,7 +87,7 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
         float bonus = world.isThundering() || world.isRaining() ? 0.2f : 0.0f;
         float lightningchance = level >= 2 ? LightningStrikeMax : LightningStrike;
 
-        if ((Util.randgen.nextFloat() - level * 0.08 - bonus) < lightningchance){return;}  
+        if ((Util.randgen.nextFloat() - level * 0.02 - bonus) < lightningchance){return;}  
         Util.createLightningStrike(pos, (ServerWorld) world, source, 2 * level);
 
         
@@ -100,7 +100,7 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
         float bonus = world.isThundering() || world.isRaining() ? 0.1f : 0.0f;
         float lightningchance = level >= 2 ? LightningStrikeMax : LightningStrike;
 
-        if ((Util.randgen.nextFloat() - level * 0.01 - bonus) < lightningchance){return;}  
+        if ((Util.randgen.nextFloat() - level * 0.02 - bonus) < lightningchance){return;}  
         Util.createLightningStrike(result.getEntity().getBlockPos(), (ServerWorld) world, source, 2 * level);
         
     }
@@ -216,10 +216,8 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
         Vec3d Pos = Vec3d.of(pos.up());
         list.forEach((living) -> {
             BlockPos currentblock = living.getBlockPos();
-            Vec3d pushback = Pos.subtract(Vec3d.of(currentblock)).normalize();
             NetworkHandlerServer.spawnBranchLightning((ServerWorld) world, Pos, new Vec3d(currentblock.getX(), currentblock.getY(), currentblock.getZ()));   
-            living.damage(DamageSource.LIGHTNING_BOLT, 1 * level); 
-            living.takeKnockback(level, pushback.x, pushback.z);
+            living.damage(DamageSource.LIGHTNING_BOLT, 1); 
             world.playSound(null, living.getBlockPos(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 0.8f, 1f);
         });
         
