@@ -87,7 +87,7 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
         float bonus = world.isThundering() || world.isRaining() ? 0.2f : 0.0f;
         float lightningchance = level >= 2 ? LightningStrikeMax : LightningStrike;
 
-        if ((Util.randgen.nextFloat() - level * 0.06 - bonus) < lightningchance){return;}  
+        if ((Util.randgen.nextFloat() - level * 0.02 - bonus) < lightningchance){return;}  
         Util.createLightningStrike(pos, (ServerWorld) world, source, 2 * level);
 
         
@@ -100,7 +100,7 @@ public class LightningEnchantment extends Enchantment implements IWorldBehvaior{
         float bonus = world.isThundering() || world.isRaining() ? 0.1f : 0.0f;
         float lightningchance = level >= 2 ? LightningStrikeMax : LightningStrike;
 
-        if ((Util.randgen.nextFloat() - level * 0.06 - bonus) < lightningchance){return;}  
+        if ((Util.randgen.nextFloat() - level * 0.02 - bonus) < lightningchance){return;}  
         Util.createLightningStrike(result.getEntity().getBlockPos(), (ServerWorld) world, source, 2 * level);
         
     }
