@@ -241,13 +241,7 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
             }
 
             
-            if (entity instanceof LivingEntity && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) > 0)&& this.Maxed){
-
-                this.PinEntity(entityHitResult);
-            }
-            else{
-                Deflect(0.3f);
-            }
+           
 
             Item item = itemToRender.getItem();
 
@@ -276,12 +270,15 @@ public class GenericThrownItemEntity extends ThrownItemEntity implements ISavedI
                 behavior.OnEntityThrownHit(world, source, entityHitResult, enchantmentData.level, Maxed);
             }
 
-         
+            if (entity instanceof LivingEntity && (EnchantmentHelper.getLevel(BNSCore.PinnedTool, itemToRender) > 0 || EnchantmentHelper.getLevel(BNSCore.PinnedWeapon, itemToRender) > 0)&& this.Maxed){
 
-           
+                this.PinEntity(entityHitResult);
+            }
+            else{
+                Deflect(0.3f);
+            }
 
-            
-            
+                
         
     }
 
