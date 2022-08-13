@@ -47,6 +47,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
 
     public void setGreen(boolean bool){
         shouldGreen = bool;
+        
 
         if (shouldGreen){
             TrailingParticle =  ParticleRegistery.GREEN_TRAILING_FLAME_PARTICLE;
@@ -110,7 +111,7 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
 
           for(double x = boxMin.getX(); x <= boxMax.getX(); x++){
               for (double y = boxMin.getY(); y <= boxMax.getY(); y++){
-                  for (double z = boxMin.getZ(); z <= boxMax.getZ(); z++){
+                      for (double z = boxMin.getZ(); z <= boxMax.getZ(); z++){
                       /**
                        * WOW! A N^3 loop. So original!
                        */
@@ -133,17 +134,18 @@ public class FlameEnchantment extends Enchantment implements IWorldBehvaior {
 
                         float chanceToTurn =  (1 - (currentDistToOrig/RelativeDistance)) + Util.getRandomFloat(0, 0.2f);
 
-                        if (chanceToTurn > 0.95 && AbstractFireBlock.canPlaceAt(world, current, Direction.UP)){
+                        if (chanceToTurn > 0.95 && (StaticFireBlock.canPlaceAt(world, current, Direction.DOWN) || StaticFireBlock.canPlaceAt(world, current, Direction.UP) || StaticFireBlock.canPlaceAt(world, current, Direction.EAST) || StaticFireBlock.canPlaceAt(world, current, Direction.WEST) || StaticFireBlock.canPlaceAt(world, current, Direction.NORTH) || StaticFireBlock.canPlaceAt(world, current, Direction.SOUTH)))
+                        {
                             BlockState blockState2;
                             if (level < 2){
-                                blockState2 = ((StaticFireBlock)BNSCore.BASE_STATIC_FIRE_BLOCK).getStateForPosition(world, pos);
+                                blockState2 = ((StaticFireBlock)BNSCore.BASE_STATIC_FIRE_BLOCK).getStateForPosition(world, current);
                             }
                             else{
-                                blockState2 = ((AdvStaticFireBlock)BNSCore.ADV_STATIC_FIRE_BLOCK).getStateForPosition(world, pos);
+                                blockState2 = ((AdvStaticFireBlock)BNSCore.ADV_STATIC_FIRE_BLOCK).getStateForPosition(world, current);
                             }
                             
                         
-                            ((ServerWorld)world).setBlockState(current, blockState2, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
+                            ((ServerWorld)world).setBlockState(current, blockState2, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD | Block.FORCE_STATE);
                         }
 
                        
